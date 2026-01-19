@@ -1,0 +1,135 @@
+// backend/prisma/schema.prisma
+
+// 1. Database Connection 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 2. Roles (User lge types)
+enum UserRole {
+  ADMIN       // Company Admin
+  MANAGER
+  TECHNICIAN
+  OCCUPANT
+}
+
+// 3. Tenant (Company / Organization) - SaaS project nisa meka godak wadagath
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String
+  domain      String?  @unique // e.g., company-a.fms.com
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users       User[]
+  assets      Asset[]
+  workOrders  WorkOrder[]
+
+  @@index([createdAt])
+}
+
+// 4. Users table
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String   
+  firstName   String
+  lastName    String
+  role        UserRole @default(OCCUPANT)
+  
+  // Me User aithi mona Company ekatada? (Tenant Link)
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignedWorkOrders WorkOrder[] @relation("AssignedWorkOrders")
+
+  @@index([tenantId])
+  @@index([role])
+  @@index([createdAt])
+}
+
+// 5. Asset Status
+enum AssetStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  RETIRED
+}
+
+// 6. Assets (Badu bhanda)
+model Asset {
+  id          String      @id @default(uuid())
+  name        String
+  category    String
+  serialNo    String?
+  status      AssetStatus @default(ACTIVE)
+
+  // Asset eka aithi Tenant ekata
+  tenantId    String
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  workOrders  WorkOrder[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([category])
+  @@unique([tenantId, serialNo])
+}
+
+// 7. Work Order Status
+enum WorkOrderStatus {
+  OPEN
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+// 8. Work Order Priority
+enum WorkOrderPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// 9. Work Orders 
+model WorkOrder {
+  id          String             @id @default(uuid())
+  title       String
+  description String?
+  status      WorkOrderStatus    @default(OPEN)
+  priority    WorkOrderPriority  @default(MEDIUM)
+
+  // Relations
+  assetId     String
+  asset       Asset              @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  tenantId    String
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  assignedToId    String?            // Technician ගේ ID එක
+  assignedTo      User?              @relation("AssignedWorkOrders", fields: [assignedToId], references: [id])
+
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([tenantId])
+  @@index([assetId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([assignedToId])
+}
