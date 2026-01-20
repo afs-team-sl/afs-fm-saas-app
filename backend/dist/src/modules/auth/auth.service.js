@@ -100,6 +100,7 @@ let AuthService = class AuthService {
                 firstName: result.user.firstName,
                 lastName: result.user.lastName,
                 role: result.user.role,
+                tenantId: result.user.tenantId,
             },
         };
     }
@@ -116,6 +117,12 @@ let AuthService = class AuthService {
             };
             return {
                 access_token: await this.jwtService.signAsync(payload),
+                user: {
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    role: user.role,
+                    tenantId: user.tenantId,
+                }
             };
         }
         throw new common_1.UnauthorizedException('Invalid email or password');

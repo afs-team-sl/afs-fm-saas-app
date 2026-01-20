@@ -6,12 +6,12 @@ export declare class UsersService {
     constructor(prisma: PrismaService);
     create(tenantId: string, createUserDto: CreateUserDto): Promise<{
         id: string;
-        createdAt: Date;
         email: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
         tenantId: string;
+        createdAt: Date;
     }>;
     findAll(tenantId: string): Promise<{
         id: string;
@@ -22,35 +22,23 @@ export declare class UsersService {
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         email: string;
         password: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
         tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     update(id: string, tenantId: string, updateUserDto: UpdateUserDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         email: string;
-        password: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
-        tenantId: string;
     }>;
     remove(id: string, tenantId: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        email: string;
-        password: string;
-        firstName: string;
-        lastName: string;
-        role: import(".prisma/client").$Enums.UserRole;
-        tenantId: string;
+        message: string;
     }>;
 }

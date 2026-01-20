@@ -1,4 +1,3 @@
-// src/modules/auth/auth.service.ts
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../common/prisma/prisma.service';
@@ -12,6 +11,9 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  /**
+   * Public registration logic: Creates a new Tenant and its first ADMIN user.
+   */
   async register(registerDto: RegisterDto) {
     const { companyName, email, password, firstName, lastName } = registerDto;
 
@@ -24,19 +26,20 @@ export class AuthService {
       throw new ConflictException('User with this email already exists');
     }
 
-    // 2. Hash the password
+    // 2. Hash the password (10 rounds)
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Create Tenant and Admin User in a transaction
+    // 3. Use a transaction to ensure atomic creation of Tenant and User
     const result = await this.prisma.$transaction(async (prisma) => {
       // Create Tenant
       const tenant = await prisma.tenant.create({
         data: {
           name: companyName,
+          // You can also add a domain here if needed
         },
       });
 
-      // Create Admin User linked to the new Tenant
+      // Create the primary ADMIN user linked to the tenant
       const user = await prisma.user.create({
         data: {
           email,
@@ -51,7 +54,7 @@ export class AuthService {
       return { tenant, user };
     });
 
-    // 4. Generate JWT token for the new admin user
+    // 4. Generate JWT payload
     const payload = {
       sub: result.user.id,
       email: result.user.email,
@@ -72,17 +75,21 @@ export class AuthService {
         firstName: result.user.firstName,
         lastName: result.user.lastName,
         role: result.user.role,
+        tenantId: result.user.tenantId,
       },
     };
   }
 
+  /**
+   * Login logic: Authenticates user and returns JWT + User Metadata
+   */
   async login(email: string, pass: string) {
     // 1. Find user by email
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
 
-    // 2. Compare hashed password
+    // 2. Compare the provided password with the stored hash
     if (user && (await bcrypt.compare(pass, user.password))) {
       // 3. Generate JWT Payload
       const payload = { 
@@ -92,8 +99,15 @@ export class AuthService {
         role: user.role 
       };
       
+      // 4. Return the Token along with necessary user metadata for Frontend 🚀
       return {
         access_token: await this.jwtService.signAsync(payload),
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          tenantId: user.tenantId,
+        }
       };
     }
     

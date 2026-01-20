@@ -56,7 +56,7 @@ let UsersService = class UsersService {
             where: { email: createUserDto.email },
         });
         if (existingUser) {
-            throw new common_1.ConflictException('User with this email already exists');
+            throw new common_1.ConflictException('A user with this email already exists');
         }
         const salt = await bcrypt.genSalt();
         const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
@@ -100,16 +100,33 @@ let UsersService = class UsersService {
     }
     async update(id, tenantId, updateUserDto) {
         await this.findOne(id, tenantId);
+        const updateData = { ...updateUserDto };
+        const rawPassword = updateUserDto.password;
+        if (rawPassword && rawPassword.trim() !== '') {
+            const salt = await bcrypt.genSalt();
+            updateData.password = await bcrypt.hash(rawPassword, salt);
+        }
+        else {
+            delete updateData.password;
+        }
         return this.prisma.user.update({
             where: { id },
-            data: updateUserDto,
+            data: updateData,
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+            },
         });
     }
     async remove(id, tenantId) {
         await this.findOne(id, tenantId);
-        return this.prisma.user.delete({
+        await this.prisma.user.delete({
             where: { id },
         });
+        return { message: 'User successfully removed from organization' };
     }
 };
 exports.UsersService = UsersService;
