@@ -12,9 +12,8 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-  // --- පද්ධතියේ ප්‍රධාන (Super Admin) විස්තර ---
-  const SYSTEM_TENANT_ID = '2411cbe9-483d-4f63-87ef-53aa591529a8'; 
-  const SYSTEM_SUPER_USER_ID = 'ඔයාගේ_USER_ID_එක_මෙතනට_දාන්න'; // <--- අනිවාර්යයෙන්ම මේක නිවැරදි කරන්න
+  // --- Super Admin Configuration ---
+  const SUPER_TENANT_ID = String(import.meta.env.VITE_SUPER_TENANT_ID || '').trim();
 
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
@@ -25,18 +24,31 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
     { name: 'System Settings', path: '/settings', icon: Settings, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
   ];
 
-  // --- 🛡️ මෙනු එක Filter කරන සුපිරි ලොජික් එක ---
+  // --- Menu Filtering Logic ---
   const filteredMenu = menuItems.filter(item => {
     const hasRoleAccess = item.roles.includes(role || '');
     if (!hasRoleAccess) return false;
 
-    // 'Global Control' පෙන්වන්නේ SUPER_USER ට විතරයි 🛡️
+    // Sanitize IDs for comparison
+    const currentTenantId = String(tenantId || '').trim();
+    const currentRole = role || '';
+    
+    // Super Admin check: Must have ADMIN role AND match Super Tenant ID
+    const isSuperAdmin = currentRole === 'ADMIN' && currentTenantId === SUPER_TENANT_ID;
+
+    // Show 'Global Control' only for Super Admins
     if (item.path === '/super-admin') {
-      return tenantId === SYSTEM_TENANT_ID && userId === SYSTEM_SUPER_USER_ID;
+      console.log('🔍 Super Admin Menu Check:', {
+        currentTenantId,
+        currentRole,
+        SUPER_TENANT_ID,
+        isSuperAdmin
+      });
+      return isSuperAdmin;
     }
 
-    // Super Admin ලොග් වුණාම එයාට Assets/Work Orders පේන්න ඕනේ නෑ
-    if (tenantId === SYSTEM_TENANT_ID && userId === SYSTEM_SUPER_USER_ID) {
+    // Hide Assets/Work Orders for Super Admins (they only manage platform globally)
+    if (isSuperAdmin) {
       if (['/assets', '/work-orders'].includes(item.path)) return false;
     }
 

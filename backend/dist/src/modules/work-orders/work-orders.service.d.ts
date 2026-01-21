@@ -8,10 +8,10 @@ export declare class WorkOrdersService {
     create(tenantId: string, dto: CreateWorkOrderDto): Promise<{
         asset: {
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            tenantId: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
@@ -24,9 +24,9 @@ export declare class WorkOrdersService {
         } | null;
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         description: string | null;
         title: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
@@ -37,10 +37,10 @@ export declare class WorkOrdersService {
     findAll(tenantId: string): Promise<({
         asset: {
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            tenantId: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
@@ -53,9 +53,9 @@ export declare class WorkOrdersService {
         } | null;
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         description: string | null;
         title: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
@@ -66,10 +66,10 @@ export declare class WorkOrdersService {
     findByStatus(tenantId: string, status: string): Promise<({
         asset: {
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            tenantId: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
@@ -82,9 +82,9 @@ export declare class WorkOrdersService {
         } | null;
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         description: string | null;
         title: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
@@ -95,10 +95,10 @@ export declare class WorkOrdersService {
     findByPriority(tenantId: string, priority: string): Promise<({
         asset: {
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            tenantId: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
@@ -111,9 +111,9 @@ export declare class WorkOrdersService {
         } | null;
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         description: string | null;
         title: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
@@ -124,10 +124,10 @@ export declare class WorkOrdersService {
     findOne(id: string, tenantId: string): Promise<{
         asset: {
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            tenantId: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
@@ -140,9 +140,9 @@ export declare class WorkOrdersService {
         } | null;
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         description: string | null;
         title: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
@@ -153,10 +153,10 @@ export declare class WorkOrdersService {
     update(id: string, tenantId: string, dto: UpdateWorkOrderDto): Promise<{
         asset: {
             id: string;
-            tenantId: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
+            tenantId: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
@@ -169,9 +169,9 @@ export declare class WorkOrdersService {
         } | null;
     } & {
         id: string;
-        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         description: string | null;
         title: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;

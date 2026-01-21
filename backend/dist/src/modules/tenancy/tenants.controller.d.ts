@@ -11,9 +11,9 @@ export declare class TenantsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
         domain: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
 }

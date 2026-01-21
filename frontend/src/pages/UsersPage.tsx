@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../api/client';
+import toast from 'react-hot-toast';
 import { 
   Plus, UserPlus, Shield, UserCog, User, 
   Mail, Trash2, Edit3, X, Loader2, Search 
@@ -18,13 +19,22 @@ const UsersPage = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState<UserData | null>(null);
 
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: 'password123', // Default for now, they can change it later
+    role: 'TECHNICIAN'
+  });
+
+  const [editFormData, setEditFormData] = useState({
+    firstName: '',
+    lastName: '',
     role: 'TECHNICIAN'
   });
 
@@ -44,12 +54,57 @@ const UsersPage = () => {
     setIsSubmitting(true);
     try {
       await apiClient.post('/users', formData);
+      toast.success('User added successfully!');
       setModalOpen(false);
       setFormData({ firstName: '', lastName: '', email: '', password: 'password123', role: 'TECHNICIAN' });
       fetchUsers();
-    } catch (error) {
-      alert('Failed to register user. Email might be already in use.');
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || 'Failed to register user. Email might be already in use.';
+      toast.error(errorMsg);
     } finally { setIsSubmitting(false); }
+  };
+
+  const handleEdit = (user: UserData) => {
+    setEditingUser(user);
+    setEditFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setIsSubmitting(true);
+    try {
+      await apiClient.patch(`/users/${editingUser.id}`, editFormData);
+      toast.success('User updated successfully!');
+      setEditModalOpen(false);
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || 'Failed to update user.';
+      toast.error(errorMsg);
+    } finally { setIsSubmitting(false); }
+  };
+
+  const handleDelete = (user: UserData) => {
+    setDeleteConfirmUser(user);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmUser) return;
+    try {
+      await apiClient.delete(`/users/${deleteConfirmUser.id}`);
+      toast.success('User deleted successfully!');
+      setDeleteConfirmUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || 'Failed to delete user.';
+      toast.error(errorMsg);
+    }
   };
 
   const getRoleBadge = (role: string) => {
@@ -121,8 +176,8 @@ const UsersPage = () => {
                     <td className="px-6 py-5">{getRoleBadge(user.role)}</td>
                     <td className="px-6 py-5 text-right">
                        <div className="flex justify-end gap-2">
-                          <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={16}/></button>
-                          <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16}/></button>
+                          <button onClick={() => handleEdit(user)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={16}/></button>
+                          <button onClick={() => handleDelete(user)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16}/></button>
                        </div>
                     </td>
                   </tr>
@@ -188,6 +243,93 @@ const UsersPage = () => {
                   {isSubmitting ? <Loader2 className="animate-spin" size={20}/> : 'Register Member'}
                 </button>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- EDIT USER MODAL --- */}
+      {isEditModalOpen && editingUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-[#001f3f]/50 backdrop-blur-md" onClick={() => setEditModalOpen(false)}></div>
+          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl z-10 overflow-hidden animate-in zoom-in duration-300">
+            <div className="p-10">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                   <h2 className="text-2xl font-black text-slate-900">Edit Member</h2>
+                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Update user information</p>
+                </div>
+                <button onClick={() => setEditModalOpen(false)} className="p-3 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X size={24}/></button>
+              </div>
+
+              <form onSubmit={handleEditSubmit} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">First Name</label>
+                    <input type="text" required className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] font-bold text-sm"
+                      value={editFormData.firstName} onChange={e => setEditFormData({...editFormData, firstName: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Last Name</label>
+                    <input type="text" required className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] font-bold text-sm"
+                      value={editFormData.lastName} onChange={e => setEditFormData({...editFormData, lastName: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Access Level</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['ADMIN', 'MANAGER', 'TECHNICIAN', 'OCCUPANT'].map(r => (
+                      <button key={r} type="button" 
+                        onClick={() => setEditFormData({...editFormData, role: r as any})}
+                        className={`py-3 text-[10px] font-black rounded-xl border transition-all ${editFormData.role === r ? 'bg-[#001f3f] text-white border-[#001f3f]' : 'bg-white text-slate-400 border-slate-200 hover:border-blue-300'}`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button type="submit" disabled={isSubmitting} className="w-full py-5 bg-[#001f3f] text-white font-black rounded-[1.5rem] shadow-2xl shadow-blue-900/30 flex justify-center items-center gap-3 active:scale-[0.98] transition-all">
+                  {isSubmitting ? <Loader2 className="animate-spin" size={20}/> : 'Update Member'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- DELETE CONFIRMATION DIALOG --- */}
+      {deleteConfirmUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setDeleteConfirmUser(null)}></div>
+          <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl z-10 overflow-hidden animate-in zoom-in duration-300">
+            <div className="p-8">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
+                  <Trash2 className="w-8 h-8 text-red-600" />
+                </div>
+              </div>
+              <h2 className="text-xl font-black text-slate-900 text-center mb-2">Delete User?</h2>
+              <p className="text-slate-500 text-sm text-center mb-6">
+                Are you sure you want to delete <span className="font-bold">{deleteConfirmUser.firstName} {deleteConfirmUser.lastName}</span>? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setDeleteConfirmUser(null)}
+                  className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         </div>

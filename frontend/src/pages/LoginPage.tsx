@@ -12,9 +12,8 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
-  // --- CONFIGURATION (ඔයාගේ Prisma Studio එකෙන් මේවා බලන්න) ---
-  const SYSTEM_TENANT_ID = '2411cbe9-483d-4f63-87ef-53aa591529a8'; // Alpha Industries ID
-  const SYSTEM_SUPER_USER_ID = 'ඔයාගේ_USER_ID_එක_මෙතනට_දාන්න'; // Kamal ගේ UUID එක
+  // --- CONFIGURATION ---
+  const SUPER_TENANT_ID = import.meta.env.VITE_SUPER_TENANT_ID;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,18 +23,32 @@ const LoginPage = () => {
       const response = await apiClient.post('/auth/login', { email, password });
       const { access_token, user } = response.data;
 
-      // 1. Context එක update කරනවා (parameters 4ක්ම යවනවා 🛡️)
-      login(access_token, user.tenantId, user.role, user.id);
+      // Sanitize IDs (remove whitespace, newlines, quotes)
+      const userTenantId = String(user.tenantId || '').trim();
+      const userId = String(user.id || '').trim();
+      const envSuperTenantId = String(SUPER_TENANT_ID || '').trim();
+      const userRole = user.role;
+
+      // Super Admin check: Must have ADMIN role AND match Super Tenant ID
+      const isSuperAdmin = userRole === 'ADMIN' && userTenantId === envSuperTenantId;
+
+      console.group('🔐 LOGIN - Super Admin Detection');
+      console.log('User Tenant ID:', userTenantId);
+      console.log('User Role:', userRole);
+      console.log('Super Tenant ID:', envSuperTenantId);
+      console.log('Is Super Admin?', isSuperAdmin);
+      console.groupEnd();
+
+      // Update AuthContext with user data
+      login(access_token, userTenantId, userRole, userId);
       
       toast.success(`Welcome back, ${user.firstName}!`);
 
-      // 2. Redirect Logic: Super Admin ද නැද්ද බලනවා
+      // Redirect based on Super Admin status
       setTimeout(() => {
-        if (user.tenantId === SYSTEM_TENANT_ID && user.id === SYSTEM_SUPER_USER_ID) {
-          navigate('/super-admin'); 
-        } else {
-          navigate('/');
-        }
+        const targetRoute = isSuperAdmin ? '/super-admin' : '/';
+        console.log(`🚀 Navigating to: ${targetRoute}`);
+        navigate(targetRoute, { replace: true });
       }, 600);
 
     } catch (err: any) {

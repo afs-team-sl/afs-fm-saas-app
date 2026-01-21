@@ -10,9 +10,9 @@ export declare class TenantsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
         domain: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
 }

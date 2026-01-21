@@ -11,7 +11,7 @@ export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
 
   // අපේ Main Company (Alpha Industries) ID එක 🛡️
-  private readonly SUPER_TENANT_ID = '2411cbe9-483d-4f63-87ef-53aa591529a8';
+  private readonly SUPER_TENANT_ID = process.env.SUPER_TENANT_ID;
 
   @Get()
   @ApiOperation({ summary: 'Get all registered organizations (Internal Use Only)' })

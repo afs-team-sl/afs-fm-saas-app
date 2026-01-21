@@ -22,7 +22,7 @@ let TenantsController = class TenantsController {
     constructor(tenantsService) {
         this.tenantsService = tenantsService;
     }
-    SUPER_TENANT_ID = '2411cbe9-483d-4f63-87ef-53aa591529a8';
+    SUPER_TENANT_ID = process.env.SUPER_TENANT_ID;
     async findAll(req) {
         if (req.user.tenantId !== this.SUPER_TENANT_ID) {
             throw new common_1.ForbiddenException('Access Denied: Your organization does not have permission to view global data.');

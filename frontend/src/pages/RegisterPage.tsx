@@ -20,35 +20,32 @@ const RegisterPage = () => {
     password: '',
   });
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess(false);
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  setSuccess(false);
 
-    try {
-      const response = await apiClient.post('/auth/register', formData);
-      
-      // 1. Backend එකෙන් එන දත්ත ටික මෙහෙම ගන්න 👇
-      const { access_token, tenant, user } = response.data;
-      
-      setSuccess(true);
-      toast.success('Organization Registered Successfully!');
+ try {
+    // 1. Backend එකට Register Request එක යවනවා
+    await apiClient.post('/auth/register', formData);
+    
+    // 2. Success Message එකක් පෙන්වනවා
+    setSuccess(true);
+    toast.success('Organization Initialized! Please sign in to your new workspace.');
 
-      // 2. අනිවාර්යයෙන්ම parameters 4ක් යවන්න ඕනේ 🛡️
-      // (token, tenantId, role, userId)
-      setTimeout(() => {
-        login(access_token, tenant.id, user.role, user.id);
-      }, 1500);
+    // 3. තත්පර 2කින් ඔයාව Login පේජ් එකට හරවා යවනවා 👇
+    setTimeout(() => {
+      navigate('/login');
+    }, 2000);
 
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Registration failed. Email might already exist.';
-      setError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (err: any) {
+    const message = err.response?.data?.message || 'Registration failed. Check your details.';
+    setError(message);
+    toast.error(message);
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-white flex animate-in fade-in duration-700">
