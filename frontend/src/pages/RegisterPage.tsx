@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
-import { Building2, Mail, Lock, Loader2, ArrowRight, AlertCircle, CheckCircle2, Sparkles, Key, Users } from 'lucide-react';
+import { Building2, Mail, Lock, Loader2, ArrowRight, AlertCircle, CheckCircle2, Key, Users } from 'lucide-react';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -84,265 +84,260 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex animate-in fade-in duration-700">
-      
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#0A1929] relative overflow-hidden flex-col justify-center px-16 text-white text-left">
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-64 h-64 border border-blue-500/20 rounded-full animate-pulse" />
-          <div className="absolute bottom-20 right-20 w-80 h-80 border border-indigo-500/20 rounded-full" />
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+        {/* Logo & Branding */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-lg mb-4">
+            <Building2 className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-semibold text-slate-900">FacilityOS</h1>
+          <p className="text-sm text-slate-500 mt-1">Create or join your organization</p>
         </div>
-        <div className="relative z-10 space-y-8">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
-              <Building2 className="w-7 h-7 text-blue-400" />
+
+        {/* Tab Switcher */}
+        <div className="flex gap-2 p-1 bg-white rounded-lg border border-slate-200 mb-6">
+          <button
+            onClick={() => { setActiveTab('new'); setError(''); setSuccess(false); }}
+            className={`flex-1 py-2.5 px-4 rounded-md font-medium text-sm transition-colors ${
+              activeTab === 'new'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Building2 className="w-4 h-4" />
+              <span>New Organization</span>
             </div>
-            <span className="text-3xl font-black tracking-tighter uppercase">FacilityOS</span>
-          </div>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/20 rounded-full border border-blue-400/30 w-fit">
-            <Sparkles className="w-4 h-4 text-blue-300" />
-            <span className="text-xs font-bold text-blue-200 uppercase tracking-widest">Enterprise Cloud Access</span>
-          </div>
-          <h1 className="text-5xl font-black leading-tight tracking-tight">Scale your<br />operations globally.</h1>
-          <p className="text-xl text-blue-200/70 max-w-md">Join hundreds of organizations transforming their facility operations with our comprehensive platform.</p>
+          </button>
+          <button
+            onClick={() => { setActiveTab('join'); setError(''); setSuccess(false); }}
+            className={`flex-1 py-2.5 px-4 rounded-md font-medium text-sm transition-colors ${
+              activeTab === 'join'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Users className="w-4 h-4" />
+              <span>Join Organization</span>
+            </div>
+          </button>
         </div>
-      </div>
 
-      {/* Right Side - Registration Form */}
-      <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
-        <div className="w-full max-w-lg">
-          <div className="lg:hidden text-center mb-8">
-            <span className="text-xl font-bold text-slate-900 uppercase tracking-tighter">FacilityOS</span>
+        {/* Error/Success Messages */}
+        {error && (
+          <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 mb-6">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
+        )}
 
-          <div className="mb-10">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Get Started</h2>
-            <p className="text-slate-500 font-medium mt-1">Create or join your workspace</p>
+        {success && (
+          <div className="flex items-start gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700 mb-6">
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <span>Success! Initializing workspace...</span>
           </div>
+        )}
 
-          {/* Tab Switcher */}
-          <div className="flex gap-2 p-1.5 bg-slate-100 rounded-2xl mb-8">
-            <button
-              onClick={() => { setActiveTab('new'); setError(''); setSuccess(false); }}
-              className={`flex-1 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all ${
-                activeTab === 'new'
-                  ? 'bg-white text-blue-900 shadow-md'
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Building2 className="w-4 h-4" />
-                <span>New Organization</span>
-              </div>
-            </button>
-            <button
-              onClick={() => { setActiveTab('join'); setError(''); setSuccess(false); }}
-              className={`flex-1 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all ${
-                activeTab === 'join'
-                  ? 'bg-white text-blue-900 shadow-md'
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Users className="w-4 h-4" />
-                <span>Join Organization</span>
-              </div>
-            </button>
-          </div>
-
-          {/* Error/Success Messages */}
-          {error && (
-            <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl text-xs font-bold text-red-700 uppercase tracking-wider mb-6">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {success && (
-            <div className="flex items-start gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-700 uppercase tracking-wider mb-6">
-              <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>Success! Initializing workspace...</span>
-            </div>
-          )}
-
+        {/* Registration Card */}
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-8">
           {/* Form Content - New Organization */}
           {activeTab === 'new' && (
-            <form onSubmit={handleNewOrganization} className="space-y-6">
-              <div className="space-y-5">
-                {/* Organization Name */}
-                <div>
-                  <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Organization Name</label>
-                  <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                    <input
-                      type="text" required
-                      className="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="Acme Corporation"
-                      value={newOrgData.companyName}
-                      onChange={e => setNewOrgData({...newOrgData, companyName: e.target.value})}
-                    />
-                  </div>
+            <form onSubmit={handleNewOrganization} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Organization Name</label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text" required
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Acme Corporation"
+                    value={newOrgData.companyName}
+                    onChange={e => setNewOrgData({...newOrgData, companyName: e.target.value})}
+                  />
                 </div>
+              </div>
 
-                {/* Admin Names */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">First Name</label>
-                    <input
-                      type="text" required
-                      className="w-full px-5 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="John"
-                      value={newOrgData.firstName}
-                      onChange={e => setNewOrgData({...newOrgData, firstName: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Last Name</label>
-                    <input
-                      type="text" required
-                      className="w-full px-5 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="Doe"
-                      value={newOrgData.lastName}
-                      onChange={e => setNewOrgData({...newOrgData, lastName: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                {/* Admin Email */}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Admin Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                    <input
-                      type="email" required
-                      className="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="admin@company.com"
-                      value={newOrgData.email}
-                      onChange={e => setNewOrgData({...newOrgData, email: e.target.value})}
-                    />
-                  </div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
+                  <input
+                    type="text" required
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="John"
+                    value={newOrgData.firstName}
+                    onChange={e => setNewOrgData({...newOrgData, firstName: e.target.value})}
+                  />
                 </div>
-
-                {/* Password */}
                 <div>
-                  <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                    <input
-                      type="password" required minLength={6}
-                      className="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="Minimum 6 characters"
-                      value={newOrgData.password}
-                      onChange={e => setNewOrgData({...newOrgData, password: e.target.value})}
-                    />
-                  </div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
+                  <input
+                    type="text" required
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Doe"
+                    value={newOrgData.lastName}
+                    onChange={e => setNewOrgData({...newOrgData, lastName: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="email" required
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="admin@company.com"
+                    value={newOrgData.email}
+                    onChange={e => setNewOrgData({...newOrgData, email: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="password" required minLength={6}
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Minimum 6 characters"
+                    value={newOrgData.password}
+                    onChange={e => setNewOrgData({...newOrgData, password: e.target.value})}
+                  />
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading || success}
-                className="w-full py-5 bg-[#0A1929] hover:bg-black text-white font-black rounded-2xl shadow-xl transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 
-                 success ? <CheckCircle2 className="w-5 h-5" /> : 
-                 <><span>CREATE ORGANIZATION</span><ArrowRight size={18} /></>}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : success ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    Success!
+                  </>
+                ) : (
+                  <>
+                    Create Organization
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           )}
 
           {/* Form Content - Join Organization */}
           {activeTab === 'join' && (
-            <form onSubmit={handleJoinOrganization} className="space-y-6">
-              <div className="space-y-5">
-                {/* Join Code */}
-                <div>
-                  <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Organization Join Code</label>
-                  <div className="relative">
-                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                    <input
-                      type="text" required
-                      className="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="clxyz123abc456def789"
-                      value={joinOrgData.joinCode}
-                      onChange={e => setJoinOrgData({...joinOrgData, joinCode: e.target.value})}
-                    />
-                  </div>
-                  <p className="text-xs text-slate-400 mt-2 ml-1 font-medium">Ask your admin for the organization join code</p>
+            <form onSubmit={handleJoinOrganization} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Organization Join Code</label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text" required
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="clxyz123abc456def789"
+                    value={joinOrgData.joinCode}
+                    onChange={e => setJoinOrgData({...joinOrgData, joinCode: e.target.value})}
+                  />
                 </div>
+                <p className="text-xs text-slate-500 mt-2">Ask your admin for the organization join code</p>
+              </div>
 
-                {/* User Names */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">First Name</label>
-                    <input
-                      type="text" required
-                      className="w-full px-5 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="Jane"
-                      value={joinOrgData.firstName}
-                      onChange={e => setJoinOrgData({...joinOrgData, firstName: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Last Name</label>
-                    <input
-                      type="text" required
-                      className="w-full px-5 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="Smith"
-                      value={joinOrgData.lastName}
-                      onChange={e => setJoinOrgData({...joinOrgData, lastName: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                {/* Email */}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Your Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                    <input
-                      type="email" required
-                      className="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="you@company.com"
-                      value={joinOrgData.email}
-                      onChange={e => setJoinOrgData({...joinOrgData, email: e.target.value})}
-                    />
-                  </div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
+                  <input
+                    type="text" required
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Jane"
+                    value={joinOrgData.firstName}
+                    onChange={e => setJoinOrgData({...joinOrgData, firstName: e.target.value})}
+                  />
                 </div>
-
-                {/* Password */}
                 <div>
-                  <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                    <input
-                      type="password" required minLength={6}
-                      className="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-slate-900 font-bold focus:border-blue-600 outline-none transition-all bg-slate-50/50"
-                      placeholder="Minimum 6 characters"
-                      value={joinOrgData.password}
-                      onChange={e => setJoinOrgData({...joinOrgData, password: e.target.value})}
-                    />
-                  </div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
+                  <input
+                    type="text" required
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Smith"
+                    value={joinOrgData.lastName}
+                    onChange={e => setJoinOrgData({...joinOrgData, lastName: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="email" required
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="you@company.com"
+                    value={joinOrgData.email}
+                    onChange={e => setJoinOrgData({...joinOrgData, email: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="password" required minLength={6}
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Minimum 6 characters"
+                    value={joinOrgData.password}
+                    onChange={e => setJoinOrgData({...joinOrgData, password: e.target.value})}
+                  />
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading || success}
-                className="w-full py-5 bg-[#0A1929] hover:bg-black text-white font-black rounded-2xl shadow-xl transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 
-                 success ? <CheckCircle2 className="w-5 h-5" /> : 
-                 <><span>JOIN ORGANIZATION</span><ArrowRight size={18} /></>}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Joining...
+                  </>
+                ) : success ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    Success!
+                  </>
+                ) : (
+                  <>
+                    Join Organization
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           )}
+        </div>
 
-          <div className="mt-10 text-center border-t border-slate-50 pt-8">
-            <p className="text-sm text-slate-500 font-medium">
-              Already have an account? <button onClick={() => navigate('/login')} className="font-black text-blue-600 uppercase text-xs tracking-wider hover:underline">Sign In</button>
-            </p>
-          </div>
+        {/* Login Link */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-slate-600">
+            Already have an account?{' '}
+            <button onClick={() => navigate('/login')} className="font-medium text-blue-600 hover:text-blue-700 hover:underline">
+              Sign in
+            </button>
+          </p>
         </div>
       </div>
     </div>
