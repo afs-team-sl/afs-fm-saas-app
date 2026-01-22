@@ -4,6 +4,7 @@ on:
       - dev
     paths:
       - 'backend/**'   # only triggers if anything inside backend/ changes
+   workflow_dispatch:   
 
 
 permissions:
