@@ -106,12 +106,9 @@ export class UsersService {
     const updateData: any = { ...updateUserDto };
 
     // 3. Check if password is being updated. If yes, hash it! 🔐
-    // We use type casting to ensure TypeScript allows access to the password field.
-    const rawPassword = (updateUserDto as any).password;
-    
-    if (rawPassword && rawPassword.trim() !== '') {
+    if (updateUserDto.password && updateUserDto.password.trim() !== '') {
       const salt = await bcrypt.genSalt();
-      updateData.password = await bcrypt.hash(rawPassword, salt);
+      updateData.password = await bcrypt.hash(updateUserDto.password, salt);
     } else {
       // If password is empty or not provided, remove it from update object
       delete updateData.password;

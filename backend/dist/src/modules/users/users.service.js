@@ -119,10 +119,9 @@ let UsersService = class UsersService {
     async update(id, tenantId, updateUserDto) {
         await this.findOne(id, tenantId);
         const updateData = { ...updateUserDto };
-        const rawPassword = updateUserDto.password;
-        if (rawPassword && rawPassword.trim() !== '') {
+        if (updateUserDto.password && updateUserDto.password.trim() !== '') {
             const salt = await bcrypt.genSalt();
-            updateData.password = await bcrypt.hash(rawPassword, salt);
+            updateData.password = await bcrypt.hash(updateUserDto.password, salt);
         }
         else {
             delete updateData.password;

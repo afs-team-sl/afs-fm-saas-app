@@ -1,14 +1,21 @@
 // src/modules/users/dto/update-user.dto.ts
-import { PartialType, OmitType } from '@nestjs/swagger';
+import { PartialType, ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateUserDto } from './create-user.dto';
+import { IsString, IsOptional, MinLength } from 'class-validator';
 
 /**
  * UpdateUserDto: 
- * 1. OmitType: We take CreateUserDto but remove 'password' 
- *    because updating passwords should be done via a secure dedicated endpoint.
- * 2. PartialType: We make all remaining fields (email, firstName, lastName, role) 
- *    optional, so the user can update only what they want.
+ * Extends CreateUserDto but makes all fields optional.
+ * Password updates are allowed and will be hashed before saving.
  */
-export class UpdateUserDto extends PartialType(
-  OmitType(CreateUserDto, ['password'] as const),
-) {}
+export class UpdateUserDto extends PartialType(CreateUserDto) {
+  @ApiPropertyOptional({
+    description: 'New password for the user account (minimum 8 characters)',
+    example: 'NewSecurePass123!',
+    minLength: 8,
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  password?: string;
+}
