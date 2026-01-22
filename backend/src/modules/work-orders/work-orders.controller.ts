@@ -11,7 +11,8 @@ import {
   HttpStatus,
   Headers,
   Query,
-  UseGuards, // Security Guard එක සඳහා
+  UseGuards,
+  Request, // For extracting JWT user data
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -53,7 +54,7 @@ export class WorkOrdersController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get all work orders for a tenant' })
+  @ApiOperation({ summary: 'Get all work orders for a tenant (Role-Based)' })
   @ApiHeader({
     name: 'x-tenant-id',
     description: 'Tenant ID for data isolation',
@@ -74,11 +75,16 @@ export class WorkOrdersController {
     @Headers('x-tenant-id') tenantId: string,
     @Query('status') status?: string,
     @Query('priority') priority?: string,
+    @Request() req?: any,
   ) {
+    // Extract user info from JWT for RBAC
+    const userId = req?.user?.sub;
+    const role = req?.user?.role;
+
     if (status) return this.workOrdersService.findByStatus(tenantId, status);
     if (priority) return this.workOrdersService.findByPriority(tenantId, priority);
     
-    return this.workOrdersService.findAll(tenantId);
+    return this.workOrdersService.findAll(tenantId, userId, role);
   }
 
   @Get(':id')

@@ -1,6 +1,7 @@
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { JoinOrganizationDto } from './dto/join-organization.dto';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
@@ -23,6 +24,23 @@ export declare class AuthController {
     signIn(loginDto: LoginDto): Promise<{
         access_token: string;
         user: {
+            id: string;
+            firstName: string;
+            lastName: string;
+            role: import(".prisma/client").$Enums.UserRole;
+            tenantId: string;
+        };
+    }>;
+    joinOrganization(joinDto: JoinOrganizationDto): Promise<{
+        message: string;
+        access_token: string;
+        tenant: {
+            id: string;
+            name: string;
+        };
+        user: {
+            id: string;
+            email: string;
             firstName: string;
             lastName: string;
             role: import(".prisma/client").$Enums.UserRole;

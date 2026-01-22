@@ -2,7 +2,6 @@ import { TenantsService } from './tenants.service';
 export declare class TenantsController {
     private readonly tenantsService;
     constructor(tenantsService: TenantsService);
-    private readonly SUPER_TENANT_ID;
     findAll(req: any): Promise<({
         _count: {
             users: number;
@@ -12,6 +11,7 @@ export declare class TenantsController {
     } & {
         id: string;
         name: string;
+        joinCode: string;
         domain: string | null;
         createdAt: Date;
         updatedAt: Date;

@@ -47,6 +47,7 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const prisma_service_1 = require("../../common/prisma/prisma.service");
 const bcrypt = __importStar(require("bcrypt"));
+const client_1 = require("@prisma/client");
 let AuthService = class AuthService {
     prisma;
     jwtService;
@@ -118,6 +119,7 @@ let AuthService = class AuthService {
             return {
                 access_token: await this.jwtService.signAsync(payload),
                 user: {
+                    id: user.id,
                     firstName: user.firstName,
                     lastName: user.lastName,
                     role: user.role,
@@ -126,6 +128,54 @@ let AuthService = class AuthService {
             };
         }
         throw new common_1.UnauthorizedException('Invalid email or password');
+    }
+    async joinOrganization(dto) {
+        const { joinCode, email, password, firstName, lastName, role } = dto;
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email },
+        });
+        if (existingUser) {
+            throw new common_1.ConflictException('User with this email already exists');
+        }
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { joinCode },
+        });
+        if (!tenant) {
+            throw new common_1.NotFoundException('Invalid join code. Organization not found.');
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await this.prisma.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                firstName,
+                lastName,
+                role: role || client_1.UserRole.TECHNICIAN,
+                tenantId: tenant.id,
+            },
+        });
+        const payload = {
+            sub: user.id,
+            email: user.email,
+            tenantId: user.tenantId,
+            role: user.role,
+        };
+        return {
+            message: `Successfully joined ${tenant.name}`,
+            access_token: await this.jwtService.signAsync(payload),
+            tenant: {
+                id: tenant.id,
+                name: tenant.name,
+            },
+            user: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+                tenantId: user.tenantId,
+            },
+        };
     }
 };
 exports.AuthService = AuthService;

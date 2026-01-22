@@ -10,21 +10,34 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
 
-  // අපේ Main Company (Alpha Industries) ID එක 🛡️
-  private readonly SUPER_TENANT_ID = process.env.SUPER_TENANT_ID;
-
   @Get()
   @ApiOperation({ summary: 'Get all registered organizations (Internal Use Only)' })
   @ApiResponse({ status: 200, description: 'List of all tenants retrieved.' })
   @ApiResponse({ status: 403, description: 'Forbidden. You are not a Super Admin.' })
   async findAll(@Request() req) {
-    // JWT එකෙන් එන user ගේ tenantId එක අපේ Main ID එකට සමානද කියලා බලනවා
-    if (req.user.tenantId !== this.SUPER_TENANT_ID) {
+    // 1. Env එකෙන් ID එක ගන්නවා. නැත්නම් Backup එක විදියට ඔයාගේ Master ID එක පාවිච්චි කරනවා.
+    const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
+    
+    // 2. දැනට ලොග් වෙලා ඉන්න යූසර්ගේ Tenant ID එක (JWT එකෙන් එන එක)
+    const currentUserTenantId = req.user.tenantId;
+
+    // --- DEBUGGING (VS Code Terminal එකේ බලන්න) ---
+    console.log('-------------------------------------------');
+    console.log('🛡️  SUPER ADMIN SECURITY CHECK');
+    console.log('Logged User Tenant ID:', currentUserTenantId);
+    console.log('System Required ID:   ', masterSuperId);
+    
+    // 3. හරියටම සමානද බලනවා. (Spaces තිබුණොත් අයින් වෙන්න .trim() දාමු)
+    if (currentUserTenantId?.trim() !== masterSuperId?.trim()) {
+      console.log('❌ ACCESS DENIED: ID MISMATCH');
       throw new ForbiddenException(
         'Access Denied: Your organization does not have permission to view global data.'
       );
     }
     
+    console.log('✅ ACCESS GRANTED: WELCOME MASTER ADMIN');
+    console.log('-------------------------------------------');
+
     return this.tenantsService.findAll();
   }
 }

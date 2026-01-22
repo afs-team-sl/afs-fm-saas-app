@@ -34,7 +34,7 @@ export declare class WorkOrdersService {
         assetId: string;
         assignedToId: string | null;
     }>;
-    findAll(tenantId: string): Promise<({
+    findAll(tenantId: string, userId?: string, role?: string): Promise<({
         asset: {
             id: string;
             name: string;

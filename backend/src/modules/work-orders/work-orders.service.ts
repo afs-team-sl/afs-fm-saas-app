@@ -62,12 +62,22 @@ export class WorkOrdersService {
   }
 
   /**
-   * Find all work orders for a specific tenant
+   * Find all work orders for a specific tenant (with RBAC)
+   * - TECHNICIAN: Only sees orders assigned to them
+   * - ADMIN/MANAGER: Sees all tenant work orders
    */
-  async findAll(tenantId: string) {
+  async findAll(tenantId: string, userId?: string, role?: string) {
+    // Build the where clause based on role
+    const whereClause: any = { tenantId };
+
+    // If user is a TECHNICIAN, filter by assignedToId
+    if (role === 'TECHNICIAN' && userId) {
+      whereClause.assignedToId = userId;
+    }
+
     return this.prisma.workOrder.findMany({
-      where: { tenantId },
-      include: this.includeRelations, // Updated to include Technician
+      where: whereClause,
+      include: this.includeRelations,
       orderBy: { createdAt: 'desc' },
     });
   }

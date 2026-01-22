@@ -10,6 +10,7 @@ import { AuthService } from './auth.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { JoinOrganizationDto } from './dto/join-organization.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -50,5 +51,26 @@ export class AuthController {
   async signIn(@Body() loginDto: LoginDto) {
     // We pass email and password from the DTO to the auth service
     return this.authService.login(loginDto.email, loginDto.password);
+  }
+
+  /**
+   * Join Organization endpoint to allow users to join using a join code.
+   */
+  @Post('join')
+  @ApiOperation({ summary: 'Join an existing organization using a join code' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Successfully joined organization. User created and JWT returned.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Organization not found. Invalid join code.' 
+  })
+  @ApiResponse({ 
+    status: 409, 
+    description: 'Conflict. User with this email already exists.' 
+  })
+  async joinOrganization(@Body() joinDto: JoinOrganizationDto) {
+    return this.authService.joinOrganization(joinDto);
   }
 }

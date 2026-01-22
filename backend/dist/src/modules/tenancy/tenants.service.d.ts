@@ -11,6 +11,7 @@ export declare class TenantsService {
     } & {
         id: string;
         name: string;
+        joinCode: string;
         domain: string | null;
         createdAt: Date;
         updatedAt: Date;

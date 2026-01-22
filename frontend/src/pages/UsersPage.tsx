@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
 import { 
-  Plus, UserPlus, Shield, UserCog, User, 
-  Mail, Trash2, Edit3, X, Loader2, Search 
+  UserPlus, Shield, UserCog, User, 
+  Trash2, Edit3, X, Loader2, Search, Lock
 } from 'lucide-react';
 
 interface UserData {
@@ -23,12 +23,13 @@ const UsersPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<UserData | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    password: 'password123', // Default for now, they can change it later
+    password: '',
     role: 'TECHNICIAN'
   });
 
@@ -46,7 +47,9 @@ const UsersPage = () => {
     try {
       const res = await apiClient.get('/users');
       setUsers(res.data);
-    } finally { setLoading(false); }
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,14 +57,15 @@ const UsersPage = () => {
     setIsSubmitting(true);
     try {
       await apiClient.post('/users', formData);
-      toast.success('User added successfully!');
+      toast.success(`User created successfully`);
       setModalOpen(false);
-      setFormData({ firstName: '', lastName: '', email: '', password: 'password123', role: 'TECHNICIAN' });
+      setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'TECHNICIAN' });
       fetchUsers();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.message || 'Failed to register user. Email might be already in use.';
-      toast.error(errorMsg);
-    } finally { setIsSubmitting(false); }
+      toast.error(error.response?.data?.message || 'Failed to create user');
+    } finally { 
+      setIsSubmitting(false); 
+    }
   };
 
   const handleEdit = (user: UserData) => {
@@ -80,105 +84,138 @@ const UsersPage = () => {
     setIsSubmitting(true);
     try {
       await apiClient.patch(`/users/${editingUser.id}`, editFormData);
-      toast.success('User updated successfully!');
+      toast.success('User updated successfully');
       setEditModalOpen(false);
       setEditingUser(null);
       fetchUsers();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.message || 'Failed to update user.';
-      toast.error(errorMsg);
-    } finally { setIsSubmitting(false); }
-  };
-
-  const handleDelete = (user: UserData) => {
-    setDeleteConfirmUser(user);
+      toast.error('Failed to update user');
+    } finally { 
+      setIsSubmitting(false); 
+    }
   };
 
   const confirmDelete = async () => {
     if (!deleteConfirmUser) return;
     try {
       await apiClient.delete(`/users/${deleteConfirmUser.id}`);
-      toast.success('User deleted successfully!');
+      toast.success('User deleted successfully');
       setDeleteConfirmUser(null);
       fetchUsers();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.message || 'Failed to delete user.';
-      toast.error(errorMsg);
+      toast.error('Failed to delete user');
     }
   };
 
   const getRoleBadge = (role: string) => {
-    const roles: Record<string, { color: string, icon: any }> = {
-      ADMIN: { color: 'text-purple-700 bg-purple-50 border-purple-100', icon: Shield },
-      MANAGER: { color: 'text-blue-700 bg-blue-50 border-blue-100', icon: UserCog },
-      TECHNICIAN: { color: 'text-amber-700 bg-amber-50 border-amber-100', icon: User },
-      OCCUPANT: { color: 'text-slate-600 bg-slate-50 border-slate-200', icon: User },
+    const roles: any = {
+      ADMIN: { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Shield },
+      MANAGER: { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: UserCog },
+      TECHNICIAN: { color: 'bg-orange-100 text-orange-700 border-orange-200', icon: User },
     };
-    const Config = roles[role] || roles.OCCUPANT;
+    const Config = roles[role] || { color: 'bg-slate-100 text-slate-700 border-slate-200', icon: User };
     return (
-      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border flex items-center gap-1.5 w-fit ${Config.color}`}>
-        <Config.icon size={12} /> {role}
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${Config.color}`}>
+        <Config.icon className="w-3 h-3" />
+        {role}
       </span>
     );
   };
 
+  const filteredUsers = users.filter(u => 
+    u.firstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    u.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Team Management</h1>
-          <p className="text-slate-500 text-sm font-medium">Control user access and system roles</p>
+          <h1 className="text-2xl font-semibold text-slate-900">Team Members</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage users and permissions</p>
         </div>
         <button 
-          onClick={() => setModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-[#001f3f] text-white px-6 py-3 rounded-2xl font-bold shadow-xl hover:bg-slate-800 transition-all active:scale-95"
+          onClick={() => setModalOpen(true)} 
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
-          <UserPlus size={20} strokeWidth={3} /> Add Member
+          <UserPlus className="w-4 h-4" />
+          Add User
         </button>
       </div>
 
-      {/* Users Table */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-slate-50/30">
-           <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input type="text" placeholder="Search members..." className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:border-[#001f3f] text-sm font-medium" />
-           </div>
+      {/* Table Card */}
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+        <div className="p-6 border-b border-slate-200">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <input 
+              type="text" 
+              placeholder="Search users..." 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+            />
+          </div>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Member Name</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Email Address</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Access Level</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">User</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">Role</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-200">
               {loading ? (
-                <tr><td colSpan={4} className="py-24 text-center text-slate-400 font-bold animate-pulse">Loading directory...</td></tr>
+                <tr>
+                  <td colSpan={4} className="py-12 text-center">
+                    <div className="flex items-center justify-center gap-2 text-slate-400">
+                      <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
+                      <span className="text-sm">Loading users...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-12 text-center text-sm text-slate-500">
+                    No users found
+                  </td>
+                </tr>
               ) : (
-                users.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-5">
+                filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-black border border-slate-200 uppercase">
+                        <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 font-medium text-sm border border-slate-200">
                           {user.firstName[0]}{user.lastName[0]}
                         </div>
-                        <span className="font-bold text-slate-800 text-sm">{user.firstName} {user.lastName}</span>
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{user.firstName} {user.lastName}</p>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-xs font-semibold text-slate-500">
-                       <div className="flex items-center gap-2"><Mail size={14} className="text-slate-300" /> {user.email}</div>
-                    </td>
-                    <td className="px-6 py-5">{getRoleBadge(user.role)}</td>
-                    <td className="px-6 py-5 text-right">
-                       <div className="flex justify-end gap-2">
-                          <button onClick={() => handleEdit(user)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={16}/></button>
-                          <button onClick={() => handleDelete(user)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16}/></button>
-                       </div>
+                    <td className="px-6 py-4 text-sm text-slate-600">{user.email}</td>
+                    <td className="px-6 py-4">{getRoleBadge(user.role)}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => handleEdit(user)} 
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => setDeleteConfirmUser(user)} 
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -188,148 +225,223 @@ const UsersPage = () => {
         </div>
       </div>
 
-      {/* --- ADD USER MODAL --- */}
+      {/* Add User Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#001f3f]/50 backdrop-blur-md" onClick={() => setModalOpen(false)}></div>
-          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl z-10 overflow-hidden animate-in zoom-in duration-300">
-            <div className="p-10">
-              <div className="flex justify-between items-center mb-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white w-full max-w-lg rounded-lg shadow-xl">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h2 className="text-lg font-semibold text-slate-900">Add New User</h2>
+              <button onClick={() => setModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-md">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                   <h2 className="text-2xl font-black text-slate-900">Add Member</h2>
-                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Assign roles and permissions</p>
-                </div>
-                <button onClick={() => setModalOpen(false)} className="p-3 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X size={24}/></button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">First Name</label>
-                    <input type="text" required className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] font-bold text-sm"
-                      value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Last Name</label>
-                    <input type="text" required className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] font-bold text-sm"
-                      value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Work Email</label>
-                  <input type="email" required className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] font-bold text-sm"
-                    value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+                  <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
+                  <input 
+                    type="text" 
+                    required 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    value={formData.firstName} 
+                    onChange={e => setFormData({...formData, firstName: e.target.value})} 
                   />
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Access Level</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['ADMIN', 'MANAGER', 'TECHNICIAN', 'OCCUPANT'].map(r => (
-                      <button key={r} type="button" 
-                        onClick={() => setFormData({...formData, role: r as any})}
-                        className={`py-3 text-[10px] font-black rounded-xl border transition-all ${formData.role === r ? 'bg-[#001f3f] text-white border-[#001f3f]' : 'bg-white text-slate-400 border-slate-200 hover:border-blue-300'}`}
-                      >
-                        {r}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <button type="submit" disabled={isSubmitting} className="w-full py-5 bg-[#001f3f] text-white font-black rounded-[1.5rem] shadow-2xl shadow-blue-900/30 flex justify-center items-center gap-3 active:scale-[0.98] transition-all">
-                  {isSubmitting ? <Loader2 className="animate-spin" size={20}/> : 'Register Member'}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- EDIT USER MODAL --- */}
-      {isEditModalOpen && editingUser && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#001f3f]/50 backdrop-blur-md" onClick={() => setEditModalOpen(false)}></div>
-          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl z-10 overflow-hidden animate-in zoom-in duration-300">
-            <div className="p-10">
-              <div className="flex justify-between items-center mb-8">
                 <div>
-                   <h2 className="text-2xl font-black text-slate-900">Edit Member</h2>
-                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Update user information</p>
-                </div>
-                <button onClick={() => setEditModalOpen(false)} className="p-3 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X size={24}/></button>
-              </div>
-
-              <form onSubmit={handleEditSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">First Name</label>
-                    <input type="text" required className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] font-bold text-sm"
-                      value={editFormData.firstName} onChange={e => setEditFormData({...editFormData, firstName: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Last Name</label>
-                    <input type="text" required className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] font-bold text-sm"
-                      value={editFormData.lastName} onChange={e => setEditFormData({...editFormData, lastName: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Access Level</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['ADMIN', 'MANAGER', 'TECHNICIAN', 'OCCUPANT'].map(r => (
-                      <button key={r} type="button" 
-                        onClick={() => setEditFormData({...editFormData, role: r as any})}
-                        className={`py-3 text-[10px] font-black rounded-xl border transition-all ${editFormData.role === r ? 'bg-[#001f3f] text-white border-[#001f3f]' : 'bg-white text-slate-400 border-slate-200 hover:border-blue-300'}`}
-                      >
-                        {r}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <button type="submit" disabled={isSubmitting} className="w-full py-5 bg-[#001f3f] text-white font-black rounded-[1.5rem] shadow-2xl shadow-blue-900/30 flex justify-center items-center gap-3 active:scale-[0.98] transition-all">
-                  {isSubmitting ? <Loader2 className="animate-spin" size={20}/> : 'Update Member'}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- DELETE CONFIRMATION DIALOG --- */}
-      {deleteConfirmUser && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setDeleteConfirmUser(null)}></div>
-          <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl z-10 overflow-hidden animate-in zoom-in duration-300">
-            <div className="p-8">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
-                  <Trash2 className="w-8 h-8 text-red-600" />
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
+                  <input 
+                    type="text" 
+                    required 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    value={formData.lastName} 
+                    onChange={e => setFormData({...formData, lastName: e.target.value})} 
+                  />
                 </div>
               </div>
-              <h2 className="text-xl font-black text-slate-900 text-center mb-2">Delete User?</h2>
-              <p className="text-slate-500 text-sm text-center mb-6">
-                Are you sure you want to delete <span className="font-bold">{deleteConfirmUser.firstName} {deleteConfirmUser.lastName}</span>? This action cannot be undone.
-              </p>
-              <div className="flex gap-3">
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                <input 
+                  type="email" 
+                  required 
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  value={formData.email} 
+                  onChange={e => setFormData({...formData, email: e.target.value})} 
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                  <input 
+                    type="password" 
+                    required 
+                    minLength={8}
+                    placeholder="At least 8 characters"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    value={formData.password} 
+                    onChange={e => setFormData({...formData, password: e.target.value})} 
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Role</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['ADMIN', 'MANAGER', 'TECHNICIAN'].map(r => (
+                    <button 
+                      key={r} 
+                      type="button" 
+                      onClick={() => setFormData({...formData, role: r as any})} 
+                      className={`py-2 text-sm font-medium rounded-md border transition-colors ${
+                        formData.role === r 
+                          ? 'bg-blue-600 text-white border-blue-600' 
+                          : 'bg-white text-slate-700 border-slate-300 hover:border-blue-500'
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
                 <button 
-                  onClick={() => setDeleteConfirmUser(null)}
-                  className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all"
+                  type="button" 
+                  onClick={() => setModalOpen(false)}
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
-                  onClick={confirmDelete}
-                  className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all"
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Delete
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Create User'
+                  )}
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white w-full max-w-lg rounded-lg shadow-xl">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h2 className="text-lg font-semibold text-slate-900">Edit User</h2>
+              <button onClick={() => setEditModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-md">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
+                  <input 
+                    type="text" 
+                    required 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    value={editFormData.firstName} 
+                    onChange={e => setEditFormData({...editFormData, firstName: e.target.value})} 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
+                  <input 
+                    type="text" 
+                    required 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    value={editFormData.lastName} 
+                    onChange={e => setEditFormData({...editFormData, lastName: e.target.value})} 
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Role</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['ADMIN', 'MANAGER', 'TECHNICIAN'].map(r => (
+                    <button 
+                      key={r} 
+                      type="button" 
+                      onClick={() => setEditFormData({...editFormData, role: r as any})} 
+                      className={`py-2 text-sm font-medium rounded-md border transition-colors ${
+                        editFormData.role === r 
+                          ? 'bg-blue-600 text-white border-blue-600' 
+                          : 'bg-white text-slate-700 border-slate-300 hover:border-blue-500'
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setEditModalOpen(false)}
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white w-full max-w-md rounded-lg shadow-xl p-6">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+              <Trash2 className="w-6 h-6 text-red-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-slate-900 text-center mb-2">Delete User</h2>
+            <p className="text-sm text-slate-600 text-center mb-6">
+              Are you sure you want to delete <span className="font-semibold">{deleteConfirmUser.firstName} {deleteConfirmUser.lastName}</span>? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setDeleteConfirmUser(null)} 
+                className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete} 
+                className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

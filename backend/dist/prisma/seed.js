@@ -37,34 +37,47 @@ const client_1 = require("@prisma/client");
 const bcrypt = __importStar(require("bcrypt"));
 const prisma = new client_1.PrismaClient();
 async function main() {
-    console.log('🌱 Seeding database...');
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash('password123', salt);
+    console.log('🚀 Starting Clean Global Seed with Join Codes...');
+    const MASTER_TENANT_ID = "05642b69-8f04-44d0-b74c-27c9db4b4969";
+    const MASTER_USER_ID = "2930b04c-4b14-4540-a6fc-002093679b8b";
+    const MASTER_JOIN_CODE = "ALPHA789";
+    const hashedDefaultPassword = await bcrypt.hash('password123', 10);
     const tenant = await prisma.tenant.upsert({
-        where: { domain: 'alpha.fms.com' },
+        where: { id: MASTER_TENANT_ID },
         update: {},
         create: {
+            id: MASTER_TENANT_ID,
             name: 'Alpha Industries',
             domain: 'alpha.fms.com',
         },
     });
+    console.log(`✅ Tenant created: ${tenant.name} | Join Code: ${MASTER_JOIN_CODE}`);
     const admin = await prisma.user.upsert({
-        where: { email: 'admin@alpha.com' },
+        where: { id: MASTER_USER_ID },
         update: {
-            password: hashedPassword,
+            password: hashedDefaultPassword,
         },
         create: {
+            id: MASTER_USER_ID,
             email: 'admin@alpha.com',
-            password: hashedPassword,
-            firstName: 'Kamal',
-            lastName: 'Perera',
+            password: hashedDefaultPassword,
+            firstName: 'System',
+            lastName: 'Admin',
             role: 'ADMIN',
             tenantId: tenant.id,
         },
     });
-    console.log(`✅ Admin updated with hashed password: ${admin.email}`);
+    console.log(`✅ Super Admin created: ${admin.email}`);
+    console.log('--------------------------------------------------');
+    console.log(`🚀 SYSTEM READY: Use Join Code [${MASTER_JOIN_CODE}] for new members.`);
+    console.log('--------------------------------------------------');
 }
 main()
-    .catch((e) => console.error(e))
-    .finally(async () => await prisma.$disconnect());
+    .catch((e) => {
+    console.error(e);
+    process.exit(1);
+})
+    .finally(async () => {
+    await prisma.$disconnect();
+});
 //# sourceMappingURL=seed.js.map

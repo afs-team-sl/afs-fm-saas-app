@@ -27,12 +27,14 @@ let WorkOrdersController = class WorkOrdersController {
     create(createWorkOrderDto, tenantId) {
         return this.workOrdersService.create(tenantId, createWorkOrderDto);
     }
-    findAll(tenantId, status, priority) {
+    findAll(tenantId, status, priority, req) {
+        const userId = req?.user?.sub;
+        const role = req?.user?.role;
         if (status)
             return this.workOrdersService.findByStatus(tenantId, status);
         if (priority)
             return this.workOrdersService.findByPriority(tenantId, priority);
-        return this.workOrdersService.findAll(tenantId);
+        return this.workOrdersService.findAll(tenantId, userId, role);
     }
     findOne(id, tenantId) {
         return this.workOrdersService.findOne(id, tenantId);
@@ -65,7 +67,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: 'Get all work orders for a tenant' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all work orders for a tenant (Role-Based)' }),
     (0, swagger_1.ApiHeader)({
         name: 'x-tenant-id',
         description: 'Tenant ID for data isolation',
@@ -85,8 +87,9 @@ __decorate([
     __param(0, (0, common_1.Headers)('x-tenant-id')),
     __param(1, (0, common_1.Query)('status')),
     __param(2, (0, common_1.Query)('priority')),
+    __param(3, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, Object]),
     __metadata("design:returntype", void 0)
 ], WorkOrdersController.prototype, "findAll", null);
 __decorate([

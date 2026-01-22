@@ -22,11 +22,19 @@ let TenantsController = class TenantsController {
     constructor(tenantsService) {
         this.tenantsService = tenantsService;
     }
-    SUPER_TENANT_ID = process.env.SUPER_TENANT_ID;
     async findAll(req) {
-        if (req.user.tenantId !== this.SUPER_TENANT_ID) {
+        const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
+        const currentUserTenantId = req.user.tenantId;
+        console.log('-------------------------------------------');
+        console.log('🛡️  SUPER ADMIN SECURITY CHECK');
+        console.log('Logged User Tenant ID:', currentUserTenantId);
+        console.log('System Required ID:   ', masterSuperId);
+        if (currentUserTenantId?.trim() !== masterSuperId?.trim()) {
+            console.log('❌ ACCESS DENIED: ID MISMATCH');
             throw new common_1.ForbiddenException('Access Denied: Your organization does not have permission to view global data.');
         }
+        console.log('✅ ACCESS GRANTED: WELCOME MASTER ADMIN');
+        console.log('-------------------------------------------');
         return this.tenantsService.findAll();
     }
 };

@@ -25,7 +25,14 @@ export declare class AssetsController {
         status: import(".prisma/client").$Enums.AssetStatus;
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
-        workOrders: {
+        workOrders: ({
+            assignedTo: {
+                id: string;
+                email: string;
+                firstName: string;
+                lastName: string;
+            } | null;
+        } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -36,7 +43,7 @@ export declare class AssetsController {
             priority: import(".prisma/client").$Enums.WorkOrderPriority;
             assetId: string;
             assignedToId: string | null;
-        }[];
+        })[];
     } & {
         id: string;
         name: string;

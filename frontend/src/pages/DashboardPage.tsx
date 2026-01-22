@@ -1,260 +1,255 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import apiClient from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
 } from 'recharts';
-import { Box, Activity, CheckCircle, TrendingUp, Users, Wrench, BarChart3 } from 'lucide-react';
+import { 
+  Box, Activity, CheckCircle, Users, Wrench, 
+  Briefcase, Clock, Globe, Zap, TrendingUp, ArrowUpRight
+} from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const DashboardPage = () => {
+  const { role, userId, tenantId } = useAuth();
   const [stats, setStats] = useState({
     totalAssets: 0,
     openOrders: 0,
     completedOrders: 0,
-    technicians: 0
+    technicians: 0,
+    tenantsCount: 0
   });
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const SUPER_TENANT_ID = import.meta.env.VITE_SUPER_TENANT_ID;
+
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [role, userId, tenantId]);
 
   const fetchDashboardData = async () => {
+    setLoading(true);
     try {
-      const [assets, orders, users] = await Promise.all([
-        apiClient.get('/assets'),
-        apiClient.get('/work-orders'),
-        apiClient.get('/users')
-      ]);
+      if (tenantId === SUPER_TENANT_ID) {
+        const [tenantsRes, usersRes, assetsRes] = await Promise.all([
+          apiClient.get('/tenants'),
+          apiClient.get('/users'),
+          apiClient.get('/assets')
+        ]);
 
-      const open = orders.data.filter((o: any) => o.status !== 'COMPLETED').length;
-      const completed = orders.data.filter((o: any) => o.status === 'COMPLETED').length;
+        setStats({
+          ...stats,
+          tenantsCount: tenantsRes.data.length,
+          technicians: usersRes.data.length,
+          totalAssets: assetsRes.data.length
+        });
 
-      setStats({
-        totalAssets: assets.data.length,
-        openOrders: open,
-        completedOrders: completed,
-        technicians: users.data.filter((u: any) => u.role === 'TECHNICIAN' || u.role === 'ADMIN').length
-      });
+        setChartData(tenantsRes.data.map((t: any) => ({
+          name: t.name.substring(0, 10),
+          value: t._count?.workOrders || 0
+        })));
 
-      const dist = [
-        { name: 'Pending', value: orders.data.filter((o: any) => o.status === 'OPEN').length },
-        { name: 'Active', value: orders.data.filter((o: any) => o.status === 'IN_PROGRESS').length },
-        { name: 'Done', value: completed },
-      ];
-      setChartData(dist);
-    } finally { setLoading(false); }
+      } else if (role === 'TECHNICIAN') {
+        const ordersRes = await apiClient.get('/work-orders');
+        const myOrders = ordersRes.data;
+
+        const pending = myOrders.filter((o: any) => o.status === 'OPEN').length;
+        const active = myOrders.filter((o: any) => o.status === 'IN_PROGRESS').length;
+        const done = myOrders.filter((o: any) => o.status === 'COMPLETED').length;
+
+        setStats({ ...stats, openOrders: pending + active, completedOrders: done });
+        setChartData([
+          { name: 'Pending', value: pending },
+          { name: 'Active', value: active },
+          { name: 'Done', value: done }
+        ]);
+
+      } else {
+        const [assetsRes, ordersRes, usersRes] = await Promise.all([
+          apiClient.get('/assets'),
+          apiClient.get('/work-orders'),
+          apiClient.get('/users')
+        ]);
+
+        const open = ordersRes.data.filter((o: any) => o.status !== 'COMPLETED').length;
+        const completed = ordersRes.data.filter((o: any) => o.status === 'COMPLETED').length;
+
+        setStats({
+          totalAssets: assetsRes.data.length,
+          openOrders: open,
+          completedOrders: completed,
+          technicians: usersRes.data.length,
+          tenantsCount: 0
+        });
+
+        setChartData([
+          { name: 'Pending', value: ordersRes.data.filter((o: any) => o.status === 'OPEN').length },
+          { name: 'Active', value: ordersRes.data.filter((o: any) => o.status === 'IN_PROGRESS').length },
+          { name: 'Done', value: completed }
+        ]);
+      }
+    } catch (error) {
+      toast.error("Failed to load dashboard data.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const COLORS = ['#60a5fa', '#3b82f6', '#2563eb'];
+  const COLORS = ['#3b82f6', '#60a5fa', '#93c5fd'];
+
+  const getUIConfig = () => {
+    if (tenantId === SUPER_TENANT_ID) {
+      return {
+        title: 'Super Admin Dashboard',
+        subtitle: 'Platform overview',
+        stats: [
+          { label: 'Organizations', val: stats.tenantsCount, icon: Globe, color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+          { label: 'Total Assets', val: stats.totalAssets, icon: Box, color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
+          { label: 'All Users', val: stats.technicians, icon: Users, color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
+          { label: 'Uptime', val: '99.9%', icon: TrendingUp, color: 'orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
+        ]
+      };
+    }
+    if (role === 'TECHNICIAN') {
+      return {
+        title: 'My Tasks',
+        subtitle: 'Your work overview',
+        stats: [
+          { label: 'Active Tasks', val: stats.openOrders, icon: Briefcase, color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+          { label: 'Completed', val: stats.completedOrders, icon: CheckCircle, color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
+          { label: 'Upcoming', val: 2, icon: Clock, color: 'orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
+          { label: 'Efficiency', val: '94%', icon: Zap, color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
+        ]
+      };
+    }
+    return {
+      title: 'Dashboard',
+      subtitle: 'Overview of your facility',
+      stats: [
+        { label: 'Total Assets', val: stats.totalAssets, icon: Box, color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+        { label: 'Open Orders', val: stats.openOrders, icon: Wrench, color: 'orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
+        { label: 'Completed', val: stats.completedOrders, icon: CheckCircle, color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
+        { label: 'Team Members', val: stats.technicians, icon: Users, color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
+      ]
+    };
+  };
+
+  const config = getUIConfig();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-white">
-      
-      {/* Header Section */}
-      <div className="pt-6 pb-8 sm:pt-8 sm:pb-10">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-900 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-900">Dashboard</h1>
-        </div>
-        <p className="text-sm sm:text-base text-gray-600 ml-11 sm:ml-[52px]">
-          Overview of your facility management system
-        </p>
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-semibold text-slate-900">{config.title}</h1>
+        <p className="text-sm text-slate-500 mt-1">{config.subtitle}</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
-        {[
-          { 
-            label: 'Total Assets', 
-            val: stats.totalAssets, 
-            icon: Box, 
-            gradient: 'from-blue-900 to-blue-700'
-          },
-          { 
-            label: 'Open Work Orders', 
-            val: stats.openOrders, 
-            icon: Wrench, 
-            gradient: 'from-blue-800 to-blue-600'
-          },
-          { 
-            label: 'Completed', 
-            val: stats.completedOrders, 
-            icon: CheckCircle, 
-            gradient: 'from-blue-700 to-blue-500'
-          },
-          { 
-            label: 'Technicians', 
-            val: stats.technicians, 
-            icon: Users, 
-            gradient: 'from-blue-600 to-blue-400'
-          },
-        ].map((stat, idx) => (
-          <div 
-            key={idx} 
-            className={`bg-gradient-to-br ${stat.gradient} rounded-2xl p-5 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
-                <stat.icon className="w-6 h-6 text-white" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {config.stats.map((stat, idx) => (
+          <div key={idx} className={`bg-white border ${stat.border} rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className={`w-10 h-10 ${stat.bg} rounded-lg flex items-center justify-center`}>
+                <stat.icon className={`w-5 h-5 ${stat.text}`} />
               </div>
+              <ArrowUpRight className="w-4 h-4 text-slate-400" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-medium text-blue-100 mb-1">{stat.label}</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-white">{stat.val}</h3>
+              <p className="text-sm text-slate-600 mb-1">{stat.label}</p>
+              <h3 className="text-2xl font-semibold text-slate-900">{stat.val}</h3>
             </div>
           </div>
         ))}
       </div>
 
       {/* Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart Card */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-100">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Work Order Analytics</h3>
-              <p className="text-sm text-gray-500">Current status distribution</p>
+              <h3 className="text-lg font-medium text-slate-900">Activity Overview</h3>
+              <p className="text-sm text-slate-500">Work order distribution</p>
             </div>
-            <div className="flex items-center gap-6">
-              {[
-                { name: 'Pending', color: 'bg-blue-400' },
-                { name: 'Active', color: 'bg-blue-600' },
-                { name: 'Done', color: 'bg-blue-700' }
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                  <span className="text-xs font-medium text-gray-600">{item.name}</span>
-                </div>
-              ))}
-            </div>
+            <Activity className="w-5 h-5 text-slate-400" />
           </div>
           
-          <div className="h-[280px] sm:h-[320px] w-full">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
-                <defs>
-                  <linearGradient id="colorBar0" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#60a5fa" stopOpacity={1}/>
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.8}/>
-                  </linearGradient>
-                  <linearGradient id="colorBar1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/>
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                  </linearGradient>
-                  <linearGradient id="colorBar2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2563eb" stopOpacity={1}/>
-                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0.8}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" strokeOpacity={0.5} />
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#6b7280', fontSize: 13, fontWeight: 600 }}
-                  dy={10}
+                  tick={{ fill: '#64748b', fontSize: 12 }} 
+                  dy={10} 
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
-                  dx={-10}
+                  tick={{ fill: '#64748b', fontSize: 12 }} 
                 />
                 <Tooltip 
-                  cursor={{ fill: '#f3f4f6', opacity: 0.3 }} 
+                  cursor={{ fill: '#f8fafc' }} 
                   contentStyle={{ 
-                    borderRadius: '16px', 
-                    border: 'none', 
-                    background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
-                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.1)',
-                    padding: '12px 16px',
-                    color: 'white',
-                    fontSize: '14px',
-                    fontWeight: 600
-                  }}
-                  labelStyle={{ color: '#93c5fd', fontSize: '12px', marginBottom: '4px' }}
+                    borderRadius: '8px', 
+                    border: '1px solid #e2e8f0', 
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)' 
+                  }} 
                 />
-                <Bar 
-                  dataKey="value" 
-                  radius={[12, 12, 0, 0]} 
-                  maxBarSize={70}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={`url(#colorBar${index})`}
-                    />
+                <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={40}>
+                  {chartData.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-          
-          {/* Stats Summary Below Chart */}
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
-            {chartData.map((item, idx) => (
-              <div key={idx} className="text-center">
-                <p className="text-xs text-gray-500 font-medium mb-1">{item.name}</p>
-                <p className="text-2xl font-bold" style={{ color: COLORS[idx] }}>{item.value}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Performance Card */}
-        <div className="bg-gradient-to-br from-blue-950 to-blue-900 rounded-2xl p-6 sm:p-7 text-white shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+        {/* Status Card */}
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-sm font-medium opacity-90">System Status</h3>
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          </div>
           
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-6">
-              <Activity className="w-5 h-5 text-blue-300" />
-              <span className="text-xs font-semibold text-blue-200 uppercase tracking-wider">System Health</span>
+          <div className="mb-6">
+            <div className="text-5xl font-bold mb-2">
+              98.2<span className="text-2xl text-blue-200">%</span>
             </div>
-            
-            <div className="mb-8">
-              <h2 className="text-5xl sm:text-6xl font-bold mb-2">
-                98.2<span className="text-2xl text-blue-300">%</span>
-              </h2>
-              <p className="text-sm text-blue-200">Overall performance</p>
-            </div>
+            <p className="text-sm text-blue-100">Overall Performance</p>
+          </div>
 
-            <div className="space-y-3">
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-blue-200">Uptime</span>
-                  <span className="text-sm font-bold text-white">99.9%</span>
-                </div>
-                <div className="w-full bg-blue-800/50 rounded-full h-1.5">
-                  <div className="bg-gradient-to-r from-blue-400 to-blue-300 h-1.5 rounded-full" style={{width: '99.9%'}}></div>
-                </div>
+          <div className="space-y-3">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-blue-100">Response Time</span>
+                <span className="text-sm font-semibold">24ms</span>
               </div>
-
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-blue-200">Response Time</span>
-                  <span className="text-sm font-bold text-white">145ms</span>
-                </div>
-                <div className="w-full bg-blue-800/50 rounded-full h-1.5">
-                  <div className="bg-gradient-to-r from-blue-500 to-blue-400 h-1.5 rounded-full" style={{width: '85%'}}></div>
-                </div>
+              <div className="w-full bg-white/20 rounded-full h-1.5">
+                <div className="bg-green-400 h-1.5 rounded-full" style={{ width: '95%' }}></div>
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-between p-3 bg-blue-400/10 rounded-xl border border-blue-400/20">
-              <span className="text-xs font-semibold text-blue-300">All Systems Operational</span>
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400"></span>
-              </span>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-blue-100">Status</span>
+                <span className="text-sm font-semibold text-green-300">All Systems Operational</span>
+              </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

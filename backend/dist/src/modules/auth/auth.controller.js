@@ -18,6 +18,7 @@ const auth_service_1 = require("./auth.service");
 const swagger_1 = require("@nestjs/swagger");
 const login_dto_1 = require("./dto/login.dto");
 const register_dto_1 = require("./dto/register.dto");
+const join_organization_dto_1 = require("./dto/join-organization.dto");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -28,6 +29,9 @@ let AuthController = class AuthController {
     }
     async signIn(loginDto) {
         return this.authService.login(loginDto.email, loginDto.password);
+    }
+    async joinOrganization(joinDto) {
+        return this.authService.joinOrganization(joinDto);
     }
 };
 exports.AuthController = AuthController;
@@ -64,6 +68,26 @@ __decorate([
     __metadata("design:paramtypes", [login_dto_1.LoginDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "signIn", null);
+__decorate([
+    (0, common_1.Post)('join'),
+    (0, swagger_1.ApiOperation)({ summary: 'Join an existing organization using a join code' }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'Successfully joined organization. User created and JWT returned.'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Organization not found. Invalid join code.'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 409,
+        description: 'Conflict. User with this email already exists.'
+    }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [join_organization_dto_1.JoinOrganizationDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "joinOrganization", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),

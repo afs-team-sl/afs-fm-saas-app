@@ -23,7 +23,7 @@ let AssetsService = class AssetsService {
                 where: { tenantId: data.tenantId, serialNo: data.serialNo },
             });
             if (existing) {
-                throw new common_1.ConflictException('Asset with this serial number already exists in your organization');
+                throw new common_1.ConflictException('Asset with this serial number already exists');
             }
         }
         return this.prisma.asset.create({ data });
@@ -40,17 +40,31 @@ let AssetsService = class AssetsService {
                 tenantId,
                 status: status
             },
+            orderBy: { createdAt: 'desc' },
         });
     }
     async findByCategory(tenantId, category) {
         return this.prisma.asset.findMany({
-            where: { tenantId, category },
+            where: {
+                tenantId,
+                category
+            },
+            orderBy: { createdAt: 'desc' },
         });
     }
     async findOne(id, tenantId) {
         const asset = await this.prisma.asset.findFirst({
             where: { id, tenantId },
-            include: { workOrders: true },
+            include: {
+                workOrders: {
+                    include: {
+                        assignedTo: {
+                            select: { id: true, firstName: true, lastName: true, email: true }
+                        }
+                    },
+                    orderBy: { createdAt: 'desc' }
+                }
+            },
         });
         if (!asset)
             throw new common_1.NotFoundException('Asset not found');
@@ -65,9 +79,7 @@ let AssetsService = class AssetsService {
     }
     async remove(id, tenantId) {
         await this.findOne(id, tenantId);
-        return this.prisma.asset.delete({
-            where: { id },
-        });
+        return this.prisma.asset.delete({ where: { id } });
     }
 };
 exports.AssetsService = AssetsService;

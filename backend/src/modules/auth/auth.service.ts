@@ -1,8 +1,10 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
+import { JoinOrganizationDto } from './dto/join-organization.dto';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -103,6 +105,7 @@ export class AuthService {
       return {
         access_token: await this.jwtService.signAsync(payload),
         user: {
+          id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
@@ -112,5 +115,70 @@ export class AuthService {
     }
     
     throw new UnauthorizedException('Invalid email or password');
+  }
+
+  /**
+   * Join Organization: Allows users to join an existing organization using a join code.
+   */
+  async joinOrganization(dto: JoinOrganizationDto) {
+    const { joinCode, email, password, firstName, lastName, role } = dto;
+
+    // 1. Check if user with this email already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    // 2. Find the organization by join code
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { joinCode },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Invalid join code. Organization not found.');
+    }
+
+    // 3. Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 4. Create the new user linked to the organization
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        role: role || UserRole.TECHNICIAN, // Default to TECHNICIAN if not specified
+        tenantId: tenant.id,
+      },
+    });
+
+    // 5. Generate JWT payload
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      tenantId: user.tenantId,
+      role: user.role,
+    };
+
+    return {
+      message: `Successfully joined ${tenant.name}`,
+      access_token: await this.jwtService.signAsync(payload),
+      tenant: {
+        id: tenant.id,
+        name: tenant.name,
+      },
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        tenantId: user.tenantId,
+      },
+    };
   }
 }

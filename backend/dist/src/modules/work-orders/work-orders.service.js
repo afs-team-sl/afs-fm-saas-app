@@ -50,9 +50,13 @@ let WorkOrdersService = class WorkOrdersService {
             include: this.includeRelations,
         });
     }
-    async findAll(tenantId) {
+    async findAll(tenantId, userId, role) {
+        const whereClause = { tenantId };
+        if (role === 'TECHNICIAN' && userId) {
+            whereClause.assignedToId = userId;
+        }
         return this.prisma.workOrder.findMany({
-            where: { tenantId },
+            where: whereClause,
             include: this.includeRelations,
             orderBy: { createdAt: 'desc' },
         });

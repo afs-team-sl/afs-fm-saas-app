@@ -8,25 +8,18 @@ import { AssetStatus } from '@prisma/client';
 export class AssetsService {
   constructor(private prisma: PrismaService) {}
 
-  /**
-   * Create a new asset with duplicate serial number check
-   */
   async create(data: CreateAssetDto & { tenantId: string }) {
     if (data.serialNo) {
       const existing = await this.prisma.asset.findFirst({
         where: { tenantId: data.tenantId, serialNo: data.serialNo },
       });
       if (existing) {
-        throw new ConflictException('Asset with this serial number already exists in your organization');
+        throw new ConflictException('Asset with this serial number already exists');
       }
     }
-
     return this.prisma.asset.create({ data });
   }
 
-  /**
-   * Find all assets belonging to a tenant
-   */
   async findAll(tenantId: string) {
     return this.prisma.asset.findMany({
       where: { tenantId },
@@ -35,7 +28,7 @@ export class AssetsService {
   }
 
   /**
-   * Filter assets by status
+   * Find assets by status
    */
   async findByStatus(tenantId: string, status: string) {
     return this.prisma.asset.findMany({
@@ -43,51 +36,56 @@ export class AssetsService {
         tenantId, 
         status: status as AssetStatus 
       },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   /**
-   * Filter assets by category
+   * Find assets by category
    */
   async findByCategory(tenantId: string, category: string) {
     return this.prisma.asset.findMany({
-      where: { tenantId, category },
+      where: { 
+        tenantId, 
+        category 
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   /**
-   * Get a specific asset with its related work orders
+   * GET ASSET DETAILS WITH FULL HISTORY 🛡️
+   * We include nested relations to show who did each work order.
    */
   async findOne(id: string, tenantId: string) {
     const asset = await this.prisma.asset.findFirst({
       where: { id, tenantId },
-      include: { workOrders: true },
+      include: { 
+        workOrders: {
+          include: {
+            assignedTo: { // වැඩේ කරපු කෙනාගේ විස්තරත් මෙතනින් ගන්නවා
+              select: { id: true, firstName: true, lastName: true, email: true }
+            }
+          },
+          orderBy: { createdAt: 'desc' } // අලුත්ම වැඩ උඩට එන්න
+        } 
+      },
     });
 
     if (!asset) throw new NotFoundException('Asset not found');
     return asset;
   }
 
-  /**
-   * Update asset details
-   */
   async update(id: string, tenantId: string, dto: UpdateAssetDto) {
-    await this.findOne(id, tenantId); // Validate existence
-
+    await this.findOne(id, tenantId);
     return this.prisma.asset.update({
       where: { id },
       data: dto,
     });
   }
 
-  /**
-   * Delete an asset
-   */
   async remove(id: string, tenantId: string) {
     await this.findOne(id, tenantId);
-    
-    return this.prisma.asset.delete({
-      where: { id },
-    });
+    return this.prisma.asset.delete({ where: { id } });
   }
 }
