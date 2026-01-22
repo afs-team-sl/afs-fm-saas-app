@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import apiClient from '../api/client';
-import { 
-  Plus, ClipboardList, Clock, User, Box, Loader2, X, 
-  Trash2, Edit3, CheckCircle2, RefreshCw, Calendar 
-} from 'lucide-react';
+import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle } from 'lucide-react';
 
 interface WorkOrder {
   id: string; title: string; description?: string; status: string; priority: string;
@@ -91,69 +88,128 @@ const WorkOrdersPage = () => {
     catch (error) { alert("Status update failed"); }
   };
 
-  const getPriorityStyle = (p: string) => {
-    const styles: Record<string, string> = {
-      URGENT: 'text-red-700 bg-red-50 border-red-200',
-      HIGH: 'text-orange-700 bg-orange-50 border-orange-200',
-      MEDIUM: 'text-blue-700 bg-blue-50 border-blue-200',
-      LOW: 'text-slate-600 bg-slate-50 border-slate-200',
+  const getPriorityBadge = (priority: string) => {
+    const badges: Record<string, string> = {
+      URGENT: 'bg-status-danger-light text-status-danger-dark border-status-danger',
+      HIGH: 'bg-orange-100 text-orange-700 border-orange-200',
+      MEDIUM: 'bg-primary-100 text-primary-700 border-primary-200',
+      LOW: 'bg-secondary-100 text-secondary-600 border-secondary-200',
     };
-    return styles[p] || styles.MEDIUM;
+    return badges[priority] || badges.MEDIUM;
+  };
+
+  const getStatusBadge = (status: string) => {
+    const badges: Record<string, string> = {
+      COMPLETED: 'bg-status-success text-white',
+      IN_PROGRESS: 'bg-status-warning text-white',
+      CANCELLED: 'bg-status-danger text-white',
+      OPEN: 'bg-status-info text-white',
+    };
+    return badges[status] || 'bg-secondary-500 text-white';
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div><h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase font-mono">Work Orders</h1><p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Maintenance Control Center</p></div>
-        <button onClick={() => handleOpenModal()} className="flex items-center justify-center gap-2 bg-[#001f3f] text-white px-6 py-3 rounded-2xl font-bold shadow-xl active:scale-95 transition-all"><Plus size={20} strokeWidth={3} /> Issue Order</button>
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">Work Orders</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage maintenance tasks and assignments</p>
+        </div>
+        <button 
+          onClick={() => handleOpenModal()} 
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Create Work Order
+        </button>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Order Details</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Asset</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Technician</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Status</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono text-center">Manage</th>
+              <tr className="border-b border-secondary-200 bg-secondary-50">
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Order Details</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Priority</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Asset</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Assigned To</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Status</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-secondary-500">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-secondary-200">
               {loading ? (
-                <tr><td colSpan={5} className="py-24 text-center text-slate-300 font-black text-sm uppercase tracking-widest animate-pulse">Syncing with cloud server...</td></tr>
+                <tr>
+                  <td colSpan={6} className="py-12 text-center">
+                    <div className="flex items-center justify-center gap-2 text-secondary-400">
+                      <div className="w-5 h-5 border-2 border-secondary-300 border-t-primary-600 rounded-full animate-spin"></div>
+                      <span className="text-sm">Loading work orders...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center">
+                    <AlertCircle className="w-12 h-12 text-secondary-300 mx-auto mb-3" />
+                    <p className="text-sm text-secondary-500">No work orders found</p>
+                  </td>
+                </tr>
               ) : orders.map((order) => (
-                <tr key={order.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-5">
-                    <p className="font-bold text-slate-800 text-sm leading-tight">{order.title}</p>
-                    <div className="flex items-center gap-1.5 mt-1 text-[9px] font-black text-slate-400 uppercase tracking-tighter">
-                       <Calendar size={10} /> {new Date(order.createdAt).toLocaleDateString()}
+                <tr key={order.id} className="hover:bg-secondary-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-medium text-slate-900">{order.title}</p>
+                    <div className="flex items-center gap-1.5 mt-1 text-xs text-secondary-500">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(order.createdAt).toLocaleDateString()}
                     </div>
                   </td>
-                  <td className="px-6 py-5">
-                    <div className="inline-flex items-center gap-2 px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black border border-blue-100 uppercase tracking-tight">
-                       <Box size={10} /> {order.asset?.name}
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getPriorityBadge(order.priority)}`}>
+                      {order.priority}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-primary-50 text-primary-700 rounded-md text-xs font-medium border border-primary-200">
+                      <Box className="w-3 h-3" />
+                      {order.asset?.name}
                     </div>
                   </td>
-                  <td className="px-6 py-5 text-xs font-bold text-slate-600">
+                  <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                       <div className="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 border border-slate-200 uppercase text-[9px] font-black">
-                          {order.assignedTo ? `${order.assignedTo.firstName[0]}${order.assignedTo.lastName[0]}` : '??'}
-                       </div>
-                       {order.assignedTo ? `${order.assignedTo.firstName} ${order.assignedTo.lastName}` : 'Unassigned'}
+                      <div className="w-8 h-8 bg-secondary-100 rounded-lg flex items-center justify-center text-secondary-600 font-medium text-xs border border-secondary-200">
+                        {order.assignedTo ? `${order.assignedTo.firstName[0]}${order.assignedTo.lastName[0]}` : '?'}
+                      </div>
+                      <span className="text-sm text-slate-600">
+                        {order.assignedTo ? `${order.assignedTo.firstName} ${order.assignedTo.lastName}` : 'Unassigned'}
+                      </span>
                     </div>
                   </td>
-                  <td className="px-6 py-5">
-                    <select value={order.status} onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                      className={`text-[10px] font-black rounded-xl px-3 py-1.5 outline-none border transition-all shadow-sm cursor-pointer uppercase ${order.status === 'COMPLETED' ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-200'}`}>
-                      <option value="OPEN">OPEN</option><option value="IN_PROGRESS">IN PROGRESS</option><option value="COMPLETED">COMPLETED</option><option value="CANCELLED">CANCELLED</option>
+                  <td className="px-6 py-4">
+                    <select 
+                      value={order.status} 
+                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      className={`text-xs font-medium rounded-md px-3 py-1.5 outline-none border-0 cursor-pointer transition-colors ${getStatusBadge(order.status)}`}
+                    >
+                      <option value="OPEN">Open</option>
+                      <option value="IN_PROGRESS">In Progress</option>
+                      <option value="COMPLETED">Completed</option>
+                      <option value="CANCELLED">Cancelled</option>
                     </select>
                   </td>
-                  <td className="px-6 py-5">
-                    <div className="flex justify-center gap-2">
-                      <button onClick={() => handleOpenModal(order)} className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all"><Edit3 size={14}/></button>
-                      <button onClick={() => handleDelete(order.id, order.title)} className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-600 hover:text-white transition-all"><Trash2 size={14}/></button>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-end gap-2">
+                      <button 
+                        onClick={() => handleOpenModal(order)} 
+                        className="p-2 text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(order.id, order.title)} 
+                        className="p-2 text-status-danger hover:bg-status-danger-light rounded-md transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -163,39 +219,104 @@ const WorkOrdersPage = () => {
         </div>
       </div>
 
-      {/* --- CREATE/EDIT MODAL --- */}
+      {/* Create/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#001f3f]/50 backdrop-blur-md shadow-inner animate-in fade-in" onClick={() => setModalOpen(false)}></div>
-          <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl z-10 overflow-hidden animate-in zoom-in duration-300 p-10">
-            <div className="flex justify-between items-center mb-8">
-              <div><h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase font-mono">{editingId ? 'Modify Record' : 'Create Assignment'}</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">SaaS Multi-tenant Work Logic</p></div>
-              <button onClick={() => setModalOpen(false)} className="p-3 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X size={24}/></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-surface w-full max-w-2xl rounded-lg shadow-xl">
+            <div className="flex items-center justify-between p-6 border-b border-secondary-200">
+              <h2 className="text-lg font-semibold text-slate-900">
+                {editingId ? 'Edit Work Order' : 'Create Work Order'}
+              </h2>
+              <button 
+                onClick={() => setModalOpen(false)} 
+                className="p-1 text-secondary-400 hover:text-secondary-600 rounded-md"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-5">
-                <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Job Title</label>
-                  <input type="text" required className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] focus:ring-4 focus:ring-blue-600/5 font-bold text-sm" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}/>
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Title</label>
+                <input 
+                  type="text" 
+                  required 
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                  value={formData.title} 
+                  onChange={e => setFormData({...formData, title: e.target.value})}
+                  placeholder="Brief description of the work order"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Asset</label>
+                  <select 
+                    required 
+                    disabled={!!editingId} 
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-secondary-50 disabled:text-secondary-500" 
+                    value={formData.assetId} 
+                    onChange={e => setFormData({...formData, assetId: e.target.value})}
+                  >
+                    <option value="">Select asset</option>
+                    {assets.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  </select>
                 </div>
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Asset</label>
-                    <select required disabled={!!editingId} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] font-bold text-sm appearance-none" value={formData.assetId} onChange={e => setFormData({...formData, assetId: e.target.value})}>
-                      <option value="">Choose Reference</option>{assets.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assign Member</label>
-                    <select className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#001f3f] font-bold text-sm appearance-none font-mono" value={formData.assignedToId} onChange={e => setFormData({...formData, assignedToId: e.target.value})}>
-                      <option value="">-- UNASSIGNED --</option>{users.map(u => <option key={u.id} value={u.id}>{u.firstName} {u.lastName}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Priority Strategy</label>
-                  <div className="flex gap-2">{['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map(p => (<button key={p} type="button" onClick={() => setFormData({...formData, priority: p})} className={`flex-1 py-3 text-[10px] font-black rounded-xl border transition-all ${formData.priority === p ? 'bg-[#001f3f] text-white border-[#001f3f] shadow-lg shadow-blue-900/20' : 'bg-white text-slate-400 border-slate-200 hover:border-blue-400'}`}>{p}</button>))}</div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Assign To</label>
+                  <select 
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                    value={formData.assignedToId} 
+                    onChange={e => setFormData({...formData, assignedToId: e.target.value})}
+                  >
+                    <option value="">Unassigned</option>
+                    {users.map(u => <option key={u.id} value={u.id}>{u.firstName} {u.lastName}</option>)}
+                  </select>
                 </div>
               </div>
-              <button type="submit" disabled={isSubmitting} className="w-full py-5 bg-[#001f3f] text-white font-black rounded-[1.5rem] shadow-2xl shadow-blue-900/30 flex justify-center items-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50">
-                {isSubmitting ? <Loader2 className="animate-spin" size={20}/> : (editingId ? 'COMMIT CHANGES' : 'PUBLISH WORK ORDER')}
-              </button>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Priority</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map(p => (
+                    <button 
+                      key={p} 
+                      type="button" 
+                      onClick={() => setFormData({...formData, priority: p})} 
+                      className={`py-2 text-sm font-medium rounded-md border transition-colors ${
+                        formData.priority === p 
+                          ? 'bg-primary-600 text-white border-primary-600' 
+                          : 'bg-surface text-secondary-700 border-secondary-300 hover:border-primary-500'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setModalOpen(false)}
+                  className="flex-1 px-4 py-2 border border-secondary-300 text-secondary-700 font-medium rounded-md hover:bg-secondary-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    editingId ? 'Update Work Order' : 'Create Work Order'
+                  )}
+                </button>
+              </div>
             </form>
           </div>
         </div>

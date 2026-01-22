@@ -52,22 +52,22 @@ export default {
         status: {
           success: {
             light: '#D1FAE5',
-            DEFAULT: '#10B981', // Emerald
+            DEFAULT: '#10B981', // Emerald - COMPLETED
             dark: '#059669',
           },
           warning: {
             light: '#FEF3C7',
-            DEFAULT: '#F59E0B', // Amber
+            DEFAULT: '#F59E0B', // Amber - IN_PROGRESS/PENDING
             dark: '#D97706',
           },
           danger: {
             light: '#FEE2E2',
-            DEFAULT: '#EF4444', // Rose
-            dark: '#DC2626',
+            DEFAULT: '#F43F5E', // Rose - URGENT/CANCELLED
+            dark: '#E11D48',
           },
           info: {
             light: '#E0F2FE',
-            DEFAULT: '#0EA5E9', // Sky Blue
+            DEFAULT: '#0EA5E9', // Sky Blue - OPEN/INFO
             dark: '#0284C7',
           },
         },

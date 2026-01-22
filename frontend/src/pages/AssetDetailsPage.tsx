@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import { 
   ArrowLeft, Box, History, Calendar, 
-  User, CheckCircle2, Clock, AlertTriangle, FileText, Settings
+  User, CheckCircle2, AlertTriangle, FileText, Settings
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -29,113 +29,161 @@ const AssetDetailsPage = () => {
     }
   };
 
-  if (loading) return <div className="p-10 text-center font-black text-slate-300 animate-pulse uppercase tracking-widest">Accessing Secure Records...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="flex items-center gap-3 text-secondary-400">
+          <div className="w-5 h-5 border-2 border-secondary-300 border-t-primary-600 rounded-full animate-spin"></div>
+          <span className="text-sm">Loading asset details...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       
       {/* Navigation & Actions */}
       <div className="flex items-center justify-between">
-        <button onClick={() => navigate('/assets')} className="group flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-colors font-bold uppercase text-[10px] tracking-widest">
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform"/> Back to Registry
+        <button 
+          onClick={() => navigate('/assets')} 
+          className="inline-flex items-center gap-2 text-secondary-600 hover:text-secondary-900 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm font-medium">Back to Assets</span>
         </button>
         <div className="flex gap-3">
-           <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Print Tag</button>
-           <button className="px-4 py-2 bg-[#001f3f] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-blue-900/10 active:scale-95 transition-all">Edit Specs</button>
+          <button className="px-4 py-2 border border-secondary-300 text-secondary-700 font-medium rounded-md hover:bg-secondary-50 transition-colors text-sm">
+            Print Tag
+          </button>
+          <button className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors text-sm">
+            Edit Details
+          </button>
         </div>
       </div>
 
       {/* Asset Overview Header */}
-      <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-slate-200 shadow-sm flex flex-col md:flex-row gap-8 items-center md:items-start">
-         <div className="w-24 h-24 bg-blue-50 text-blue-600 rounded-[2rem] flex items-center justify-center border border-blue-100 shadow-inner">
-            <Box size={40} strokeWidth={2.5} />
-         </div>
-         <div className="flex-1 text-center md:text-left space-y-2">
+      <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-6">
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          <div className="w-16 h-16 bg-primary-50 text-primary-600 rounded-lg flex items-center justify-center border border-primary-200">
+            <Box className="w-8 h-8" />
+          </div>
+          <div className="flex-1 space-y-3">
             <div className="flex flex-col md:flex-row md:items-center gap-3">
-               <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">{asset.name}</h1>
-               <span className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[10px] font-black uppercase tracking-widest w-fit mx-auto md:mx-0">{asset.status}</span>
+              <h1 className="text-2xl font-semibold text-slate-900">{asset.name}</h1>
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+                asset.status === 'ACTIVE' ? 'bg-status-success-light text-status-success-dark border-status-success' :
+                asset.status === 'MAINTENANCE' ? 'bg-status-warning-light text-status-warning-dark border-status-warning' :
+                asset.status === 'RETIRED' ? 'bg-status-danger-light text-status-danger-dark border-status-danger' :
+                'bg-secondary-100 text-secondary-600 border-secondary-200'
+              }`}>
+                {asset.status}
+              </span>
             </div>
-            <div className="flex flex-wrap justify-center md:justify-start gap-6 text-slate-400 font-bold text-[11px] uppercase tracking-wider pt-2">
-               <span className="flex items-center gap-2"><Settings size={14}/> {asset.category}</span>
-               <span className="flex items-center gap-2"><FileText size={14}/> SN: {asset.serialNo || 'N/A'}</span>
-               <span className="flex items-center gap-2"><Calendar size={14}/> Registered: {new Date(asset.createdAt).toLocaleDateString()}</span>
+            <div className="flex flex-wrap gap-6 text-sm text-secondary-600">
+              <span className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                {asset.category}
+              </span>
+              <span className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                SN: {asset.serialNo || 'N/A'}
+              </span>
+              <span className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Registered: {new Date(asset.createdAt).toLocaleDateString()}
+              </span>
             </div>
-         </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
          
          {/* Left Side: Performance Metrics */}
          <div className="space-y-6">
-            <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-blue-900/20 relative overflow-hidden group">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-500/20 transition-all duration-700"></div>
-               <p className="text-[10px] font-bold opacity-50 uppercase tracking-widest">Uptime Performance</p>
-               <h2 className="text-5xl font-black mt-2 tracking-tighter">99.8<span className="text-blue-500 text-2xl">%</span></h2>
-               <div className="mt-8 pt-6 border-t border-white/5">
-                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Last Critical Failure</p>
-                  <p className="text-sm font-bold mt-1 text-slate-300">None Recorded</p>
-               </div>
+            <div className="bg-primary-600 rounded-lg p-6 text-white shadow-sm">
+              <p className="text-xs font-medium opacity-90">Uptime Performance</p>
+              <h2 className="text-4xl font-semibold mt-2">
+                99.8<span className="text-xl">%</span>
+              </h2>
+              <div className="mt-6 pt-4 border-t border-white/20">
+                <p className="text-xs font-medium opacity-90">Last Critical Failure</p>
+                <p className="text-sm mt-1">None Recorded</p>
+              </div>
             </div>
 
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-4">
-               <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                  <AlertTriangle size={16} className="text-orange-500" /> Maintenance Summary
-               </h3>
-               <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-                     <span className="text-[10px] font-black text-slate-400 uppercase">Total Orders</span>
-                     <span className="text-sm font-black text-slate-800">{asset.workOrders?.length || 0}</span>
-                  </div>
-               </div>
+            <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-6">
+              <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-4">
+                <AlertTriangle className="w-4 h-4 text-status-warning" />
+                Maintenance Summary
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-secondary-50 rounded-md">
+                  <span className="text-xs font-medium text-secondary-600">Total Work Orders</span>
+                  <span className="text-sm font-semibold text-slate-900">{asset.workOrders?.length || 0}</span>
+                </div>
+              </div>
             </div>
          </div>
 
-         {/* Right Side: Maintenance Timeline (The Masterpiece) */}
-         <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-slate-200 shadow-sm">
-               <div className="flex items-center gap-3 mb-10">
-                  <History className="text-blue-600" size={24} strokeWidth={3} />
-                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Maintenance Timeline</h3>
-               </div>
+         {/* Right Side: Maintenance Timeline */}
+         <div className="lg:col-span-2">
+            <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <History className="w-5 h-5 text-primary-600" />
+                <h3 className="text-lg font-semibold text-slate-900">Maintenance Timeline</h3>
+              </div>
 
-               <div className="space-y-10 relative">
-                  {/* Vertical Line */}
-                  <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-100 hidden sm:block"></div>
+              <div className="space-y-4 relative">
+                {/* Vertical Line */}
+                <div className="absolute left-4 top-2 bottom-2 w-px bg-secondary-200 hidden sm:block"></div>
 
-                  {asset.workOrders && asset.workOrders.length > 0 ? (
-                    asset.workOrders.map((wo: any, index: number) => (
-                      <div key={wo.id} className="relative pl-0 sm:pl-12 group">
-                        {/* Dot on Timeline */}
-                        <div className="absolute left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-blue-600 border-4 border-white ring-1 ring-blue-600 hidden sm:block z-10"></div>
-                        
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-slate-50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 rounded-2xl border border-transparent hover:border-slate-100 transition-all duration-300">
-                           <div className="space-y-1">
-                              <h4 className="font-black text-slate-800 text-sm uppercase tracking-tight">{wo.title}</h4>
-                              <p className="text-xs text-slate-500 font-medium line-clamp-1">{wo.description || 'No detailed log provided.'}</p>
-                              <div className="flex items-center gap-4 mt-2">
-                                 <span className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-wider">
-                                    <Calendar size={12}/> {new Date(wo.createdAt).toLocaleDateString()}
-                                 </span>
-                                 <span className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-wider">
-                                    <User size={12}/> {wo.assignedTo ? `${wo.assignedTo.firstName}` : 'Unassigned'}
-                                 </span>
-                              </div>
-                           </div>
-                           <div className="flex items-center gap-2">
-                              <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${wo.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
-                                 {wo.status}
-                              </span>
-                           </div>
+                {asset.workOrders && asset.workOrders.length > 0 ? (
+                  asset.workOrders.map((wo: any) => (
+                    <div key={wo.id} className="relative pl-0 sm:pl-12">
+                      {/* Dot on Timeline */}
+                      <div className="absolute left-[13px] top-3 w-2 h-2 rounded-full bg-primary-600 border-2 border-white ring-2 ring-primary-600 hidden sm:block z-10"></div>
+                      
+                      <div className="p-4 bg-secondary-50 hover:bg-white hover:shadow-md rounded-lg border border-transparent hover:border-secondary-200 transition-all">
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-4">
+                            <h4 className="font-medium text-slate-900">{wo.title}</h4>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                              wo.status === 'COMPLETED' ? 'bg-status-success-light text-status-success-dark' :
+                              wo.status === 'IN_PROGRESS' ? 'bg-status-warning-light text-status-warning-dark' :
+                              wo.status === 'CANCELLED' ? 'bg-status-danger-light text-status-danger-dark' :
+                              'bg-status-info-light text-status-info-dark'
+                            }`}>
+                              {wo.status === 'IN_PROGRESS' ? 'In Progress' : wo.status.charAt(0) + wo.status.slice(1).toLowerCase()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-secondary-600 line-clamp-2">
+                            {wo.description || 'No description provided.'}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-secondary-500">
+                            <span className="flex items-center gap-1.5">
+                              <Calendar className="w-3 h-3" />
+                              {new Date(wo.createdAt).toLocaleDateString()}
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                              <User className="w-3 h-3" />
+                              {wo.assignedTo ? `${wo.assignedTo.firstName} ${wo.assignedTo.lastName}` : 'Unassigned'}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <div className="py-10 text-center space-y-3">
-                       <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-200"><CheckCircle2 size={32}/></div>
-                       <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No maintenance history recorded for this asset.</p>
                     </div>
-                  )}
-               </div>
+                  ))
+                ) : (
+                  <div className="py-12 text-center space-y-3">
+                    <div className="w-12 h-12 bg-secondary-50 rounded-full flex items-center justify-center mx-auto text-secondary-300">
+                      <CheckCircle2 className="w-8 h-8" />
+                    </div>
+                    <p className="text-sm text-secondary-500">No maintenance history recorded for this asset.</p>
+                  </div>
+                )}
+              </div>
             </div>
          </div>
 
