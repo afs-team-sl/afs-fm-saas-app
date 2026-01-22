@@ -42,4 +42,29 @@ export class TenantsService {
 
     return tenant;
   }
+
+  // Tenant එකක නම Update කරනවා (Admins Only)
+  async update(id: string, data: { name: string }) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant with ID ${id} not found`);
+    }
+
+    return this.prisma.tenant.update({
+      where: { id },
+      data: { name: data.name },
+      include: {
+        _count: {
+          select: {
+            users: true,
+            assets: true,
+            workOrders: true,
+          },
+        },
+      },
+    });
+  }
 }

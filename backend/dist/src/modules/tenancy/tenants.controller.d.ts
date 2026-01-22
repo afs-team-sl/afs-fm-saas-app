@@ -1,8 +1,25 @@
 import { TenantsService } from './tenants.service';
+declare class UpdateTenantDto {
+    name: string;
+}
 export declare class TenantsController {
     private readonly tenantsService;
     constructor(tenantsService: TenantsService);
     getCurrentTenant(req: any): Promise<{
+        _count: {
+            users: number;
+            assets: number;
+            workOrders: number;
+        };
+    } & {
+        id: string;
+        name: string;
+        joinCode: string;
+        domain: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    updateCurrentTenant(req: any, updateTenantDto: UpdateTenantDto): Promise<{
         _count: {
             users: number;
             assets: number;
@@ -31,3 +48,4 @@ export declare class TenantsController {
         updatedAt: Date;
     })[]>;
 }
+export {};

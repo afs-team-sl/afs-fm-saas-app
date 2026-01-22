@@ -17,6 +17,19 @@ const common_1 = require("@nestjs/common");
 const tenants_service_1 = require("./tenants.service");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const class_validator_1 = require("class-validator");
+class UpdateTenantDto {
+    name;
+}
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'The new name for the organization',
+        example: 'Acme Corporation',
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], UpdateTenantDto.prototype, "name", void 0);
 let TenantsController = class TenantsController {
     tenantsService;
     constructor(tenantsService) {
@@ -25,6 +38,13 @@ let TenantsController = class TenantsController {
     async getCurrentTenant(req) {
         const tenantId = req.user.tenantId;
         return this.tenantsService.findOne(tenantId);
+    }
+    async updateCurrentTenant(req, updateTenantDto) {
+        if (req.user.role !== 'ADMIN') {
+            throw new common_1.ForbiddenException('Only administrators can update organization settings');
+        }
+        const tenantId = req.user.tenantId;
+        return this.tenantsService.update(tenantId, { name: updateTenantDto.name });
     }
     async findAll(req) {
         const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
@@ -53,6 +73,18 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], TenantsController.prototype, "getCurrentTenant", null);
+__decorate([
+    (0, common_1.Patch)('me'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update current organization name (Admin only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Organization name updated successfully.' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden. Only admins can update organization name.' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Tenant not found.' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, UpdateTenantDto]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "updateCurrentTenant", null);
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all registered organizations (Internal Use Only)' }),

@@ -1,7 +1,18 @@
-import { Controller, Get, UseGuards, ForbiddenException, Request } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, ForbiddenException, Request } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiProperty } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { IsString, IsNotEmpty } from 'class-validator';
+
+class UpdateTenantDto {
+  @ApiProperty({
+    description: 'The new name for the organization',
+    example: 'Acme Corporation',
+  })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+}
 
 @ApiTags('Tenants (Super Admin Only)')
 @ApiBearerAuth()
@@ -17,6 +28,21 @@ export class TenantsController {
   async getCurrentTenant(@Request() req) {
     const tenantId = req.user.tenantId;
     return this.tenantsService.findOne(tenantId);
+  }
+
+  @Patch('me')
+  @ApiOperation({ summary: 'Update current organization name (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Organization name updated successfully.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. Only admins can update organization name.' })
+  @ApiResponse({ status: 404, description: 'Tenant not found.' })
+  async updateCurrentTenant(@Request() req, @Body() updateTenantDto: UpdateTenantDto) {
+    // Only admins can update organization name
+    if (req.user.role !== 'ADMIN') {
+      throw new ForbiddenException('Only administrators can update organization settings');
+    }
+
+    const tenantId = req.user.tenantId;
+    return this.tenantsService.update(tenantId, { name: updateTenantDto.name });
   }
 
   @Get()

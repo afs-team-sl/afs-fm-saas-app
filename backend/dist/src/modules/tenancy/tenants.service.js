@@ -49,6 +49,27 @@ let TenantsService = class TenantsService {
         }
         return tenant;
     }
+    async update(id, data) {
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { id },
+        });
+        if (!tenant) {
+            throw new common_1.NotFoundException(`Tenant with ID ${id} not found`);
+        }
+        return this.prisma.tenant.update({
+            where: { id },
+            data: { name: data.name },
+            include: {
+                _count: {
+                    select: {
+                        users: true,
+                        assets: true,
+                        workOrders: true,
+                    },
+                },
+            },
+        });
+    }
 };
 exports.TenantsService = TenantsService;
 exports.TenantsService = TenantsService = __decorate([

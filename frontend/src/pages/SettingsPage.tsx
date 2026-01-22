@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
-import { User, Lock, ShieldCheck, Loader2, Save, Key, Copy, CheckCircle, LogOut } from 'lucide-react';
+import { User, Lock, ShieldCheck, Loader2, Save, Key, Copy, CheckCircle, LogOut, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const SettingsPage = () => {
@@ -10,6 +10,8 @@ const SettingsPage = () => {
   const [fetching, setFetching] = useState(true);
   const [joinCode, setJoinCode] = useState<string>('');
   const [copied, setCopied] = useState(false);
+  const [orgName, setOrgName] = useState<string>('');
+  const [orgLoading, setOrgLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -49,12 +51,17 @@ const SettingsPage = () => {
   const fetchJoinCode = async () => {
     try {
       const response = await apiClient.get('/tenants/me');
-      if (response.data && response.data.joinCode) {
-        setJoinCode(response.data.joinCode);
+      if (response.data) {
+        if (response.data.joinCode) {
+          setJoinCode(response.data.joinCode);
+        }
+        if (response.data.name) {
+          setOrgName(response.data.name);
+        }
       }
     } catch (error) {
       // Silently fail - user may not have permission
-      console.error('Error fetching join code:', error);
+      console.error('Error fetching tenant data:', error);
     }
   };
 
@@ -64,6 +71,25 @@ const SettingsPage = () => {
       setCopied(true);
       toast.success('Join code copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleOrgUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!orgName.trim()) {
+      toast.error('Organization name cannot be empty');
+      return;
+    }
+    setOrgLoading(true);
+    try {
+      await apiClient.patch('/tenants/me', { name: orgName });
+      toast.success('Organization name updated successfully');
+      fetchJoinCode(); // Refresh tenant data
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'Failed to update organization name';
+      toast.error(msg);
+    } finally {
+      setOrgLoading(false);
     }
   };
 
@@ -208,6 +234,58 @@ const SettingsPage = () => {
               </div>
             </form>
           </div>
+
+          {/* Organization Profile Card - Only for Admins */}
+          {role === 'ADMIN' && (
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+              <div className="p-6 border-b border-slate-200">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-slate-600" />
+                  <h2 className="text-lg font-medium text-slate-900">Organization Profile</h2>
+                </div>
+              </div>
+              
+              <form onSubmit={handleOrgUpdate} className="p-6 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Organization Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter your company or organization name"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    value={orgName}
+                    onChange={e => setOrgName(e.target.value)}
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    This name will be displayed across your organization's dashboard
+                  </p>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={orgLoading}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {orgLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        Update Organization
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
 
         {/* Sidebar - Takes 1 column */}
