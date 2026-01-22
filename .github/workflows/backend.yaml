@@ -1,0 +1,67 @@
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'backend/**'   # only triggers if anything inside backend/ changes
+
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RG: rg-fms-dev
+  APP_SERVICE: db-fms-dev
+  ACR: acrfms.azurecr.io
+  IMAGE_NAME: be-fms-backend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Login to Azure via OIDC (no secret needed)
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+
+      # 3️⃣ Login to ACR
+      - name: Login to ACR
+        run: az acr login --name acrfms
+
+      # 4️⃣ Build and push Docker image
+      - name: Build & Push Docker Image
+        run: |
+          docker build -t ${{ env.ACR }}/${{ env.IMAGE_NAME }}:${{ github.sha }} ./backend
+          docker push ${{ env.ACR }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      # 5️⃣ Deploy container to App Service
+      - name: Deploy to Azure App Service
+        run: |
+          az webapp config container set \
+            --name ${{ env.APP_SERVICE }} \
+            --resource-group ${{ env.RG }} \
+            --docker-custom-image-name ${{ env.ACR }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      # 6️⃣ Map Key Vault secrets to App Service env vars
+      - name: Configure App Service App Settings from Key Vault
+        run: |
+          az webapp config appsettings set \
+            --name ${{ env.APP_SERVICE }} \
+            --resource-group ${{ env.RG }} \
+            --settings \
+              DATABASE_URL="@Microsoft.KeyVault(SecretUri=https://keyvault-fms-dev.vault.azure.net/secrets/database-url/)" \
+              JWT_SECRET="@Microsoft.KeyVault(SecretUri=https://keyvault-fms-dev.vault.azure.net/secrets/jwt-secret/)" \
+              JWT_EXPIRES_IN="1d" \
+              PORT="3000" \
+              CORS_ORIGIN="http://localhost:5173" \
+              SUPER_TENANT_ID="05642b69-8f04-44d0-b74c-27c9db4b4969" \
+              SYSTEM_SUPER_USER_ID="2930b04c-4b14-4540-a6fc-002093679b8b"
