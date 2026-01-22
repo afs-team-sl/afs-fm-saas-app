@@ -6,8 +6,7 @@ on:
       - dev
     
 
-permissions:
-  contents: read
+
 
 env:
   RG: rg-fms-dev
@@ -35,13 +34,7 @@ jobs:
 
       # 3️⃣ Login to ACR
       - name: Login to ACR
-        run: |
-          echo "${{ secrets.AZURE_CLIENT_SECRET }}" | docker login acrfms.azurecr.io \
-            --username ${{ secrets.AZURE_CLIENT_ID }} \
-            --password-stdin
-          
-
-
+        run: az acr login --name acrfms
 
       # 4️⃣ Build and push Docker image
       - name: Build & Push Docker Image
@@ -57,17 +50,4 @@ jobs:
             --resource-group ${{ env.RG }} \
             --docker-custom-image-name ${{ env.ACR }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      # 6️⃣ Map Key Vault secrets to App Service env vars
-      - name: Configure App Service App Settings from Key Vault
-        run: |
-          az webapp config appsettings set \
-            --name ${{ env.APP_SERVICE }} \
-            --resource-group ${{ env.RG }} \
-            --settings \
-              DATABASE_URL="@Microsoft.KeyVault(SecretUri=https://keyvault-fms-dev.vault.azure.net/secrets/database-url/)" \
-              JWT_SECRET="@Microsoft.KeyVault(SecretUri=https://keyvault-fms-dev.vault.azure.net/secrets/jwt-secret/)" \
-              JWT_EXPIRES_IN="1d" \
-              PORT="3000" \
-              CORS_ORIGIN="http://localhost:5173" \
-              SUPER_TENANT_ID="05642b69-8f04-44d0-b74c-27c9db4b4969" \
-              SYSTEM_SUPER_USER_ID="2930b04c-4b14-4540-a6fc-002093679b8b"
+      
