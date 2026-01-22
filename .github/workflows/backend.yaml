@@ -37,7 +37,6 @@ jobs:
           echo $TOKEN | docker login ${{ env.ACR }} \
                         --username 00000000-0000-0000-0000-000000000000 \
                         --password-stdin
-          az acr repository list --name acrfms --output table
 
       # 4️⃣ Build and push Docker image
       - name: Build & Push Docker Image
