@@ -1,21 +1,22 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private configService: ConfigService) {
     super({
-      // Request එකේ Header එකෙන් "Bearer <token>" විදියට ටෝකන් එක ගන්නවා
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: 'MY_SECRET_KEY_123', 
+      // Load JWT_SECRET from environment variables
+      secretOrKey: configService.get<string>('JWT_SECRET'),
     });
   }
 
   async validate(payload: any) {
-    // ටෝකන් එක හරියටම check වුණාම මේ return කරන ඩේටා ටික 
-    // request.user කියන තැනට NestJS මගින් ඇතුළත් කරනවා.
+    // Decode and validate JWT payload
+    // This data is automatically attached to request.user by NestJS
     return { 
       userId: payload.sub, 
       email: payload.email, 

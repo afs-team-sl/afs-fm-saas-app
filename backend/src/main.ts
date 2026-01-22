@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Get ConfigService to access environment variables
+  const configService = app.get(ConfigService);
 
   // 1. Global Validation - Enables automatic input data checking using DTOs
   app.useGlobalPipes(new ValidationPipe({
@@ -13,8 +17,14 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // 2. Enable CORS - Needed for browser-based API testing (like Swagger)
-  app.enableCors();
+  // 2. Enable CORS - Configure for production deployment
+  const corsOrigin = configService.get<string>('CORS_ORIGIN');
+  app.enableCors({
+    origin: corsOrigin ? corsOrigin.split(',').map(origin => origin.trim()) : '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID'],
+  });
 
   // 3. Swagger Setup - Configures the API Documentation page
   const config = new DocumentBuilder()
@@ -35,8 +45,8 @@ async function bootstrap() {
   // This line creates the /api path for your documentation
   SwaggerModule.setup('api', app, document);
 
-  // 4. Start the server
-  const port = process.env.PORT ?? 3000;
+  // 4. Start the server - Use PORT from environment or default to 3000
+  const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
   
   console.log(`🚀 Server is running on: http://localhost:${port}`);

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './common/prisma/prisma.module';
@@ -9,7 +10,19 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AssetsModule, WorkOrdersModule, AuthModule, TenancyModule],
+  imports: [
+    // Load environment variables globally
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    PrismaModule,
+    UsersModule,
+    AssetsModule,
+    WorkOrdersModule,
+    AuthModule,
+    TenancyModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
