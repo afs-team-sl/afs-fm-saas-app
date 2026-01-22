@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../api/client';
-import { 
-  Building2, Users, Box, Globe, 
-  Activity, Server, ChevronRight, Search, TrendingUp
-} from 'lucide-react';
+import Building2 from 'lucide-react/dist/esm/icons/building-2';
+import Users from 'lucide-react/dist/esm/icons/users';
+import Box from 'lucide-react/dist/esm/icons/box';
+import Globe from 'lucide-react/dist/esm/icons/globe';
+import Activity from 'lucide-react/dist/esm/icons/activity';
+import Server from 'lucide-react/dist/esm/icons/server';
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right';
+import Search from 'lucide-react/dist/esm/icons/search';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
 import toast from 'react-hot-toast';
 
 const SuperAdminPage = () => {

@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { 
-  ArrowLeft, Box, History, Calendar, 
-  User, CheckCircle2, AlertTriangle, FileText, Settings
-} from 'lucide-react';
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
+import Box from 'lucide-react/dist/esm/icons/box';
+import History from 'lucide-react/dist/esm/icons/history';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import User from 'lucide-react/dist/esm/icons/user';
+import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2';
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
+import FileText from 'lucide-react/dist/esm/icons/file-text';
+import Settings from 'lucide-react/dist/esm/icons/settings';
 import toast from 'react-hot-toast';
 
 const AssetDetailsPage = () => {

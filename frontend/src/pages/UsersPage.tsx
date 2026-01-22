@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
-import { 
-  UserPlus, Shield, UserCog, User, 
-  Trash2, Edit3, X, Loader2, Search, Lock
-} from 'lucide-react';
+import UserPlus from 'lucide-react/dist/esm/icons/user-plus';
+import Shield from 'lucide-react/dist/esm/icons/shield';
+import UserCog from 'lucide-react/dist/esm/icons/user-cog';
+import User from 'lucide-react/dist/esm/icons/user';
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
+import Edit3 from 'lucide-react/dist/esm/icons/edit-3';
+import X from 'lucide-react/dist/esm/icons/x';
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
+import Search from 'lucide-react/dist/esm/icons/search';
+import Lock from 'lucide-react/dist/esm/icons/lock';
 
 interface UserData {
   id: string;

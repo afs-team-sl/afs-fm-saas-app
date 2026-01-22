@@ -1,17 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { 
-  ArrowLeft, 
-  Box, 
-  AlertCircle, 
-  User, 
-  Calendar, 
-  Clock, 
-  Loader2,
-  CheckCircle,
-  Play
-} from 'lucide-react';
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
+import Box from 'lucide-react/dist/esm/icons/box';
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
+import User from 'lucide-react/dist/esm/icons/user';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import Clock from 'lucide-react/dist/esm/icons/clock';
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
+import Play from 'lucide-react/dist/esm/icons/play';
 import toast from 'react-hot-toast';
 
 interface WorkOrderDetails {

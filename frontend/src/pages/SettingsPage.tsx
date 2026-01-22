@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
-import { User, Lock, ShieldCheck, Loader2, Save, Key, Copy, CheckCircle, LogOut, Building2 } from 'lucide-react';
+import User from 'lucide-react/dist/esm/icons/user';
+import Lock from 'lucide-react/dist/esm/icons/lock';
+import ShieldCheck from 'lucide-react/dist/esm/icons/shield-check';
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
+import Save from 'lucide-react/dist/esm/icons/save';
+import Key from 'lucide-react/dist/esm/icons/key';
+import Copy from 'lucide-react/dist/esm/icons/copy';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
+import LogOut from 'lucide-react/dist/esm/icons/log-out';
+import Building2 from 'lucide-react/dist/esm/icons/building-2';
 import { useAuth } from '../context/AuthContext';
 
 const SettingsPage = () => {
