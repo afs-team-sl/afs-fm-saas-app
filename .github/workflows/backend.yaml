@@ -35,7 +35,13 @@ jobs:
 
       # 3️⃣ Login to ACR
       - name: Login to ACR
-        run: az acr login --name acrfms
+        run: |
+          echo "${{ secrets.AZURE_CLIENT_SECRET }}" | docker login acrfms.azurecr.io \
+            --username ${{ secrets.AZURE_CLIENT_ID }} \
+            --password-stdin
+          
+
+
 
       # 4️⃣ Build and push Docker image
       - name: Build & Push Docker Image
