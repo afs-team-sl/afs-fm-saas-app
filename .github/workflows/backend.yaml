@@ -36,6 +36,9 @@ jobs:
       - name: Login to ACR
         run: | 
           az acr login --name acrfms
+          echo ${{ secrets.AZURE_CLIENT_SECRET }} | docker login ${{ env.ACR }} \
+            --username ${{ secrets.AZURE_CLIENT_ID }} \
+            --password-stdin
           az acr repository list --name acrfms --output table
 
       # 4️⃣ Build and push Docker image
