@@ -48,14 +48,15 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return (
     <div className="h-screen w-full flex overflow-hidden bg-slate-50">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 md:relative md:translate-x-0 h-full flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white border-r border-slate-700/50 transform transition-transform duration-300 md:relative md:translate-x-0 h-full flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-200 cursor-pointer" onClick={() => navigate('/')}>
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Package className="w-5 h-5 text-white" />
+        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-700/50 cursor-pointer group" onClick={() => navigate('/')}>
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all">
+            <Package className="w-6 h-6 text-white" strokeWidth={2.5} />
           </div>
           <div>
-            <span className="font-semibold text-lg text-slate-900">FacilityOS</span>
+            <span className="font-bold text-xl text-white tracking-tight">AFS Nexus</span>
+            <p className="text-[9px] font-medium text-blue-400 uppercase tracking-wider opacity-70">Facility Intelligence</p>
           </div>
         </div>
 
@@ -67,13 +68,13 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
               <button 
                 key={item.name} 
                 onClick={() => { navigate(item.path); setSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                   isActive 
-                    ? 'bg-blue-50 text-blue-700' 
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30' 
+                    : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
                 }`}
               >
-                <item.icon className="w-5 h-5" />
+                <item.icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
                 {item.name}
               </button>
             );
@@ -81,21 +82,21 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </nav>
 
         {/* User Section */}
-        <div className="p-3 border-t border-slate-200">
-          <div className="mb-2 px-3 py-2 bg-slate-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs font-semibold">{role?.substring(0,2)}</span>
+        <div className="p-3 border-t border-slate-700/50">
+          <div className="mb-3 px-4 py-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white text-sm font-bold">{role?.substring(0,2)}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">Admin User</p>
-                <p className="text-xs text-slate-500">{role}</p>
+                <p className="text-sm font-semibold text-white truncate">Admin User</p>
+                <p className="text-xs text-slate-400 font-medium">{role}</p>
               </div>
             </div>
           </div>
           <button 
             onClick={logout} 
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-400 hover:bg-red-500/10 border border-red-500/20 rounded-xl transition-all hover:border-red-500/40"
           >
             <LogOut className="w-4 h-4" />
             Sign Out
@@ -106,24 +107,24 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shadow-sm">
           <div className="flex items-center gap-4">
             <button 
-              className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg" 
+              className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all" 
               onClick={() => setSidebarOpen(!isSidebarOpen)}
             >
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <div className="hidden sm:block">
-              <h2 className="text-sm font-medium text-slate-900">{currentPage?.name || 'Dashboard'}</h2>
-              <p className="text-xs text-slate-500">Welcome back</p>
+              <h2 className="text-base font-bold text-slate-900">{currentPage?.name || 'Dashboard'}</h2>
+              <p className="text-xs text-slate-500 font-medium">Welcome back to AFS Nexus</p>
             </div>
           </div>
           
           <div className="flex items-center gap-3">
-            <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors relative">
+            <button className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all relative">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
             </button>
           </div>
         </header>

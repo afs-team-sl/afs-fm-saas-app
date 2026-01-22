@@ -84,15 +84,15 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Logo & Branding */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-lg mb-4">
-            <Building2 className="w-8 h-8 text-white" />
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-5 shadow-lg shadow-blue-500/30">
+            <Building2 className="w-10 h-10 text-white" strokeWidth={2.5} />
           </div>
-          <h1 className="text-2xl font-semibold text-slate-900">FacilityOS</h1>
-          <p className="text-sm text-slate-500 mt-1">Create or join your organization</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">AFS Nexus</h1>
+          <p className="text-sm font-medium text-slate-500 mt-2">Create or join your organization</p>
         </div>
 
         {/* Tab Switcher */}
