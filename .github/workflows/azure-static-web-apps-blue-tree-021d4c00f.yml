@@ -7,7 +7,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
-      - main
+      - dev
 
 jobs:
   build_and_deploy_job:
@@ -44,4 +44,5 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_TREE_021D4C00F }}
           action: "close"
+
 
