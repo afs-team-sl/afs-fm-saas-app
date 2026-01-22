@@ -128,6 +128,9 @@ model WorkOrder {
   assignedToId    String?            
   assignedTo      User?              @relation("AssignedWorkOrders", fields: [assignedToId], references: [id])
 
+  // Completion Note (Written by Technician)
+  completionNote  String?
+
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
 

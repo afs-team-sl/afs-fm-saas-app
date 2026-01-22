@@ -33,6 +33,7 @@ export declare class WorkOrdersService {
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
+        completionNote: string | null;
     }>;
     findAll(tenantId: string, userId?: string, role?: string): Promise<({
         asset: {
@@ -62,6 +63,7 @@ export declare class WorkOrdersService {
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
+        completionNote: string | null;
     })[]>;
     findByStatus(tenantId: string, status: string): Promise<({
         asset: {
@@ -91,6 +93,7 @@ export declare class WorkOrdersService {
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
+        completionNote: string | null;
     })[]>;
     findByPriority(tenantId: string, priority: string): Promise<({
         asset: {
@@ -120,6 +123,7 @@ export declare class WorkOrdersService {
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
+        completionNote: string | null;
     })[]>;
     findOne(id: string, tenantId: string): Promise<{
         asset: {
@@ -149,6 +153,7 @@ export declare class WorkOrdersService {
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
+        completionNote: string | null;
     }>;
     update(id: string, tenantId: string, dto: UpdateWorkOrderDto): Promise<{
         asset: {
@@ -178,6 +183,7 @@ export declare class WorkOrdersService {
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
+        completionNote: string | null;
     }>;
     remove(id: string, tenantId: string): Promise<{
         message: string;

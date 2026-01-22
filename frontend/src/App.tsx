@@ -8,6 +8,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import AssetsPage from './pages/AssetsPage';
 import WorkOrdersPage from './pages/WorkOrdersPage';
+import WorkOrderDetailsPage from './pages/WorkOrderDetailsPage';
 import UsersPage from './pages/UsersPage';
 import SuperAdminPage from './pages/SuperAdminPage';
 import SettingsPage from './pages/SettingsPage';
@@ -34,6 +35,7 @@ function App() {
           <Route path="/" element={isAuthenticated ? <DashboardLayout><DashboardPage /></DashboardLayout> : <Navigate to="/login" replace />} />
           <Route path="/assets" element={isAuthenticated ? <DashboardLayout><AssetsPage /></DashboardLayout> : <Navigate to="/login" replace />} />
           <Route path="/work-orders" element={isAuthenticated ? <DashboardLayout><WorkOrdersPage /></DashboardLayout> : <Navigate to="/login" replace />} />
+          <Route path="/work-orders/:id" element={isAuthenticated ? <DashboardLayout><WorkOrderDetailsPage /></DashboardLayout> : <Navigate to="/login" replace />} />
           
           {/* Admin-Only Routes */}
           <Route path="/users" element={

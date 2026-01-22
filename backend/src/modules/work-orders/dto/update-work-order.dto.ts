@@ -47,6 +47,14 @@ export class UpdateWorkOrderDto {
   priority?: WorkOrderPriority;
 
   @ApiPropertyOptional({
+    description: 'Completion notes written by the technician',
+    example: 'Replaced faulty capacitor. System tested and running normally.',
+  })
+  @IsString()
+  @IsOptional()
+  completionNote?: string;
+
+  @ApiPropertyOptional({
     description: 'Updated UUID of the technician assigned to this work order',
     example: '123e4567-e89b-12d3-a456-426614174001',
   })

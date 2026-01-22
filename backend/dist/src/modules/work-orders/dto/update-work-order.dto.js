@@ -18,6 +18,7 @@ class UpdateWorkOrderDto {
     description;
     status;
     priority;
+    completionNote;
     assignedToId;
 }
 exports.UpdateWorkOrderDto = UpdateWorkOrderDto;
@@ -61,6 +62,15 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateWorkOrderDto.prototype, "priority", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Completion notes written by the technician',
+        example: 'Replaced faulty capacitor. System tested and running normally.',
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateWorkOrderDto.prototype, "completionNote", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: 'Updated UUID of the technician assigned to this work order',

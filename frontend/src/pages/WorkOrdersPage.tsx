@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle } from 'lucide-react';
 
@@ -9,6 +10,7 @@ interface WorkOrder {
 }
 
 const WorkOrdersPage = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<WorkOrder[]>([]);
   const [assets, setAssets] = useState<{id: string, name: string}[]>([]);
   const [users, setUsers] = useState<{id: string, firstName: string, lastName: string}[]>([]);
@@ -157,7 +159,12 @@ const WorkOrdersPage = () => {
               ) : orders.map((order) => (
                 <tr key={order.id} className="hover:bg-secondary-50 transition-colors">
                   <td className="px-6 py-4">
-                    <p className="text-sm font-medium text-slate-900">{order.title}</p>
+                    <button 
+                      onClick={() => navigate(`/work-orders/${order.id}`)} 
+                      className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline text-left"
+                    >
+                      {order.title}
+                    </button>
                     <div className="flex items-center gap-1.5 mt-1 text-xs text-secondary-500">
                       <Calendar className="w-3 h-3" />
                       {new Date(order.createdAt).toLocaleDateString()}

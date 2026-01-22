@@ -4,5 +4,6 @@ export declare class UpdateWorkOrderDto {
     description?: string;
     status?: WorkOrderStatus;
     priority?: WorkOrderPriority;
+    completionNote?: string;
     assignedToId?: string;
 }

@@ -65,6 +65,7 @@ export declare class AssetsService {
             priority: import(".prisma/client").$Enums.WorkOrderPriority;
             assetId: string;
             assignedToId: string | null;
+            completionNote: string | null;
         })[];
     } & {
         id: string;
