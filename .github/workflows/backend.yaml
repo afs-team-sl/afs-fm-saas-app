@@ -2,8 +2,8 @@ on:
   push:
     branches:
       - dev
-    paths:
-      - 'backend/**'   # only triggers if anything inside backend/ changes
+   # paths:
+   #   - 'backend/**'   # only triggers if anything inside backend/ changes
   workflow_dispatch:     # <-- same level as push
 
 
