@@ -4,8 +4,10 @@ interface AuthContextType {
   token: string | null;
   tenantId: string | null;
   role: string | null;
-  userId: string | null; // <--- අලුතින් එක් කළා
-  login: (token: string, tenantId: string, role: string, userId: string) => void; // <--- parameters 4ක්
+  userId: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  login: (token: string, tenantId: string, role: string, userId: string, firstName: string, lastName: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -16,18 +18,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(localStorage.getItem('access_token'));
   const [tenantId, setTenantId] = useState<string | null>(localStorage.getItem('tenant_id'));
   const [role, setRole] = useState<string | null>(localStorage.getItem('user_role'));
-  const [userId, setUserId] = useState<string | null>(localStorage.getItem('user_id')); // <--- අලුතින් එක් කළා
+  const [userId, setUserId] = useState<string | null>(localStorage.getItem('user_id'));
+  const [firstName, setFirstName] = useState<string | null>(localStorage.getItem('user_first_name'));
+  const [lastName, setLastName] = useState<string | null>(localStorage.getItem('user_last_name'));
 
-  const login = (newToken: string, newTenantId: string, newRole: string, newUserId: string) => {
+  const login = (
+    newToken: string,
+    newTenantId: string,
+    newRole: string,
+    newUserId: string,
+    newFirstName: string,
+    newLastName: string
+  ) => {
     localStorage.setItem('access_token', newToken);
     localStorage.setItem('tenant_id', newTenantId);
     localStorage.setItem('user_role', newRole);
-    localStorage.setItem('user_id', newUserId); // <--- ලෝකල් සේව් කරනවා
+    localStorage.setItem('user_id', newUserId);
+    localStorage.setItem('user_first_name', newFirstName);
+    localStorage.setItem('user_last_name', newLastName);
     
     setToken(newToken);
     setTenantId(newTenantId);
     setRole(newRole);
     setUserId(newUserId);
+    setFirstName(newFirstName);
+    setLastName(newLastName);
   };
 
   const logout = () => {
@@ -36,10 +51,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTenantId(null);
     setRole(null);
     setUserId(null);
+    setFirstName(null);
+    setLastName(null);
   };
 
   return (
-    <AuthContext.Provider value={{ token, tenantId, role, userId, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ token, tenantId, role, userId, firstName, lastName, login, logout, isAuthenticated: !!token }}>
       {children}
     </AuthContext.Provider>
   );

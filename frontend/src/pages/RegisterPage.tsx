@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
 import { Building2, Mail, Lock, Loader2, ArrowRight, AlertCircle, CheckCircle2, Key, Users } from 'lucide-react';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [activeTab, setActiveTab] = useState<'new' | 'join'>('new');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -38,17 +36,14 @@ const RegisterPage = () => {
     setSuccess(false);
 
     try {
-      const response = await apiClient.post('/auth/register', newOrgData);
+      await apiClient.post('/auth/register', newOrgData);
       setSuccess(true);
-      toast.success('Organization created successfully! Logging you in...');
+      toast.success('Organization created successfully! Redirecting to login...');
 
-      // Auto-login after registration
-      const { access_token, user } = response.data;
-      login(access_token, user.tenantId, user.role, user.id);
-
+      // Redirect to login page instead of auto-login
       setTimeout(() => {
-        navigate('/', { replace: true });
-      }, 1000);
+        navigate('/login', { replace: true });
+      }, 1500);
     } catch (err: any) {
       const message = err.response?.data?.message || 'Registration failed. Check your details.';
       setError(message);
@@ -66,15 +61,12 @@ const RegisterPage = () => {
     try {
       const response = await apiClient.post('/auth/join', joinOrgData);
       setSuccess(true);
-      toast.success(`Successfully joined ${response.data.tenant.name}!`);
+      toast.success(`Successfully joined ${response.data.tenant.name}! Please login.`);
 
-      // Auto-login after joining
-      const { access_token, user } = response.data;
-      login(access_token, user.tenantId, user.role, user.id);
-
+      // Redirect to login page instead of auto-login
       setTimeout(() => {
-        navigate('/', { replace: true });
-      }, 1000);
+        navigate('/login', { replace: true });
+      }, 1500);
     } catch (err: any) {
       const message = err.response?.data?.message || 'Failed to join organization. Check your join code.';
       setError(message);

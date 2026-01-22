@@ -28,6 +28,8 @@ const LoginPage = () => {
       const userId = String(user.id || '').trim();
       const envSuperTenantId = String(SUPER_TENANT_ID || '').trim();
       const userRole = user.role;
+      const userFirstName = user.firstName || '';
+      const userLastName = user.lastName || '';
 
       // Super Admin check: Must have ADMIN role AND match Super Tenant ID
       const isSuperAdmin = userRole === 'ADMIN' && userTenantId === envSuperTenantId;
@@ -39,8 +41,8 @@ const LoginPage = () => {
       console.log('Is Super Admin?', isSuperAdmin);
       console.groupEnd();
 
-      // Update AuthContext with user data
-      login(access_token, userTenantId, userRole, userId);
+      // Update AuthContext with user data including firstName and lastName
+      login(access_token, userTenantId, userRole, userId, userFirstName, userLastName);
       
       toast.success(`Welcome back, ${user.firstName}!`);
 

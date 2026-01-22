@@ -7,12 +7,27 @@ import {
 } from 'lucide-react';
 
 const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { logout, role, tenantId } = useAuth();
+  const { logout, role, tenantId, firstName, lastName } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const SUPER_TENANT_ID = String(import.meta.env.VITE_SUPER_TENANT_ID || '').trim();
+
+  // Generate user initials from first and last name
+  const getUserInitials = () => {
+    const first = (firstName || 'U').charAt(0).toUpperCase();
+    const last = (lastName || 'N').charAt(0).toUpperCase();
+    return `${first}${last}`;
+  };
+
+  // Get full name
+  const getFullName = () => {
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    }
+    return 'User';
+  };
 
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
@@ -86,10 +101,10 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
           <div className="mb-3 px-4 py-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white text-sm font-bold">{role?.substring(0,2)}</span>
+                <span className="text-white text-sm font-bold">{getUserInitials()}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">Admin User</p>
+                <p className="text-sm font-semibold text-white truncate">{getFullName()}</p>
                 <p className="text-xs text-slate-400 font-medium">{role}</p>
               </div>
             </div>
