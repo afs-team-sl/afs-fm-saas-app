@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  LayoutDashboard, Box, ClipboardList, Settings, 
-  LogOut, Menu, X, Bell, UserCog, Package, ShieldCheck
-} from 'lucide-react';
+import LayoutDashboard from 'lucide-react/dist/esm/icons/layout-dashboard';
+import Box from 'lucide-react/dist/esm/icons/box';
+import ClipboardList from 'lucide-react/dist/esm/icons/clipboard-list';
+import Settings from 'lucide-react/dist/esm/icons/settings';
+import LogOut from 'lucide-react/dist/esm/icons/log-out';
+import Menu from 'lucide-react/dist/esm/icons/menu';
+import X from 'lucide-react/dist/esm/icons/x';
+import Bell from 'lucide-react/dist/esm/icons/bell';
+import UserCog from 'lucide-react/dist/esm/icons/user-cog';
+import Package from 'lucide-react/dist/esm/icons/package';
+import ShieldCheck from 'lucide-react/dist/esm/icons/shield-check';
 
 const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { logout, role, tenantId, firstName, lastName } = useAuth();
