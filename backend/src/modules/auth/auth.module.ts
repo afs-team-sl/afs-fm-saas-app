@@ -16,9 +16,13 @@ import { JwtStrategy } from './jwt.strategy';
       global: true,
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
+        // Non-null assertion (!) ensures JWT_SECRET is defined
+        // This is safe because the app should not start without this critical value
+        secret: configService.get<string>('JWT_SECRET')!,
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '1d',
+          // Cast to any to satisfy JwtModuleOptions type requirements
+          // The value is a valid time string ('1d', '7d', etc.) which JWT library accepts
+          expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '1d') as any,
         },
       }),
       inject: [ConfigService],

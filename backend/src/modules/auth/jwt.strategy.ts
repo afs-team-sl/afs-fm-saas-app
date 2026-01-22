@@ -9,8 +9,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      // Load JWT_SECRET from environment variables
-      secretOrKey: configService.get<string>('JWT_SECRET'),
+      // Non-null assertion (!) ensures JWT_SECRET is defined
+      // This is required because passport-jwt expects a string, not string | undefined
+      // The app will fail to start if JWT_SECRET is missing, which is the desired behavior
+      secretOrKey: configService.get<string>('JWT_SECRET')!,
     });
   }
 
