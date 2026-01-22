@@ -5,7 +5,7 @@ import { User, Lock, ShieldCheck, Loader2, Save, Key, Copy, CheckCircle, LogOut 
 import { useAuth } from '../context/AuthContext';
 
 const SettingsPage = () => {
-  const { role, tenantId, userId, logout } = useAuth();
+  const { role, userId, logout } = useAuth();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [joinCode, setJoinCode] = useState<string>('');
@@ -27,6 +27,10 @@ const SettingsPage = () => {
 
   const fetchProfile = async () => {
     try {
+      if (!userId) {
+        console.error('No userId available');
+        return;
+      }
       const response = await apiClient.get(`/users/${userId}`);
       setFormData({
         firstName: response.data.firstName,
@@ -35,6 +39,7 @@ const SettingsPage = () => {
         password: ''
       });
     } catch (error) {
+      console.error('Failed to load profile data:', error);
       toast.error('Failed to load profile data.');
     } finally {
       setFetching(false);
@@ -43,12 +48,12 @@ const SettingsPage = () => {
 
   const fetchJoinCode = async () => {
     try {
-      const response = await apiClient.get('/tenants');
-      const currentTenant = response.data.find((t: any) => t.id === tenantId);
-      if (currentTenant) {
-        setJoinCode(currentTenant.joinCode);
+      const response = await apiClient.get('/tenants/me');
+      if (response.data && response.data.joinCode) {
+        setJoinCode(response.data.joinCode);
       }
     } catch (error) {
+      // Silently fail - user may not have permission
       console.error('Error fetching join code:', error);
     }
   };

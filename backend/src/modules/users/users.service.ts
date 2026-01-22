@@ -65,15 +65,33 @@ export class UsersService {
    * Find a single user by ID and ensure they belong to the correct tenant.
    */
   async findOne(id: string, tenantId: string) {
-    const user = await this.prisma.user.findFirst({
-      where: { id, tenantId },
-    });
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: { id, tenantId },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          tenantId: true,
+          createdAt: true,
+        },
+      });
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found in your organization`);
+      if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found in your organization`);
+      }
+
+      return user;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      // Log the error for debugging but throw a user-friendly message
+      console.error('Error finding user:', error);
+      throw new NotFoundException(`Unable to find user with ID ${id}`);
     }
-
-    return user;
   }
 
   /**

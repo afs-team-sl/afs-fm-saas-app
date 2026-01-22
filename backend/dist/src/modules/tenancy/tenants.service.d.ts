@@ -16,4 +16,18 @@ export declare class TenantsService {
         createdAt: Date;
         updatedAt: Date;
     })[]>;
+    findOne(id: string): Promise<{
+        _count: {
+            users: number;
+            assets: number;
+            workOrders: number;
+        };
+    } & {
+        id: string;
+        name: string;
+        joinCode: string;
+        domain: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
 }

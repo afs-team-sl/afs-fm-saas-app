@@ -22,6 +22,10 @@ let TenantsController = class TenantsController {
     constructor(tenantsService) {
         this.tenantsService = tenantsService;
     }
+    async getCurrentTenant(req) {
+        const tenantId = req.user.tenantId;
+        return this.tenantsService.findOne(tenantId);
+    }
     async findAll(req) {
         const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
         const currentUserTenantId = req.user.tenantId;
@@ -39,6 +43,16 @@ let TenantsController = class TenantsController {
     }
 };
 exports.TenantsController = TenantsController;
+__decorate([
+    (0, common_1.Get)('me'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get current user\'s tenant information' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Current tenant retrieved.' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Tenant not found.' }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "getCurrentTenant", null);
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all registered organizations (Internal Use Only)' }),

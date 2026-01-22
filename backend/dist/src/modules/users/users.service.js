@@ -90,13 +90,31 @@ let UsersService = class UsersService {
         });
     }
     async findOne(id, tenantId) {
-        const user = await this.prisma.user.findFirst({
-            where: { id, tenantId },
-        });
-        if (!user) {
-            throw new common_1.NotFoundException(`User with ID ${id} not found in your organization`);
+        try {
+            const user = await this.prisma.user.findFirst({
+                where: { id, tenantId },
+                select: {
+                    id: true,
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                    role: true,
+                    tenantId: true,
+                    createdAt: true,
+                },
+            });
+            if (!user) {
+                throw new common_1.NotFoundException(`User with ID ${id} not found in your organization`);
+            }
+            return user;
         }
-        return user;
+        catch (error) {
+            if (error instanceof common_1.NotFoundException) {
+                throw error;
+            }
+            console.error('Error finding user:', error);
+            throw new common_1.NotFoundException(`Unable to find user with ID ${id}`);
+        }
     }
     async update(id, tenantId, updateUserDto) {
         await this.findOne(id, tenantId);

@@ -23,9 +23,7 @@ export declare class UsersService {
     findOne(id: string, tenantId: string): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         email: string;
-        password: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;

@@ -10,6 +10,15 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
 
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user\'s tenant information' })
+  @ApiResponse({ status: 200, description: 'Current tenant retrieved.' })
+  @ApiResponse({ status: 404, description: 'Tenant not found.' })
+  async getCurrentTenant(@Request() req) {
+    const tenantId = req.user.tenantId;
+    return this.tenantsService.findOne(tenantId);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all registered organizations (Internal Use Only)' })
   @ApiResponse({ status: 200, description: 'List of all tenants retrieved.' })
