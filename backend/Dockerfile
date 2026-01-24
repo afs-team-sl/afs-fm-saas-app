@@ -61,7 +61,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
 USER nestjs
 
 # Expose the application port (Azure will map this automatically)
-EXPOSE 3000
+EXPOSE 80
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
