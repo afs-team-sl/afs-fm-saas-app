@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - dev
-    
-
-
 
 env:
   RG: rg-fms-dev
@@ -32,9 +29,14 @@ jobs:
             --tenant ${{ secrets.AZURE_TENANT_ID }}
           az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # 3️⃣ Login to ACR
-      - name: Login to ACR
-        run: az acr login --name acrfms
+      # 3️⃣ Login to ACR using token (works with RBAC + ABAC)
+      - name: Docker Login to ACR
+        run: |
+          echo "Logging in to ACR using access token..."
+          TOKEN=$(az acr login --name acrfms --expose-token --output tsv --query accessToken)
+          echo $TOKEN | docker login ${{ env.ACR }} \
+                        --username 00000000-0000-0000-0000-000000000000 \
+                        --password-stdin
 
       # 4️⃣ Build and push Docker image
       - name: Build & Push Docker Image
@@ -49,5 +51,3 @@ jobs:
             --name ${{ env.APP_SERVICE }} \
             --resource-group ${{ env.RG }} \
             --docker-custom-image-name ${{ env.ACR }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-
-      
