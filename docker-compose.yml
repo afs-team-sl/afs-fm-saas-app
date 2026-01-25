@@ -1,0 +1,81 @@
+services:
+  # ==========================================
+  # Backend Service (NestJS + Prisma)
+  # ==========================================
+  fms-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    image: fms-backend:latest
+    container_name: fms-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    # Load ALL environment variables from backend/.env file
+    env_file:
+      - ./backend/.env
+    # Override specific variables if needed (these are optional)
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3000
+    networks:
+      - fms-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    labels:
+      - "com.fms.service=backend"
+      - "com.fms.description=FMS Backend API"
+
+  # ==========================================
+  # Frontend Service (React + Vite + serve)
+  # ==========================================
+  fms-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    image: fms-frontend:latest
+    container_name: fms-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:3000
+      - NODE_ENV=${NODE_ENV:-production}
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      fms-api:
+        condition: service_healthy
+    networks:
+      - fms-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.fms.service=frontend"
+      - "com.fms.description=FMS Web Application"
+
+# ==========================================
+# Networks
+# ==========================================
+networks:
+  fms-network:
+    driver: bridge
+    name: fms-network
+
+# ==========================================
+# Volumes (Optional - for future use)
+# ==========================================
+volumes:
+  fms-data:
+    driver: local
+    name: fms-data

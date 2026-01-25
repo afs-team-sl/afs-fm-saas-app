@@ -19,8 +19,21 @@ async function bootstrap() {
 
   // 2. Enable CORS - Configure for production deployment
   const corsOrigin = configService.get<string>('CORS_ORIGIN');
+  
+  // Build allowed origins list
+  const allowedOrigins = [
+    'http://localhost',        // Frontend on port 80 (Docker)
+    'http://localhost:5173',   // Vite dev server (local development)
+  ];
+  
+  // Add custom origins from environment variable
+  if (corsOrigin) {
+    const customOrigins = corsOrigin.split(',').map(origin => origin.trim());
+    allowedOrigins.push(...customOrigins);
+  }
+  
   app.enableCors({
-    origin: corsOrigin ? corsOrigin.split(',').map(origin => origin.trim()) : '*',
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID'],
@@ -46,8 +59,9 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   // 4. Start the server - Use PORT from environment or default to 3000
+  // Listen on 0.0.0.0 to allow Docker container access
   const port = configService.get<number>('PORT') || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   
   console.log(`🚀 Server is running on: http://localhost:${port}`);
   console.log(`📚 API Docs available at: http://localhost:${port}/api`);

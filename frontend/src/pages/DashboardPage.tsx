@@ -4,17 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
 } from 'recharts';
-import Box from 'lucide-react/dist/esm/icons/box';
-import Activity from 'lucide-react/dist/esm/icons/activity';
-import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
-import Users from 'lucide-react/dist/esm/icons/users';
-import Wrench from 'lucide-react/dist/esm/icons/wrench';
-import Briefcase from 'lucide-react/dist/esm/icons/briefcase';
-import Clock from 'lucide-react/dist/esm/icons/clock';
-import Globe from 'lucide-react/dist/esm/icons/globe';
-import Zap from 'lucide-react/dist/esm/icons/zap';
-import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
-import ArrowUpRight from 'lucide-react/dist/esm/icons/arrow-up-right';
+import { Box, Activity, CheckCircle, Users, Wrench, Briefcase, Clock, Globe, Zap, TrendingUp, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const DashboardPage = () => {

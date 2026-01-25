@@ -2,15 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
-import Building2 from 'lucide-react/dist/esm/icons/building-2';
-import Mail from 'lucide-react/dist/esm/icons/mail';
-import Lock from 'lucide-react/dist/esm/icons/lock';
-import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
-import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right';
-import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
-import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2';
-import Key from 'lucide-react/dist/esm/icons/key';
-import Users from 'lucide-react/dist/esm/icons/users';
+import { Building2, Mail, Lock, Loader2, ArrowRight, AlertCircle, CheckCircle2, Key, Users } from 'lucide-react';
 
 const RegisterPage = () => {
   const navigate = useNavigate();

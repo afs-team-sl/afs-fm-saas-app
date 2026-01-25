@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import Plus from 'lucide-react/dist/esm/icons/plus';
-import Box from 'lucide-react/dist/esm/icons/box';
-import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
-import X from 'lucide-react/dist/esm/icons/x';
-import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
-import Edit3 from 'lucide-react/dist/esm/icons/edit-3';
-import Calendar from 'lucide-react/dist/esm/icons/calendar';
-import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
+import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle } from 'lucide-react';
 
 interface WorkOrder {
   id: string; title: string; description?: string; status: string; priority: string;

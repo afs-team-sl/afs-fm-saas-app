@@ -2,13 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
-import Plus from 'lucide-react/dist/esm/icons/plus';
-import Search from 'lucide-react/dist/esm/icons/search';
-import Box from 'lucide-react/dist/esm/icons/box';
-import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
-import Edit3 from 'lucide-react/dist/esm/icons/edit-3';
-import X from 'lucide-react/dist/esm/icons/x';
-import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
+import { Plus, Search, Box, Trash2, Edit3, X, Loader2 } from 'lucide-react';
 
 interface Asset {
   id: string; name: string; category: string; serialNo: string;

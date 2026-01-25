@@ -1,52 +1,18 @@
-# Node modules
-node_modules/
+node_modules
 npm-debug.log
-yarn-error.log
-
-# Build output
-dist/
-
-# Development files
+dist
 .env
 .env.local
-.env.development
-.env.test
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Git
-.git/
+.env.*.local
+coverage
+.git
 .gitignore
-.gitattributes
-
-# Testing
-coverage/
-*.test.ts
-test/
-
-# Documentation
-*.md
 README.md
-docs/
-
-# Misc
-.DS_Store
-Thumbs.db
-.editorconfig
 .prettierrc
-.prettierignore
-eslint.config.mjs
-
-# Docker
-Dockerfile
-.dockerignore
-docker-compose.yml
-
-# Logs
-logs/
+.eslintrc.js
+*.md
+test
+.vscode
+.idea
 *.log
+.DS_Store
