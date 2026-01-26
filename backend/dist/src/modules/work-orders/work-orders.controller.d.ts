@@ -21,9 +21,9 @@ export declare class WorkOrdersController {
         } & {
             id: string;
             createdAt: Date;
+            partId: string;
             quantity: number;
             workOrderId: string;
-            partId: string;
         })[];
         asset: {
             id: string;
@@ -70,9 +70,9 @@ export declare class WorkOrdersController {
         } & {
             id: string;
             createdAt: Date;
+            partId: string;
             quantity: number;
             workOrderId: string;
-            partId: string;
         })[];
         asset: {
             id: string;
@@ -119,9 +119,9 @@ export declare class WorkOrdersController {
         } & {
             id: string;
             createdAt: Date;
+            partId: string;
             quantity: number;
             workOrderId: string;
-            partId: string;
         })[];
         asset: {
             id: string;
@@ -168,9 +168,9 @@ export declare class WorkOrdersController {
         } & {
             id: string;
             createdAt: Date;
+            partId: string;
             quantity: number;
             workOrderId: string;
-            partId: string;
         })[];
         asset: {
             id: string;
@@ -219,9 +219,9 @@ export declare class WorkOrdersController {
     } & {
         id: string;
         createdAt: Date;
+        partId: string;
         quantity: number;
         workOrderId: string;
-        partId: string;
     }>;
     getWorkOrderParts(id: string, tenantId: string): Promise<({
         part: {
@@ -238,9 +238,9 @@ export declare class WorkOrdersController {
     } & {
         id: string;
         createdAt: Date;
+        partId: string;
         quantity: number;
         workOrderId: string;
-        partId: string;
     })[]>;
     removePart(id: string, partId: string, tenantId: string): Promise<{
         message: string;

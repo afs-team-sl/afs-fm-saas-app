@@ -12,15 +12,15 @@ export declare class MaintenancePlansService {
         };
     } & {
         id: string;
-        title: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         description: string | null;
+        title: string;
+        assetId: string;
         frequency: import(".prisma/client").$Enums.MaintenanceFrequency;
         nextDueDate: Date;
         lastGeneratedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        assetId: string;
-        tenantId: string;
     }>;
     findAll(tenantId: string): Promise<({
         asset: {
@@ -31,15 +31,15 @@ export declare class MaintenancePlansService {
         };
     } & {
         id: string;
-        title: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         description: string | null;
+        title: string;
+        assetId: string;
         frequency: import(".prisma/client").$Enums.MaintenanceFrequency;
         nextDueDate: Date;
         lastGeneratedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        assetId: string;
-        tenantId: string;
     })[]>;
     findOne(id: string, tenantId: string): Promise<{
         asset: {
@@ -50,15 +50,15 @@ export declare class MaintenancePlansService {
         };
     } & {
         id: string;
-        title: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         description: string | null;
+        title: string;
+        assetId: string;
         frequency: import(".prisma/client").$Enums.MaintenanceFrequency;
         nextDueDate: Date;
         lastGeneratedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        assetId: string;
-        tenantId: string;
     }>;
     update(id: string, dto: UpdateMaintenancePlanDto, tenantId: string): Promise<{
         asset: {
@@ -68,15 +68,15 @@ export declare class MaintenancePlansService {
         };
     } & {
         id: string;
-        title: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         description: string | null;
+        title: string;
+        assetId: string;
         frequency: import(".prisma/client").$Enums.MaintenanceFrequency;
         nextDueDate: Date;
         lastGeneratedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        assetId: string;
-        tenantId: string;
     }>;
     remove(id: string, tenantId: string): Promise<{
         message: string;
@@ -88,16 +88,16 @@ export declare class MaintenancePlansService {
             };
         } & {
             id: string;
-            title: string;
-            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            assetId: string;
             tenantId: string;
+            description: string | null;
+            title: string;
             status: import(".prisma/client").$Enums.WorkOrderStatus;
             priority: import(".prisma/client").$Enums.WorkOrderPriority;
-            completionNote: string | null;
+            assetId: string;
             assignedToId: string | null;
+            completionNote: string | null;
         };
         updatedPlan: {
             asset: {
@@ -107,15 +107,15 @@ export declare class MaintenancePlansService {
             };
         } & {
             id: string;
-            title: string;
+            createdAt: Date;
+            updatedAt: Date;
+            tenantId: string;
             description: string | null;
+            title: string;
+            assetId: string;
             frequency: import(".prisma/client").$Enums.MaintenanceFrequency;
             nextDueDate: Date;
             lastGeneratedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
-            assetId: string;
-            tenantId: string;
         };
     }>;
 }
