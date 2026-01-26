@@ -128,35 +128,32 @@ const InventoryPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-3">
-            <Package className="w-7 h-7 text-primary-600" />
-            Inventory & Spare Parts
-          </h1>
-          <p className="text-sm text-secondary-600 mt-1">Manage your parts inventory and track stock levels</p>
+          <h1 className="text-2xl font-semibold text-slate-900">Inventory & Spare Parts</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage your parts inventory and track stock levels</p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors text-sm inline-flex items-center gap-2"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Add New Part
+          Add Part
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-secondary-600 uppercase tracking-wider">Total Parts</p>
+              <p className="text-xs font-medium text-secondary-500 uppercase tracking-wider">Total Parts</p>
               <h3 className="text-2xl font-bold text-slate-900 mt-1">{parts.length}</h3>
             </div>
-            <div className="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center border border-primary-200">
               <Package className="w-6 h-6 text-primary-600" />
             </div>
           </div>
@@ -165,10 +162,10 @@ const InventoryPage = () => {
         <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-secondary-600 uppercase tracking-wider">Low Stock Items</p>
+              <p className="text-xs font-medium text-secondary-500 uppercase tracking-wider">Low Stock Items</p>
               <h3 className="text-2xl font-bold text-status-danger-dark mt-1">{lowStockCount}</h3>
             </div>
-            <div className="w-12 h-12 bg-status-danger-light rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-status-danger-light rounded-lg flex items-center justify-center border border-status-danger">
               <TrendingDown className="w-6 h-6 text-status-danger-dark" />
             </div>
           </div>
@@ -177,10 +174,10 @@ const InventoryPage = () => {
         <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-secondary-600 uppercase tracking-wider">Total Value</p>
+              <p className="text-xs font-medium text-secondary-500 uppercase tracking-wider">Total Value</p>
               <h3 className="text-2xl font-bold text-slate-900 mt-1">${totalValue.toFixed(2)}</h3>
             </div>
-            <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center border border-green-200">
               <DollarSign className="w-6 h-6 text-green-600" />
             </div>
           </div>
@@ -188,44 +185,48 @@ const InventoryPage = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-secondary-400" />
+      <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-400 w-4 h-4" />
           <input
             type="text"
-            placeholder="Search by part name or number..."
+            placeholder="Search parts..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
       </div>
 
       {/* Parts Table */}
-      <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-secondary-50 border-b border-secondary-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-secondary-600 uppercase tracking-wider">Part Name</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-secondary-600 uppercase tracking-wider">Part Number</th>
-                <th className="px-6 py-3 text-center text-xs font-semibold text-secondary-600 uppercase tracking-wider">Stock Level</th>
-                <th className="px-6 py-3 text-center text-xs font-semibold text-secondary-600 uppercase tracking-wider">Min Stock</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-secondary-600 uppercase tracking-wider">Unit Price</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-secondary-600 uppercase tracking-wider">Total Value</th>
-                <th className="px-6 py-3 text-center text-xs font-semibold text-secondary-600 uppercase tracking-wider">Actions</th>
+            <thead>
+              <tr className="border-b border-secondary-200 bg-secondary-50">
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Part</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 hidden sm:table-cell">Part Number</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-secondary-500">Stock</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-secondary-500 hidden md:table-cell">Min</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-secondary-500 hidden lg:table-cell">Price</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-secondary-500 hidden lg:table-cell">Value</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-secondary-500">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-secondary-200">
-              {filteredParts.length === 0 ? (
+              {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-12 h-12 bg-secondary-50 rounded-full flex items-center justify-center">
-                        <Package className="w-6 h-6 text-secondary-400" />
-                      </div>
-                      <p className="text-sm text-secondary-500">No parts found. Add your first part to get started.</p>
+                  <td colSpan={7} className="py-12 text-center">
+                    <div className="flex items-center justify-center gap-2 text-secondary-400">
+                      <div className="w-5 h-5 border-2 border-secondary-300 border-t-primary-600 rounded-full animate-spin"></div>
+                      <span className="text-sm">Loading parts...</span>
                     </div>
+                  </td>
+                </tr>
+              ) : filteredParts.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-sm text-secondary-500">
+                    No parts found
                   </td>
                 </tr>
               ) : (
@@ -235,53 +236,44 @@ const InventoryPage = () => {
                   
                   return (
                     <tr key={part.id} className="hover:bg-secondary-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
-                            <Package className="w-5 h-5 text-primary-600" />
+                          <div className="w-10 h-10 bg-primary-50 text-primary-600 rounded-lg flex items-center justify-center border border-primary-200">
+                            <Package className="w-5 h-5" />
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900">{part.name}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-slate-900 truncate">{part.name}</p>
+                            <p className="text-xs text-secondary-500 font-mono sm:hidden">{part.partNumber}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-mono text-secondary-600">{part.partNumber}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <td className="px-6 py-4 text-sm text-secondary-500 font-mono hidden sm:table-cell">{part.partNumber}</td>
+                      <td className="px-6 py-4 text-center">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold ${
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${
                             isLowStock
-                              ? 'bg-status-danger-light text-status-danger-dark'
-                              : 'bg-status-success-light text-status-success-dark'
+                              ? 'bg-status-danger-light text-status-danger-dark border-status-danger'
+                              : 'bg-status-success-light text-status-success-dark border-status-success'
                           }`}
                         >
-                          {isLowStock && <AlertTriangle className="w-4 h-4" />}
+                          {isLowStock && <AlertTriangle className="w-3 h-3" />}
                           {part.stockLevel}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-secondary-600">
-                        {part.minStock}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-slate-900">
-                        ${part.unitPrice.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-slate-900">
-                        ${totalValue.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="px-6 py-4 text-center text-sm text-slate-600 hidden md:table-cell">{part.minStock}</td>
+                      <td className="px-6 py-4 text-right text-sm text-slate-600 hidden lg:table-cell">${part.unitPrice.toFixed(2)}</td>
+                      <td className="px-6 py-4 text-right text-sm font-medium text-slate-900 hidden lg:table-cell">${totalValue.toFixed(2)}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-2">
                           <button
                             onClick={() => handleOpenModal(part)}
                             className="p-2 text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
-                            title="Edit Part"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(part.id)}
-                            className="p-2 text-status-danger-dark hover:bg-status-danger-light rounded-md transition-colors"
-                            title="Delete Part"
+                            className="p-2 text-status-danger hover:bg-status-danger-light rounded-md transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -298,79 +290,79 @@ const InventoryPage = () => {
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-surface w-full max-w-lg rounded-lg shadow-xl">
             <div className="flex items-center justify-between p-6 border-b border-secondary-200">
-              <h2 className="text-xl font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-900">
                 {editingPart ? 'Edit Part' : 'Add New Part'}
               </h2>
               <button
                 onClick={handleCloseModal}
-                className="text-secondary-400 hover:text-secondary-600 transition-colors"
+                className="p-1 text-secondary-400 hover:text-secondary-600 rounded-md"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-1">
-                  Part Name <span className="text-status-danger-dark">*</span>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Part Name
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="e.g., Oil Filter"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Enter part name"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-1">
-                  Part Number <span className="text-status-danger-dark">*</span>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Part Number
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.partNumber}
                   onChange={(e) => setFormData({ ...formData, partNumber: e.target.value })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   placeholder="e.g., OF-12345"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
                     Stock Level
                   </label>
                   <input
                     type="number"
                     min="0"
                     value={formData.stockLevel}
-                    onChange={(e) => setFormData({ ...formData, stockLevel: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    onChange={(e) => setFormData({ ...formData, stockLevel: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
                     Min Stock
                   </label>
                   <input
                     type="number"
                     min="0"
                     value={formData.minStock}
-                    onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
                   Unit Price ($)
                 </label>
                 <input
@@ -378,8 +370,9 @@ const InventoryPage = () => {
                   step="0.01"
                   min="0"
                   value={formData.unitPrice}
-                  onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="0.00"
                 />
               </div>
 
@@ -395,7 +388,7 @@ const InventoryPage = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors"
                 >
-                  {editingPart ? 'Update Part' : 'Add Part'}
+                  {editingPart ? 'Update Part' : 'Create Part'}
                 </button>
               </div>
             </form>
