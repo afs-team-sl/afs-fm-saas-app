@@ -39,9 +39,5 @@ USER reactuser
 # Expose port 80
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
-
 # Start the application with serve
 CMD ["serve", "-s", "dist", "-l", "80"]

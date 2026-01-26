@@ -53,12 +53,11 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Install OpenSSL for Prisma runtime and curl for health checks
+# Install OpenSSL for Prisma runtime
 RUN apk add --no-cache \
     openssl \
     libc6-compat \
-    dumb-init \
-    curl
+    dumb-init
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
@@ -83,12 +82,8 @@ USER nestjs
 # Expose the application port
 EXPOSE 3000
 
-# Health check - Ensure it uses port 3000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
-
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
-# Start the application - Explicitly use node to run the main.js file
+# Start the application
 CMD ["node", "dist/src/main.js"]
