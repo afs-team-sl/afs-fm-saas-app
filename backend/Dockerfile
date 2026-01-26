@@ -80,7 +80,7 @@ COPY --chown=nestjs:nodejs package*.json ./
 USER nestjs
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE 80
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
