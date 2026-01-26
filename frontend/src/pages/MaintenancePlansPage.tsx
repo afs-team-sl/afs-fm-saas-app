@@ -134,7 +134,7 @@ const MaintenancePlansPage = () => {
 
   const getFrequencyBadge = (frequency: string) => {
     const badges: Record<string, string> = {
-      WEEKLY: 'bg-blue-100 text-blue-700 border-blue-200',
+      WEEKLY: 'bg-primary-100 text-primary-dark border-primary-200',
       MONTHLY: 'bg-green-100 text-green-700 border-green-200',
       QUARTERLY: 'bg-purple-100 text-purple-700 border-purple-200',
       YEARLY: 'bg-orange-100 text-orange-700 border-orange-200',
@@ -164,7 +164,7 @@ const MaintenancePlansPage = () => {
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Setup New Schedule
@@ -222,7 +222,7 @@ const MaintenancePlansPage = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center">
-                          <span className="text-xs font-semibold text-primary-600">
+                          <span className="text-xs font-semibold text-primary">
                             {plan.asset.name.substring(0, 2).toUpperCase()}
                           </span>
                         </div>
@@ -240,7 +240,7 @@ const MaintenancePlansPage = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <Calendar className={`w-4 h-4 ${isOverdue(plan.nextDueDate) ? 'text-red-500' : 'text-primary-600'}`} />
+                        <Calendar className={`w-4 h-4 ${isOverdue(plan.nextDueDate) ? 'text-red-500' : 'text-primary'}`} />
                         <span className={`text-sm font-medium ${isOverdue(plan.nextDueDate) ? 'text-red-600' : 'text-slate-900'}`}>
                           {formatDate(plan.nextDueDate)}
                         </span>
@@ -267,7 +267,7 @@ const MaintenancePlansPage = () => {
                         </button>
                         <button
                           onClick={() => handleOpenModal(plan)}
-                          className="p-2 text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
+                          className="p-2 text-primary hover:bg-primary-50 rounded-md transition-colors"
                           title="Edit Plan"
                         >
                           <Edit3 className="w-4 h-4" />
@@ -315,7 +315,7 @@ const MaintenancePlansPage = () => {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="e.g., HVAC Filter Replacement"
                 />
               </div>
@@ -325,7 +325,7 @@ const MaintenancePlansPage = () => {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   rows={3}
                   placeholder="Optional maintenance details..."
                 />
@@ -340,7 +340,7 @@ const MaintenancePlansPage = () => {
                     required
                     value={formData.assetId}
                     onChange={(e) => setFormData({ ...formData, assetId: e.target.value })}
-                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     disabled={!!editingId}
                   >
                     <option value="">Select Asset</option>
@@ -363,7 +363,7 @@ const MaintenancePlansPage = () => {
                     required
                     value={formData.frequency}
                     onChange={(e) => setFormData({ ...formData, frequency: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="WEEKLY">Weekly</option>
                     <option value="MONTHLY">Monthly</option>
@@ -382,7 +382,7 @@ const MaintenancePlansPage = () => {
                   required
                   value={formData.nextDueDate}
                   onChange={(e) => setFormData({ ...formData, nextDueDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
@@ -397,7 +397,7 @@ const MaintenancePlansPage = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? (
                     <>

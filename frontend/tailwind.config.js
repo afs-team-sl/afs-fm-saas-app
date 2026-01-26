@@ -10,19 +10,22 @@ export default {
         sans: ['Inter', 'Roboto', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
-        // Primary Brand Color - Royal Blue
+        // Primary Brand Color - Enterprise Navy
         primary: {
-          50: '#EFF6FF',
-          100: '#DBEAFE',
-          200: '#BFDBFE',
-          300: '#93C5FD',
-          400: '#60A5FA',
-          500: '#3B82F6',
-          600: '#2563EB', // Main primary color
-          700: '#1D4ED8',
-          800: '#1E40AF',
-          900: '#1E3A8A',
-          950: '#172554',
+          DEFAULT: '#232249', // Main primary color
+          light: '#2d2a5c',   // Subtle tint for hover states
+          dark: '#1a1833',    // Darker shade for active states
+          50: '#f3f3f9',
+          100: '#e7e7f3',
+          200: '#d0d0e7',
+          300: '#a9a9d4',
+          400: '#7b7bbd',
+          500: '#5858a6',
+          600: '#45458d',
+          700: '#383872',
+          800: '#2d2a5c',
+          900: '#232249',
+          950: '#1a1833',
         },
         // Secondary - Slate Grey
         secondary: {

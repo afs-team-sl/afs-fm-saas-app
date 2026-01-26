@@ -135,7 +135,7 @@ const UsersPage = () => {
         </div>
         <button 
           onClick={() => setModalOpen(true)} 
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
         >
           <UserPlus className="w-4 h-4" />
           Add User
@@ -152,7 +152,7 @@ const UsersPage = () => {
               placeholder="Search users..." 
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" 
             />
           </div>
         </div>
@@ -172,7 +172,7 @@ const UsersPage = () => {
                 <tr>
                   <td colSpan={4} className="py-12 text-center">
                     <div className="flex items-center justify-center gap-2 text-slate-400">
-                      <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
+                      <div className="w-5 h-5 border-2 border-slate-300 border-t-primary rounded-full animate-spin"></div>
                       <span className="text-sm">Loading users...</span>
                     </div>
                   </td>
@@ -202,7 +202,7 @@ const UsersPage = () => {
                       <div className="flex justify-end gap-2">
                         <button 
                           onClick={() => handleEdit(user)} 
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                          className="p-2 text-primary hover:bg-primary-50 rounded-md transition-colors"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
@@ -240,7 +240,7 @@ const UsersPage = () => {
                   <input 
                     type="text" 
                     required 
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" 
                     value={formData.firstName} 
                     onChange={e => setFormData({...formData, firstName: e.target.value})} 
                   />
@@ -250,7 +250,7 @@ const UsersPage = () => {
                   <input 
                     type="text" 
                     required 
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" 
                     value={formData.lastName} 
                     onChange={e => setFormData({...formData, lastName: e.target.value})} 
                   />
@@ -262,7 +262,7 @@ const UsersPage = () => {
                 <input 
                   type="email" 
                   required 
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" 
                   value={formData.email} 
                   onChange={e => setFormData({...formData, email: e.target.value})} 
                 />
@@ -277,7 +277,7 @@ const UsersPage = () => {
                     required 
                     minLength={8}
                     placeholder="At least 8 characters"
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" 
                     value={formData.password} 
                     onChange={e => setFormData({...formData, password: e.target.value})} 
                   />
@@ -294,8 +294,8 @@ const UsersPage = () => {
                       onClick={() => setFormData({...formData, role: r as any})} 
                       className={`py-2 text-sm font-medium rounded-md border transition-colors ${
                         formData.role === r 
-                          ? 'bg-blue-600 text-white border-blue-600' 
-                          : 'bg-white text-slate-700 border-slate-300 hover:border-blue-500'
+                          ? 'bg-primary text-white border-primary' 
+                          : 'bg-white text-slate-700 border-slate-300 hover:border-primary'
                       }`}
                     >
                       {r}
@@ -350,7 +350,7 @@ const UsersPage = () => {
                   <input 
                     type="text" 
                     required 
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" 
                     value={editFormData.firstName} 
                     onChange={e => setEditFormData({...editFormData, firstName: e.target.value})} 
                   />
@@ -360,7 +360,7 @@ const UsersPage = () => {
                   <input 
                     type="text" 
                     required 
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" 
                     value={editFormData.lastName} 
                     onChange={e => setEditFormData({...editFormData, lastName: e.target.value})} 
                   />
@@ -377,8 +377,8 @@ const UsersPage = () => {
                       onClick={() => setEditFormData({...editFormData, role: r as any})} 
                       className={`py-2 text-sm font-medium rounded-md border transition-colors ${
                         editFormData.role === r 
-                          ? 'bg-blue-600 text-white border-blue-600' 
-                          : 'bg-white text-slate-700 border-slate-300 hover:border-blue-500'
+                          ? 'bg-primary text-white border-primary' 
+                          : 'bg-white text-slate-700 border-slate-300 hover:border-primary'
                       }`}
                     >
                       {r}

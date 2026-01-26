@@ -38,8 +38,8 @@ const SuperAdminPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Globe className="w-5 h-5 text-blue-600" />
+            <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+              <Globe className="w-5 h-5 text-primary" />
             </div>
             <h1 className="text-2xl font-semibold text-slate-900">Super Admin Dashboard</h1>
           </div>
@@ -53,10 +53,10 @@ const SuperAdminPage = () => {
               <span className="text-xs font-medium text-green-700">System Online</span>
             </div>
           </div>
-          <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="px-3 py-2 bg-primary-50 border border-primary-200 rounded-md">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
-              <span className="text-xs font-medium text-blue-700">99.9% Uptime</span>
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <span className="text-xs font-medium text-primary-dark">99.9% Uptime</span>
             </div>
           </div>
         </div>
@@ -65,7 +65,7 @@ const SuperAdminPage = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Organizations', val: tenants.length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+          { label: 'Organizations', val: tenants.length, icon: Building2, color: 'text-primary', bg: 'bg-primary-50', border: 'border-primary-200' },
           { label: 'Total Users', val: totalUsers, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
           { label: 'Total Assets', val: totalAssets, icon: Box, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
           { label: 'Work Orders', val: totalOrders, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' },
@@ -104,7 +104,7 @@ const SuperAdminPage = () => {
               placeholder="Search organizations..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full md:w-64" 
+              className="pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-full md:w-64" 
             />
           </div>
         </div>
@@ -126,7 +126,7 @@ const SuperAdminPage = () => {
                 <tr>
                   <td colSpan={6} className="py-12 text-center">
                     <div className="flex items-center justify-center gap-2 text-slate-400">
-                      <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
+                      <div className="w-5 h-5 border-2 border-slate-300 border-t-primary rounded-full animate-spin"></div>
                       <span className="text-sm">Loading organizations...</span>
                     </div>
                   </td>
@@ -142,8 +142,8 @@ const SuperAdminPage = () => {
                   <tr key={t.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-center">
-                          <Building2 className="w-5 h-5 text-blue-600" />
+                        <div className="w-10 h-10 bg-primary-50 border border-primary-200 rounded-lg flex items-center justify-center">
+                          <Building2 className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-slate-900">{t.name}</p>

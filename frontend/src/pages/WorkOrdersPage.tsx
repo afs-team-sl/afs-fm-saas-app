@@ -231,7 +231,7 @@ const WorkOrdersPage = () => {
           <button 
             onClick={exportToPDF}
             disabled={orders.length === 0}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-primary-600 text-primary-600 font-medium rounded-md hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-primary text-primary font-medium rounded-md hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FileDown className="w-4 h-4" />
             Export PDF
@@ -281,7 +281,7 @@ const WorkOrdersPage = () => {
                   <td className="px-6 py-4">
                     <button 
                       onClick={() => navigate(`/work-orders/${order.id}`)} 
-                      className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline text-left"
+                      className="text-sm font-medium text-primary hover:text-primary-dark hover:underline text-left"
                     >
                       {order.title}
                     </button>
@@ -296,7 +296,7 @@ const WorkOrdersPage = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-primary-50 text-primary-700 rounded-md text-xs font-medium border border-primary-200">
+                    <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-primary-50 text-primary-dark rounded-md text-xs font-medium border border-primary-200">
                       <Box className="w-3 h-3" />
                       {order.asset?.name}
                     </div>
@@ -411,8 +411,8 @@ const WorkOrdersPage = () => {
                       onClick={() => setFormData({...formData, priority: p})} 
                       className={`py-2 text-sm font-medium rounded-md border transition-colors ${
                         formData.priority === p 
-                          ? 'bg-primary-600 text-white border-primary-600' 
-                          : 'bg-surface text-secondary-700 border-secondary-300 hover:border-primary-500'
+                          ? 'bg-primary text-white border-primary' 
+                          : 'bg-surface text-secondary-700 border-secondary-300 hover:border-primary'
                       }`}
                     >
                       {p}

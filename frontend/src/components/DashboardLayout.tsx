@@ -66,12 +66,12 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white border-r border-slate-700/50 transform transition-transform duration-300 md:relative md:translate-x-0 h-full flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Logo */}
         <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-700/50 cursor-pointer group" onClick={() => navigate('/')}>
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all">
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 group-hover:shadow-primary/50 transition-all">
             <Package className="w-6 h-6 text-white" strokeWidth={2.5} />
           </div>
           <div>
             <span className="font-bold text-xl text-white tracking-tight">AFS Nexus</span>
-            <p className="text-[9px] font-medium text-blue-400 uppercase tracking-wider opacity-70">Facility Intelligence</p>
+            <p className="text-[9px] font-medium text-slate-400 uppercase tracking-wider opacity-70">Facility Intelligence</p>
           </div>
         </div>
 
@@ -85,7 +85,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 onClick={() => { navigate(item.path); setSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                   isActive 
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30' 
+                    ? 'bg-primary text-white shadow-lg shadow-primary/30' 
                     : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
                 }`}
               >
@@ -100,7 +100,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <div className="p-3 border-t border-slate-700/50">
           <div className="mb-3 px-4 py-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
                 <span className="text-white text-sm font-bold">{getUserInitials()}</span>
               </div>
               <div className="flex-1 min-w-0">

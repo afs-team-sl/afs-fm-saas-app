@@ -197,7 +197,7 @@ const WorkOrderDetailsPage = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="text-sm text-gray-600">Loading work order details...</p>
         </div>
       </div>
@@ -212,7 +212,7 @@ const WorkOrderDetailsPage = () => {
           <p className="text-gray-600">Work order not found</p>
           <button
             onClick={() => navigate('/work-orders')}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
           >
             Back to Work Orders
           </button>
@@ -231,7 +231,7 @@ const WorkOrderDetailsPage = () => {
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/work-orders')}
-          className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Work Orders
@@ -277,7 +277,7 @@ const WorkOrderDetailsPage = () => {
           {/* Asset Information */}
           <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
             <div className="flex items-center gap-2 mb-3">
-              <Box className="w-5 h-5 text-blue-600" />
+              <Box className="w-5 h-5 text-primary" />
               <h3 className="text-sm font-semibold text-gray-700">Asset Information</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -306,11 +306,11 @@ const WorkOrderDetailsPage = () => {
           {workOrder.assignedTo && (
             <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
               <div className="flex items-center gap-2 mb-3">
-                <User className="w-5 h-5 text-blue-600" />
+                <User className="w-5 h-5 text-primary" />
                 <h3 className="text-sm font-semibold text-gray-700">Assigned Technician</h3>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
                   {workOrder.assignedTo.firstName[0]}{workOrder.assignedTo.lastName[0]}
                 </div>
                 <div className="text-sm">
@@ -346,7 +346,7 @@ const WorkOrderDetailsPage = () => {
               disabled={isDisabled || isSubmitting}
               placeholder="Write detailed notes about the work performed, parts replaced, and any follow-up recommendations..."
               rows={6}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
             />
             {isCompleted && (
               <div className="mt-2 flex items-center gap-2 text-green-600 text-sm">
@@ -366,13 +366,13 @@ const WorkOrderDetailsPage = () => {
           <div className="border-t border-gray-200 pt-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-blue-600" />
+                <Package className="w-5 h-5 text-primary" />
                 <h3 className="text-sm font-semibold text-gray-700">Parts Used</h3>
               </div>
               {!isDisabled && (
                 <button
                   onClick={() => setShowPartsModal(true)}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary-dark transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Add Part
@@ -382,9 +382,9 @@ const WorkOrderDetailsPage = () => {
 
             {/* Stock Deduction Info */}
             {workOrderParts.length > 0 && workOrder?.status !== 'COMPLETED' && workOrder?.status !== 'CANCELLED' && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-800">
+              <div className="mb-4 p-3 bg-primary-50 border border-primary-200 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-primary-dark">
                   <strong>Note:</strong> Parts are reserved but stock will only be deducted when this work order is marked as <strong>COMPLETED</strong>. 
                   Parts can be added or removed until completion.
                 </div>
@@ -462,7 +462,7 @@ const WorkOrderDetailsPage = () => {
               <button
                 onClick={handleMarkInProgress}
                 disabled={isSubmitting || workOrder.status === 'IN_PROGRESS'}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? (
                   <>
@@ -521,7 +521,7 @@ const WorkOrderDetailsPage = () => {
                   required
                   value={selectedPartId}
                   onChange={(e) => setSelectedPartId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="">-- Choose a part --</option>
                   {availableParts.map((part) => (
@@ -543,12 +543,12 @@ const WorkOrderDetailsPage = () => {
                   required
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
 
               {selectedPartId && (
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                <div className="bg-primary-50 border border-primary-200 rounded-md p-3">
                   <p className="text-sm text-gray-700">
                     <span className="font-semibold">Available Stock: </span>
                     {availableParts.find((p) => p.id === selectedPartId)?.stockLevel || 0}
@@ -570,7 +570,7 @@ const WorkOrderDetailsPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark transition-colors"
                 >
                   Add Part
                 </button>

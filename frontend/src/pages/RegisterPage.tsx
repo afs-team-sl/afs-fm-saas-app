@@ -80,7 +80,7 @@ const RegisterPage = () => {
       <div className="w-full max-w-2xl">
         {/* Logo & Branding */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-5 shadow-lg shadow-blue-500/30">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-primary rounded-2xl mb-5 shadow-lg shadow-primary/30">
             <Building2 className="w-10 h-10 text-white" strokeWidth={2.5} />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">AFS Nexus</h1>
@@ -93,7 +93,7 @@ const RegisterPage = () => {
             onClick={() => { setActiveTab('new'); setError(''); setSuccess(false); }}
             className={`flex-1 py-2.5 px-4 rounded-md font-medium text-sm transition-colors ${
               activeTab === 'new'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-primary text-white'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -106,7 +106,7 @@ const RegisterPage = () => {
             onClick={() => { setActiveTab('join'); setError(''); setSuccess(false); }}
             className={`flex-1 py-2.5 px-4 rounded-md font-medium text-sm transition-colors ${
               activeTab === 'join'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-primary text-white'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -143,7 +143,7 @@ const RegisterPage = () => {
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text" required
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Acme Corporation"
                     value={newOrgData.companyName}
                     onChange={e => setNewOrgData({...newOrgData, companyName: e.target.value})}
@@ -156,7 +156,7 @@ const RegisterPage = () => {
                   <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
                   <input
                     type="text" required
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="John"
                     value={newOrgData.firstName}
                     onChange={e => setNewOrgData({...newOrgData, firstName: e.target.value})}
@@ -166,7 +166,7 @@ const RegisterPage = () => {
                   <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
                   <input
                     type="text" required
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Doe"
                     value={newOrgData.lastName}
                     onChange={e => setNewOrgData({...newOrgData, lastName: e.target.value})}
@@ -180,7 +180,7 @@ const RegisterPage = () => {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="email" required
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="admin@company.com"
                     value={newOrgData.email}
                     onChange={e => setNewOrgData({...newOrgData, email: e.target.value})}
@@ -194,7 +194,7 @@ const RegisterPage = () => {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="password" required minLength={6}
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Minimum 6 characters"
                     value={newOrgData.password}
                     onChange={e => setNewOrgData({...newOrgData, password: e.target.value})}
@@ -205,7 +205,7 @@ const RegisterPage = () => {
               <button
                 type="submit"
                 disabled={loading || success}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-primary hover:bg-primary-dark text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
                 {loading ? (
                   <>
@@ -236,7 +236,7 @@ const RegisterPage = () => {
                   <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text" required
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="clxyz123abc456def789"
                     value={joinOrgData.joinCode}
                     onChange={e => setJoinOrgData({...joinOrgData, joinCode: e.target.value})}
@@ -250,7 +250,7 @@ const RegisterPage = () => {
                   <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
                   <input
                     type="text" required
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Jane"
                     value={joinOrgData.firstName}
                     onChange={e => setJoinOrgData({...joinOrgData, firstName: e.target.value})}
@@ -260,7 +260,7 @@ const RegisterPage = () => {
                   <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
                   <input
                     type="text" required
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Smith"
                     value={joinOrgData.lastName}
                     onChange={e => setJoinOrgData({...joinOrgData, lastName: e.target.value})}
@@ -274,7 +274,7 @@ const RegisterPage = () => {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="email" required
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="you@company.com"
                     value={joinOrgData.email}
                     onChange={e => setJoinOrgData({...joinOrgData, email: e.target.value})}
@@ -288,7 +288,7 @@ const RegisterPage = () => {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="password" required minLength={6}
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Minimum 6 characters"
                     value={joinOrgData.password}
                     onChange={e => setJoinOrgData({...joinOrgData, password: e.target.value})}
@@ -299,7 +299,7 @@ const RegisterPage = () => {
               <button
                 type="submit"
                 disabled={loading || success}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-primary hover:bg-primary-dark text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
                 {loading ? (
                   <>
@@ -326,7 +326,7 @@ const RegisterPage = () => {
         <div className="mt-6 text-center">
           <p className="text-sm text-slate-600">
             Already have an account?{' '}
-            <button onClick={() => navigate('/login')} className="font-medium text-blue-600 hover:text-blue-700 hover:underline">
+            <button onClick={() => navigate('/login')} className="font-medium text-primary hover:text-primary-dark hover:underline">
               Sign in
             </button>
           </p>

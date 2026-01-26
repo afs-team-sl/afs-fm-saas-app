@@ -93,7 +93,7 @@ const DashboardPage = () => {
     }
   };
 
-  const COLORS = ['#3b82f6', '#60a5fa', '#93c5fd'];
+  const COLORS = ['#1e3a8a', '#3b82f6', '#93c5fd'];
 
   const getUIConfig = () => {
     if (tenantId === SUPER_TENANT_ID) {
@@ -101,7 +101,7 @@ const DashboardPage = () => {
         title: 'Super Admin Dashboard',
         subtitle: 'Platform overview',
         stats: [
-          { label: 'Organizations', val: stats.tenantsCount, icon: Globe, color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+          { label: 'Organizations', val: stats.tenantsCount, icon: Globe, color: 'primary', bg: 'bg-primary-50', border: 'border-primary-200', text: 'text-primary-dark' },
           { label: 'Total Assets', val: stats.totalAssets, icon: Box, color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
           { label: 'All Users', val: stats.technicians, icon: Users, color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
           { label: 'Uptime', val: '99.9%', icon: TrendingUp, color: 'orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
@@ -113,7 +113,7 @@ const DashboardPage = () => {
         title: 'My Tasks',
         subtitle: 'Your work overview',
         stats: [
-          { label: 'Active Tasks', val: stats.openOrders, icon: Briefcase, color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+          { label: 'Active Tasks', val: stats.openOrders, icon: Briefcase, color: 'primary', bg: 'bg-primary-50', border: 'border-primary-200', text: 'text-primary-dark' },
           { label: 'Completed', val: stats.completedOrders, icon: CheckCircle, color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
           { label: 'Upcoming', val: 2, icon: Clock, color: 'orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
           { label: 'Efficiency', val: '94%', icon: Zap, color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
@@ -124,7 +124,7 @@ const DashboardPage = () => {
       title: 'Dashboard',
       subtitle: 'Overview of your facility',
       stats: [
-        { label: 'Total Assets', val: stats.totalAssets, icon: Box, color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+        { label: 'Total Assets', val: stats.totalAssets, icon: Box, color: 'primary', bg: 'bg-primary-50', border: 'border-primary-200', text: 'text-primary-dark' },
         { label: 'Open Orders', val: stats.openOrders, icon: Wrench, color: 'orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
         { label: 'Completed', val: stats.completedOrders, icon: CheckCircle, color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
         { label: 'Team Members', val: stats.technicians, icon: Users, color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
@@ -137,7 +137,7 @@ const DashboardPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-slate-300 border-t-primary rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -215,7 +215,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Status Card */}
-        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-primary to-primary-dark rounded-lg p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-sm font-medium opacity-90">System Status</h3>
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -223,15 +223,15 @@ const DashboardPage = () => {
           
           <div className="mb-6">
             <div className="text-5xl font-bold mb-2">
-              98.2<span className="text-2xl text-blue-200">%</span>
+              98.2<span className="text-2xl text-primary-200">%</span>
             </div>
-            <p className="text-sm text-blue-100">Overall Performance</p>
+            <p className="text-sm text-primary-100">Overall Performance</p>
           </div>
 
           <div className="space-y-3">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-blue-100">Response Time</span>
+                <span className="text-xs text-primary-100">Response Time</span>
                 <span className="text-sm font-semibold">24ms</span>
               </div>
               <div className="w-full bg-white/20 rounded-full h-1.5">
@@ -241,7 +241,7 @@ const DashboardPage = () => {
 
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-blue-100">Status</span>
+                <span className="text-xs text-primary-100">Status</span>
                 <span className="text-sm font-semibold text-green-300">All Systems Operational</span>
               </div>
             </div>
