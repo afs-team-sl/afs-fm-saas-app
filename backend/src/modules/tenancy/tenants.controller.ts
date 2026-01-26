@@ -1,8 +1,9 @@
-import { Controller, Get, Patch, Body, UseGuards, ForbiddenException, Request } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, ForbiddenException, Request, Param, Post } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiProperty } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import { NotificationType } from '@prisma/client';
 
 class UpdateTenantDto {
   @ApiProperty({
@@ -12,6 +13,25 @@ class UpdateTenantDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+}
+
+class BroadcastDto {
+  @ApiProperty({
+    description: 'The broadcast message to send to all users',
+    example: 'System maintenance scheduled for tomorrow at 2 AM EST',
+  })
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+
+  @ApiProperty({
+    description: 'Type of notification',
+    enum: NotificationType,
+    example: 'INFO',
+  })
+  @IsEnum(NotificationType)
+  @IsOptional()
+  type?: NotificationType;
 }
 
 @ApiTags('Tenants (Super Admin Only)')
@@ -74,5 +94,58 @@ export class TenantsController {
     console.log('-------------------------------------------');
 
     return this.tenantsService.findAll();
+  }
+
+  @Get(':id/impersonate')
+  @ApiOperation({ summary: 'Impersonate as tenant admin (Super Admin Only)' })
+  @ApiResponse({ status: 200, description: 'JWT token for tenant admin generated.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You are not a Super Admin.' })
+  @ApiResponse({ status: 404, description: 'Tenant or admin user not found.' })
+  async impersonateTenant(@Request() req, @Param('id') tenantId: string) {
+    const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
+    const currentUserTenantId = req.user.tenantId;
+
+    console.log('🎭 IMPERSONATION REQUEST');
+    console.log('Requester Tenant ID:', currentUserTenantId);
+    console.log('Target Tenant ID:', tenantId);
+
+    if (currentUserTenantId?.trim() !== masterSuperId?.trim()) {
+      console.log('❌ IMPERSONATION DENIED: NOT SUPER ADMIN');
+      throw new ForbiddenException(
+        'Access Denied: Only Super Admin can impersonate other tenants.'
+      );
+    }
+
+    console.log('✅ IMPERSONATION ALLOWED');
+    return this.tenantsService.generateImpersonationToken(tenantId);
+  }
+
+  @Post('broadcast')
+  @ApiOperation({ summary: 'Send system-wide broadcast message (Super Admin Only)' })
+  @ApiResponse({ status: 201, description: 'Broadcast message sent successfully.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You are not a Super Admin.' })
+  async broadcastMessage(@Request() req, @Body() broadcastDto: BroadcastDto) {
+    const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
+    const currentUserTenantId = req.user.tenantId;
+
+    console.log('📢 BROADCAST REQUEST');
+    console.log('Requester Tenant ID:', currentUserTenantId);
+
+    if (currentUserTenantId?.trim() !== masterSuperId?.trim()) {
+      console.log('❌ BROADCAST DENIED: NOT SUPER ADMIN');
+      throw new ForbiddenException(
+        'Access Denied: Only Super Admin can send broadcast messages.'
+      );
+    }
+
+    console.log('✅ BROADCAST SENDING');
+    return this.tenantsService.createBroadcast(broadcastDto.message, broadcastDto.type);
+  }
+
+  @Get('notifications/active')
+  @ApiOperation({ summary: 'Get active broadcast notifications for all users' })
+  @ApiResponse({ status: 200, description: 'Active notifications retrieved.' })
+  async getActiveNotifications() {
+    return this.tenantsService.getActiveNotifications();
   }
 }

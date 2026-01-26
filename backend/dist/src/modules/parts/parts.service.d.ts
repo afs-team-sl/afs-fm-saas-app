@@ -48,9 +48,9 @@ export declare class PartsService {
         } & {
             id: string;
             createdAt: Date;
-            partId: string;
             quantity: number;
             workOrderId: string;
+            partId: string;
         })[];
     } & {
         id: string;

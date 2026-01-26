@@ -1,15 +1,55 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Box, ClipboardList, Settings, LogOut, Menu, X, Bell, UserCog, Package, ShieldCheck, Calendar, MapPin } from 'lucide-react';
+import { LayoutDashboard, Box, ClipboardList, Settings, LogOut, Menu, X, Bell, UserCog, Package, ShieldCheck, Calendar, MapPin, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import apiClient from '../api/client';
+
+interface Notification {
+  id: string;
+  message: string;
+  type: 'INFO' | 'WARNING' | 'CRITICAL' | 'MAINTENANCE';
+  createdAt: string;
+}
 
 const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { logout, role, tenantId, firstName, lastName } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const SUPER_TENANT_ID = String(import.meta.env.VITE_SUPER_TENANT_ID || '').trim();
+
+  // Fetch active notifications
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await apiClient.get('/tenants/notifications/active');
+        setNotifications(res.data);
+      } catch (err) {
+        console.error('Failed to fetch notifications:', err);
+      }
+    };
+    fetchNotifications();
+    
+    // Poll every 30 seconds for new notifications
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Get notification styling based on type
+  const getNotificationStyle = (type: Notification['type']) => {
+    switch (type) {
+      case 'CRITICAL':
+        return { bg: 'bg-red-600', icon: AlertCircle, text: 'text-white' };
+      case 'WARNING':
+        return { bg: 'bg-orange-500', icon: AlertTriangle, text: 'text-white' };
+      case 'MAINTENANCE':
+        return { bg: 'bg-amber-500', icon: Settings, text: 'text-white' };
+      default:
+        return { bg: 'bg-primary', icon: Info, text: 'text-white' };
+    }
+  };
 
   // Generate user initials from first and last name
   const getUserInitials = () => {
@@ -143,6 +183,27 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
             </button>
           </div>
         </header>
+
+        {/* Broadcast Notifications Banner */}
+        {notifications.length > 0 && (
+          <div className="space-y-0">
+            {notifications.map((notif) => {
+              const style = getNotificationStyle(notif.type);
+              const Icon = style.icon;
+              return (
+                <div key={notif.id} className={`${style.bg} ${style.text} px-4 md:px-6 py-3 flex items-center gap-3 shadow-sm`}>
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{notif.message}</p>
+                  </div>
+                  <span className="text-xs opacity-75 whitespace-nowrap">
+                    {notif.type}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto bg-slate-50">

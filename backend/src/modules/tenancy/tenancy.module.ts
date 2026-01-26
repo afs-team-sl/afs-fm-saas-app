@@ -1,9 +1,16 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { TenantsController } from './tenants.controller';
 import { TenantsService } from './tenants.service';
 
 @Module({
-  controllers: [TenantsController], // <--- මේක මෙතන තියෙන්නම ඕනේ!
+  imports: [
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      signOptions: { expiresIn: '24h' },
+    }),
+  ],
+  controllers: [TenantsController],
   providers: [TenantsService],
   exports: [TenantsService],
 })

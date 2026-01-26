@@ -1,12 +1,20 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { Building2, Users, Box, Globe, Activity, Server, ChevronRight, Search, TrendingUp } from 'lucide-react';
+import { Building2, Users, Box, Globe, Activity, Server, ChevronRight, Search, TrendingUp, Database, Shield, Send, LogIn, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const SuperAdminPage = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastType, setBroadcastType] = useState('INFO');
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchGlobalData();
@@ -26,6 +34,58 @@ const SuperAdminPage = () => {
   const totalUsers = tenants.reduce((acc, curr: any) => acc + (curr._count?.users || 0), 0);
   const totalAssets = tenants.reduce((acc, curr: any) => acc + (curr._count?.assets || 0), 0);
   const totalOrders = tenants.reduce((acc, curr: any) => acc + (curr._count?.workOrders || 0), 0);
+
+  // Mock data for new metrics (in real app, fetch from backend)
+  const totalStorage = '47.3 GB';
+  const systemHealth = 98.7;
+
+  const handleImpersonate = async (tenantId: string, tenantName: string) => {
+    if (!confirm(`Login as admin for "${tenantName}"? This will switch your session.`)) {
+      return;
+    }
+
+    setImpersonatingId(tenantId);
+    try {
+      const res = await apiClient.get(`/tenants/${tenantId}/impersonate`);
+      const { access_token, user, tenant } = res.data;
+      
+      // Update auth context with impersonated user
+      login(access_token, tenant.id, user.role, user.id, user.firstName, user.lastName);
+      
+      toast.success(`Now logged in as ${user.firstName} ${user.lastName} (${tenant.name})`);
+      
+      // Navigate to the main dashboard
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 500);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to impersonate tenant');
+    } finally {
+      setImpersonatingId(null);
+    }
+  };
+
+  const handleBroadcast = async () => {
+    if (!broadcastMessage.trim()) {
+      toast.error('Please enter a broadcast message');
+      return;
+    }
+
+    setIsBroadcasting(true);
+    try {
+      await apiClient.post('/tenants/broadcast', {
+        message: broadcastMessage,
+        type: broadcastType,
+      });
+      
+      toast.success('Broadcast sent to all users!');
+      setBroadcastMessage('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to send broadcast');
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
 
   const filteredTenants = tenants.filter((t: any) => 
     t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -63,12 +123,14 @@ const SuperAdminPage = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           { label: 'Organizations', val: tenants.length, icon: Building2, color: 'text-primary', bg: 'bg-primary-50', border: 'border-primary-200' },
           { label: 'Total Users', val: totalUsers, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
           { label: 'Total Assets', val: totalAssets, icon: Box, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
           { label: 'Work Orders', val: totalOrders, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' },
+          { label: 'Storage Used', val: totalStorage, icon: Database, color: 'text-cyan-600', bg: 'bg-cyan-50', border: 'border-cyan-200', isString: true },
+          { label: 'System Health', val: `${systemHealth}%`, icon: Shield, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', isString: true },
         ].map((s, i) => (
           <div key={i} className={`bg-white p-5 rounded-lg border ${s.border} shadow-sm hover:shadow-md transition-shadow`}>
             <div className="flex items-center justify-between mb-3">
@@ -85,6 +147,64 @@ const SuperAdminPage = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Broadcast Message Card */}
+      <div className="bg-gradient-to-r from-primary to-primary-dark rounded-lg border border-primary-dark shadow-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+            <Send className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-white">System-Wide Broadcast</h2>
+            <p className="text-xs text-white/70">Send a message to all users across all organizations</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-white/90 mb-2">Message Type</label>
+            <select
+              value={broadcastType}
+              onChange={(e) => setBroadcastType(e.target.value)}
+              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50"
+            >
+              <option value="INFO" className="text-slate-900">Information</option>
+              <option value="WARNING" className="text-slate-900">Warning</option>
+              <option value="CRITICAL" className="text-slate-900">Critical</option>
+              <option value="MAINTENANCE" className="text-slate-900">Maintenance</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-white/90 mb-2">Broadcast Message</label>
+            <textarea
+              value={broadcastMessage}
+              onChange={(e) => setBroadcastMessage(e.target.value)}
+              placeholder="Type your message here..."
+              rows={3}
+              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 resize-none"
+            />
+          </div>
+          
+          <button
+            onClick={handleBroadcast}
+            disabled={isBroadcasting || !broadcastMessage.trim()}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-primary font-semibold rounded-md hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            {isBroadcasting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                Send Broadcast
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Organizations Table */}
@@ -178,8 +298,22 @@ const SuperAdminPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="inline-flex items-center justify-center w-8 h-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors">
-                        <ChevronRight className="w-4 h-4" />
+                      <button
+                        onClick={() => handleImpersonate(t.id, t.name)}
+                        disabled={impersonatingId === t.id}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {impersonatingId === t.id ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Switching...
+                          </>
+                        ) : (
+                          <>
+                            <LogIn className="w-3.5 h-3.5" />
+                            Login as Admin
+                          </>
+                        )}
                       </button>
                     </td>
                   </tr>

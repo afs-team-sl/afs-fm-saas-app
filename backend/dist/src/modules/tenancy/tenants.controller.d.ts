@@ -1,6 +1,11 @@
 import { TenantsService } from './tenants.service';
+import { NotificationType } from '@prisma/client';
 declare class UpdateTenantDto {
     name: string;
+}
+declare class BroadcastDto {
+    message: string;
+    type?: NotificationType;
 }
 export declare class TenantsController {
     private readonly tenantsService;
@@ -47,5 +52,39 @@ export declare class TenantsController {
         createdAt: Date;
         updatedAt: Date;
     })[]>;
+    impersonateTenant(req: any, tenantId: string): Promise<{
+        access_token: string;
+        user: {
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+            role: import(".prisma/client").$Enums.UserRole;
+            tenantId: string;
+        };
+        tenant: {
+            id: string;
+            name: string;
+        };
+    }>;
+    broadcastMessage(req: any, broadcastDto: BroadcastDto): Promise<{
+        message: string;
+        notification: {
+            id: string;
+            createdAt: Date;
+            type: import(".prisma/client").$Enums.NotificationType;
+            message: string;
+            isActive: boolean;
+            expiresAt: Date | null;
+        };
+    }>;
+    getActiveNotifications(): Promise<{
+        id: string;
+        createdAt: Date;
+        type: import(".prisma/client").$Enums.NotificationType;
+        message: string;
+        isActive: boolean;
+        expiresAt: Date | null;
+    }[]>;
 }
 export {};

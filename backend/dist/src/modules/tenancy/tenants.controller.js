@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TenantsController = void 0;
 const common_1 = require("@nestjs/common");
@@ -18,6 +19,7 @@ const tenants_service_1 = require("./tenants.service");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const class_validator_1 = require("class-validator");
+const client_1 = require("@prisma/client");
 class UpdateTenantDto {
     name;
 }
@@ -30,6 +32,29 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], UpdateTenantDto.prototype, "name", void 0);
+class BroadcastDto {
+    message;
+    type;
+}
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'The broadcast message to send to all users',
+        example: 'System maintenance scheduled for tomorrow at 2 AM EST',
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], BroadcastDto.prototype, "message", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Type of notification',
+        enum: client_1.NotificationType,
+        example: 'INFO',
+    }),
+    (0, class_validator_1.IsEnum)(client_1.NotificationType),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", typeof (_a = typeof client_1.NotificationType !== "undefined" && client_1.NotificationType) === "function" ? _a : Object)
+], BroadcastDto.prototype, "type", void 0);
 let TenantsController = class TenantsController {
     tenantsService;
     constructor(tenantsService) {
@@ -60,6 +85,34 @@ let TenantsController = class TenantsController {
         console.log('✅ ACCESS GRANTED: WELCOME MASTER ADMIN');
         console.log('-------------------------------------------');
         return this.tenantsService.findAll();
+    }
+    async impersonateTenant(req, tenantId) {
+        const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
+        const currentUserTenantId = req.user.tenantId;
+        console.log('🎭 IMPERSONATION REQUEST');
+        console.log('Requester Tenant ID:', currentUserTenantId);
+        console.log('Target Tenant ID:', tenantId);
+        if (currentUserTenantId?.trim() !== masterSuperId?.trim()) {
+            console.log('❌ IMPERSONATION DENIED: NOT SUPER ADMIN');
+            throw new common_1.ForbiddenException('Access Denied: Only Super Admin can impersonate other tenants.');
+        }
+        console.log('✅ IMPERSONATION ALLOWED');
+        return this.tenantsService.generateImpersonationToken(tenantId);
+    }
+    async broadcastMessage(req, broadcastDto) {
+        const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
+        const currentUserTenantId = req.user.tenantId;
+        console.log('📢 BROADCAST REQUEST');
+        console.log('Requester Tenant ID:', currentUserTenantId);
+        if (currentUserTenantId?.trim() !== masterSuperId?.trim()) {
+            console.log('❌ BROADCAST DENIED: NOT SUPER ADMIN');
+            throw new common_1.ForbiddenException('Access Denied: Only Super Admin can send broadcast messages.');
+        }
+        console.log('✅ BROADCAST SENDING');
+        return this.tenantsService.createBroadcast(broadcastDto.message, broadcastDto.type);
+    }
+    async getActiveNotifications() {
+        return this.tenantsService.getActiveNotifications();
     }
 };
 exports.TenantsController = TenantsController;
@@ -95,6 +148,37 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], TenantsController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)(':id/impersonate'),
+    (0, swagger_1.ApiOperation)({ summary: 'Impersonate as tenant admin (Super Admin Only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'JWT token for tenant admin generated.' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden. You are not a Super Admin.' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Tenant or admin user not found.' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "impersonateTenant", null);
+__decorate([
+    (0, common_1.Post)('broadcast'),
+    (0, swagger_1.ApiOperation)({ summary: 'Send system-wide broadcast message (Super Admin Only)' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Broadcast message sent successfully.' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden. You are not a Super Admin.' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, BroadcastDto]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "broadcastMessage", null);
+__decorate([
+    (0, common_1.Get)('notifications/active'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get active broadcast notifications for all users' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Active notifications retrieved.' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "getActiveNotifications", null);
 exports.TenantsController = TenantsController = __decorate([
     (0, swagger_1.ApiTags)('Tenants (Super Admin Only)'),
     (0, swagger_1.ApiBearerAuth)(),

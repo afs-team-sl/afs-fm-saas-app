@@ -284,3 +284,25 @@ model Room {
 
   @@index([floorId])
 }
+
+// 16. Global Notification Type
+enum NotificationType {
+  INFO
+  WARNING
+  CRITICAL
+  MAINTENANCE
+}
+
+// 17. Global Notifications (Super Admin Broadcasts)
+model GlobalNotification {
+  id          String            @id @default(uuid())
+  message     String
+  type        NotificationType  @default(INFO)
+  isActive    Boolean           @default(true)
+  
+  createdAt   DateTime          @default(now())
+  expiresAt   DateTime?         // Optional expiration
+
+  @@index([isActive])
+  @@index([createdAt])
+}

@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TenancyModule = void 0;
 const common_1 = require("@nestjs/common");
+const jwt_1 = require("@nestjs/jwt");
 const tenants_controller_1 = require("./tenants.controller");
 const tenants_service_1 = require("./tenants.service");
 let TenancyModule = class TenancyModule {
@@ -15,6 +16,12 @@ let TenancyModule = class TenancyModule {
 exports.TenancyModule = TenancyModule;
 exports.TenancyModule = TenancyModule = __decorate([
     (0, common_1.Module)({
+        imports: [
+            jwt_1.JwtModule.register({
+                secret: process.env.JWT_SECRET || 'your-secret-key',
+                signOptions: { expiresIn: '24h' },
+            }),
+        ],
         controllers: [tenants_controller_1.TenantsController],
         providers: [tenants_service_1.TenantsService],
         exports: [tenants_service_1.TenantsService],
