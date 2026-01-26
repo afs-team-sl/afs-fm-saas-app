@@ -111,7 +111,7 @@ const WorkOrderDetailsPage = () => {
         partId: selectedPartId,
         quantity: quantity,
       });
-      toast.success('Part added successfully');
+      toast.success('Part added. Stock will be deducted when work order is completed.');
       fetchWorkOrderParts();
       fetchAvailableParts(); // Refresh to show updated stock levels
       setShowPartsModal(false);
@@ -123,11 +123,11 @@ const WorkOrderDetailsPage = () => {
   };
 
   const handleRemovePart = async (workOrderPartId: string) => {
-    if (!confirm('Remove this part? Stock will be restored.')) return;
+    if (!confirm('Remove this part from the work order?')) return;
 
     try {
       await apiClient.delete(`/work-orders/${id}/parts/${workOrderPartId}`);
-      toast.success('Part removed and stock restored');
+      toast.success('Part removed from work order');
       fetchWorkOrderParts();
       fetchAvailableParts();
     } catch (error: any) {
@@ -163,7 +163,7 @@ const WorkOrderDetailsPage = () => {
         status: 'COMPLETED',
         completionNote: completionNote,
       });
-      toast.success('Work order completed successfully!');
+      toast.success('Work order completed! Stock has been deducted for used parts.');
       fetchWorkOrderDetails();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to complete work order');
@@ -379,6 +379,26 @@ const WorkOrderDetailsPage = () => {
                 </button>
               )}
             </div>
+
+            {/* Stock Deduction Info */}
+            {workOrderParts.length > 0 && workOrder?.status !== 'COMPLETED' && workOrder?.status !== 'CANCELLED' && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800">
+                  <strong>Note:</strong> Parts are reserved but stock will only be deducted when this work order is marked as <strong>COMPLETED</strong>. 
+                  Parts can be added or removed until completion.
+                </div>
+              </div>
+            )}
+
+            {workOrder?.status === 'COMPLETED' && workOrderParts.length > 0 && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-green-800">
+                  <strong>Stock Deducted:</strong> The quantities below have been deducted from inventory.
+                </div>
+              </div>
+            )}
 
             {workOrderParts.length === 0 ? (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">

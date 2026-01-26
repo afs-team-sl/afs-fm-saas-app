@@ -95,7 +95,34 @@ let WorkOrdersService = class WorkOrdersService {
         return workOrder;
     }
     async update(id, tenantId, dto) {
-        await this.findOne(id, tenantId);
+        const existingWorkOrder = await this.findOne(id, tenantId);
+        const isBeingCompleted = dto.status === 'COMPLETED' && existingWorkOrder.status !== 'COMPLETED';
+        if (isBeingCompleted) {
+            return this.prisma.$transaction(async (tx) => {
+                const workOrderParts = await tx.workOrderPart.findMany({
+                    where: { workOrderId: id },
+                    include: { part: true },
+                });
+                for (const woPart of workOrderParts) {
+                    if (woPart.part.stockLevel < woPart.quantity) {
+                        throw new common_1.BadRequestException(`Insufficient stock for ${woPart.part.name}. Available: ${woPart.part.stockLevel}, Required: ${woPart.quantity}`);
+                    }
+                    await tx.part.update({
+                        where: { id: woPart.partId },
+                        data: {
+                            stockLevel: {
+                                decrement: woPart.quantity,
+                            },
+                        },
+                    });
+                }
+                return tx.workOrder.update({
+                    where: { id },
+                    data: dto,
+                    include: this.includeRelations,
+                });
+            });
+        }
         return this.prisma.workOrder.update({
             where: { id },
             data: dto,
@@ -111,6 +138,12 @@ let WorkOrdersService = class WorkOrdersService {
     }
     async addPart(workOrderId, tenantId, dto) {
         const workOrder = await this.findOne(workOrderId, tenantId);
+        if (workOrder.status === 'COMPLETED') {
+            throw new common_1.BadRequestException('Cannot add parts to a completed work order');
+        }
+        if (workOrder.status === 'CANCELLED') {
+            throw new common_1.BadRequestException('Cannot add parts to a cancelled work order');
+        }
         const part = await this.prisma.part.findFirst({
             where: {
                 id: dto.partId,
@@ -121,7 +154,7 @@ let WorkOrdersService = class WorkOrdersService {
             throw new common_1.NotFoundException(`Part with ID ${dto.partId} not found in your organization`);
         }
         if (part.stockLevel < dto.quantity) {
-            throw new common_1.BadRequestException(`Insufficient stock for ${part.name}. Available: ${part.stockLevel}, Required: ${dto.quantity}`);
+            throw new common_1.BadRequestException(`Insufficient stock for ${part.name}. Available: ${part.stockLevel}, Required: ${dto.quantity}. Stock will be deducted when work order is completed.`);
         }
         const workOrderPart = await this.prisma.workOrderPart.create({
             data: {
@@ -131,14 +164,6 @@ let WorkOrdersService = class WorkOrdersService {
             },
             include: {
                 part: true,
-            },
-        });
-        await this.prisma.part.update({
-            where: { id: dto.partId },
-            data: {
-                stockLevel: {
-                    decrement: dto.quantity,
-                },
             },
         });
         return workOrderPart;
@@ -154,7 +179,10 @@ let WorkOrdersService = class WorkOrdersService {
         });
     }
     async removePart(workOrderId, workOrderPartId, tenantId) {
-        await this.findOne(workOrderId, tenantId);
+        const workOrder = await this.findOne(workOrderId, tenantId);
+        if (workOrder.status === 'COMPLETED') {
+            throw new common_1.BadRequestException('Cannot remove parts from a completed work order. Stock has already been deducted.');
+        }
         const workOrderPart = await this.prisma.workOrderPart.findUnique({
             where: { id: workOrderPartId },
             include: { part: true },
@@ -162,18 +190,10 @@ let WorkOrdersService = class WorkOrdersService {
         if (!workOrderPart || workOrderPart.workOrderId !== workOrderId) {
             throw new common_1.NotFoundException('Work order part not found');
         }
-        await this.prisma.part.update({
-            where: { id: workOrderPart.partId },
-            data: {
-                stockLevel: {
-                    increment: workOrderPart.quantity,
-                },
-            },
-        });
         await this.prisma.workOrderPart.delete({
             where: { id: workOrderPartId },
         });
-        return { message: 'Part removed and stock restored' };
+        return { message: 'Part removed from work order' };
     }
 };
 exports.WorkOrdersService = WorkOrdersService;

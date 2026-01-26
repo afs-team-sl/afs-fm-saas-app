@@ -132,15 +132,58 @@ export class WorkOrdersService {
 
   /**
    * Update a work order
+   * CRITICAL: When status changes to 'COMPLETED', deduct stock for all linked parts
    */
   async update(id: string, tenantId: string, dto: UpdateWorkOrderDto) {
     // Check if it exists in this tenant first
-    await this.findOne(id, tenantId);
+    const existingWorkOrder = await this.findOne(id, tenantId);
 
+    // Check if status is changing to COMPLETED
+    const isBeingCompleted = dto.status === 'COMPLETED' && existingWorkOrder.status !== 'COMPLETED';
+
+    if (isBeingCompleted) {
+      // Use transaction to ensure atomicity
+      return this.prisma.$transaction(async (tx) => {
+        // 1. Get all parts linked to this work order
+        const workOrderParts = await tx.workOrderPart.findMany({
+          where: { workOrderId: id },
+          include: { part: true },
+        });
+
+        // 2. Deduct stock for each part
+        for (const woPart of workOrderParts) {
+          // Verify sufficient stock
+          if (woPart.part.stockLevel < woPart.quantity) {
+            throw new BadRequestException(
+              `Insufficient stock for ${woPart.part.name}. Available: ${woPart.part.stockLevel}, Required: ${woPart.quantity}`,
+            );
+          }
+
+          // Deduct stock
+          await tx.part.update({
+            where: { id: woPart.partId },
+            data: {
+              stockLevel: {
+                decrement: woPart.quantity,
+              },
+            },
+          });
+        }
+
+        // 3. Update the work order status
+        return tx.workOrder.update({
+          where: { id },
+          data: dto,
+          include: this.includeRelations,
+        });
+      });
+    }
+
+    // If not being completed, just update normally
     return this.prisma.workOrder.update({
       where: { id },
       data: dto,
-      include: this.includeRelations, // Updated to include Technician
+      include: this.includeRelations,
     });
   }
 
@@ -158,8 +201,8 @@ export class WorkOrdersService {
   }
 
   /**
-   * Add a part to a work order
-   * This method deducts stock from the Part table when called
+   * Add a part to a work order (Soft Link - No immediate stock deduction)
+   * Stock will only be deducted when Work Order status changes to 'COMPLETED'
    */
   async addPart(
     workOrderId: string,
@@ -169,7 +212,20 @@ export class WorkOrdersService {
     // 1. Verify work order exists and belongs to tenant
     const workOrder = await this.findOne(workOrderId, tenantId);
 
-    // 2. Verify the part exists and belongs to the same tenant
+    // 2. Prevent adding parts to completed or cancelled work orders
+    if (workOrder.status === 'COMPLETED') {
+      throw new BadRequestException(
+        'Cannot add parts to a completed work order',
+      );
+    }
+
+    if (workOrder.status === 'CANCELLED') {
+      throw new BadRequestException(
+        'Cannot add parts to a cancelled work order',
+      );
+    }
+
+    // 3. Verify the part exists and belongs to the same tenant
     const part = await this.prisma.part.findFirst({
       where: {
         id: dto.partId,
@@ -183,14 +239,15 @@ export class WorkOrdersService {
       );
     }
 
-    // 3. Check if sufficient stock is available
+    // 4. Validate that sufficient stock will be available when completed
+    // This is a soft validation - actual deduction happens on completion
     if (part.stockLevel < dto.quantity) {
       throw new BadRequestException(
-        `Insufficient stock for ${part.name}. Available: ${part.stockLevel}, Required: ${dto.quantity}`,
+        `Insufficient stock for ${part.name}. Available: ${part.stockLevel}, Required: ${dto.quantity}. Stock will be deducted when work order is completed.`,
       );
     }
 
-    // 4. Create the WorkOrderPart record
+    // 5. Create the WorkOrderPart record (Soft Link)
     const workOrderPart = await this.prisma.workOrderPart.create({
       data: {
         workOrderId: workOrderId,
@@ -199,16 +256,6 @@ export class WorkOrdersService {
       },
       include: {
         part: true,
-      },
-    });
-
-    // 5. CRITICAL: Deduct stock from the Part table
-    await this.prisma.part.update({
-      where: { id: dto.partId },
-      data: {
-        stockLevel: {
-          decrement: dto.quantity,
-        },
       },
     });
 
@@ -231,7 +278,8 @@ export class WorkOrdersService {
   }
 
   /**
-   * Remove a part from a work order (and restore stock)
+   * Remove a part from a work order
+   * Since stock is only deducted on completion, no stock restoration needed
    */
   async removePart(
     workOrderId: string,
@@ -239,7 +287,14 @@ export class WorkOrdersService {
     tenantId: string,
   ) {
     // Verify work order exists
-    await this.findOne(workOrderId, tenantId);
+    const workOrder = await this.findOne(workOrderId, tenantId);
+
+    // Prevent removing parts from completed work orders
+    if (workOrder.status === 'COMPLETED') {
+      throw new BadRequestException(
+        'Cannot remove parts from a completed work order. Stock has already been deducted.',
+      );
+    }
 
     // Find the work order part
     const workOrderPart = await this.prisma.workOrderPart.findUnique({
@@ -251,21 +306,11 @@ export class WorkOrdersService {
       throw new NotFoundException('Work order part not found');
     }
 
-    // Restore stock
-    await this.prisma.part.update({
-      where: { id: workOrderPart.partId },
-      data: {
-        stockLevel: {
-          increment: workOrderPart.quantity,
-        },
-      },
-    });
-
-    // Delete the work order part
+    // Delete the work order part (no stock restoration needed)
     await this.prisma.workOrderPart.delete({
       where: { id: workOrderPartId },
     });
 
-    return { message: 'Part removed and stock restored' };
+    return { message: 'Part removed from work order' };
   }
 }
