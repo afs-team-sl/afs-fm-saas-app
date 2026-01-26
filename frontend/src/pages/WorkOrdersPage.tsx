@@ -169,7 +169,7 @@ const WorkOrdersPage = () => {
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: navyBlue,
+        fillColor: navyBlue as [number, number, number],
         textColor: [255, 255, 255],
         fontSize: 10,
         fontStyle: 'bold',
@@ -177,10 +177,10 @@ const WorkOrdersPage = () => {
       },
       bodyStyles: {
         fontSize: 9,
-        textColor: darkGray,
+        textColor: darkGray as [number, number, number],
       },
       alternateRowStyles: {
-        fillColor: lightGray,
+        fillColor: lightGray as [number, number, number],
       },
       styles: {
         cellPadding: 5,
