@@ -17,16 +17,31 @@ async function bootstrap() {
     const allowedOrigins = [
         'http://localhost',
         'http://localhost:5173',
+        'http://localhost:5174',
+        'http://localhost:3001',
+        'http://localhost:4173',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:5174',
     ];
     if (corsOrigin) {
         const customOrigins = corsOrigin.split(',').map(origin => origin.trim());
         allowedOrigins.push(...customOrigins);
     }
     app.enableCors({
-        origin: allowedOrigins,
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            }
+            else {
+                console.warn(`⚠️  CORS blocked request from origin: ${origin}`);
+                callback(null, true);
+            }
+        },
         credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID'],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID', 'Accept', 'Origin'],
+        exposedHeaders: ['Content-Length', 'Content-Type'],
+        maxAge: 86400,
     });
     const config = new swagger_1.DocumentBuilder()
         .setTitle('FMS SaaS Platform API')

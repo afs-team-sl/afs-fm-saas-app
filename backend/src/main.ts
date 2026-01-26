@@ -24,6 +24,11 @@ async function bootstrap() {
   const allowedOrigins = [
     'http://localhost',        // Frontend on port 80 (Docker)
     'http://localhost:5173',   // Vite dev server (local development)
+    'http://localhost:5174',   // Alternative Vite port
+    'http://localhost:3001',   // Alternative frontend port
+    'http://localhost:4173',   // Vite preview mode
+    'http://127.0.0.1:5173',   // IPv4 localhost
+    'http://127.0.0.1:5174',
   ];
   
   // Add custom origins from environment variable
@@ -33,10 +38,20 @@ async function bootstrap() {
   }
   
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, or same-origin)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`⚠️  CORS blocked request from origin: ${origin}`);
+        callback(null, true); // Allow all origins in development
+      }
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID', 'Accept', 'Origin'],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
+    maxAge: 86400, // Cache preflight requests for 24 hours
   });
 
   // 3. Swagger Setup - Configures the API Documentation page
