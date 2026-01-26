@@ -7,35 +7,35 @@ export declare class PartsService {
     create(tenantId: string, dto: CreatePartDto): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }>;
     findAll(tenantId: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }[]>;
     findLowStock(tenantId: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
         workOrderParts: ({
@@ -55,24 +55,24 @@ export declare class PartsService {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }>;
     update(id: string, tenantId: string, dto: UpdatePartDto): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }>;
     remove(id: string, tenantId: string): Promise<{
         message: string;
@@ -80,23 +80,23 @@ export declare class PartsService {
     deductStock(partId: string, quantity: number, tenantId: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }>;
     addStock(partId: string, quantity: number, tenantId: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }>;
 }

@@ -14,12 +14,14 @@ import SuperAdminPage from './pages/SuperAdminPage';
 import SettingsPage from './pages/SettingsPage';
 import AssetDetailsPage from './pages/AssetDetailsPage';
 import InventoryPage from './pages/InventoryPage';
+import MaintenancePlansPage from './pages/MaintenancePlansPage';
 
 function App() {
   const { isAuthenticated, role, tenantId } = useAuth();
 
   // Admin Check Function
   const isAdmin = role === 'ADMIN';
+  const isManager = role === 'MANAGER';
   const isSuperAdmin = isAdmin && String(tenantId || '').trim() === String(import.meta.env.VITE_SUPER_TENANT_ID || '').trim();
 
   return (
@@ -38,6 +40,11 @@ function App() {
           <Route path="/work-orders" element={isAuthenticated ? <DashboardLayout><WorkOrdersPage /></DashboardLayout> : <Navigate to="/login" replace />} />
           <Route path="/work-orders/:id" element={isAuthenticated ? <DashboardLayout><WorkOrderDetailsPage /></DashboardLayout> : <Navigate to="/login" replace />} />
           <Route path="/inventory" element={isAuthenticated ? <DashboardLayout><InventoryPage /></DashboardLayout> : <Navigate to="/login" replace />} />
+          
+          {/* Admin/Manager Routes */}
+          <Route path="/maintenance" element={
+            isAuthenticated ? ((isAdmin || isManager) ? <DashboardLayout><MaintenancePlansPage /></DashboardLayout> : <Navigate to="/" replace />) : <Navigate to="/login" replace />
+          } />
           
           {/* Admin-Only Routes */}
           <Route path="/users" element={

@@ -9,6 +9,7 @@ import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 import { PartsModule } from './modules/parts/parts.module';
+import { MaintenancePlansModule } from './modules/maintenance-plans/maintenance-plans.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PartsModule } from './modules/parts/parts.module';
     AuthModule,
     TenancyModule,
     PartsModule,
+    MaintenancePlansModule,
   ],
   controllers: [AppController],
   providers: [AppService],

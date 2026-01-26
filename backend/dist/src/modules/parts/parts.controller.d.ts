@@ -7,35 +7,35 @@ export declare class PartsController {
     create(req: any, createPartDto: CreatePartDto): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }>;
     findAll(req: any): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }[]>;
     findLowStock(req: any): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }[]>;
     findOne(id: string, req: any): Promise<{
         workOrderParts: ({
@@ -55,24 +55,24 @@ export declare class PartsController {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }>;
     update(id: string, req: any, updatePartDto: UpdatePartDto): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }>;
     remove(id: string, req: any): Promise<{
         message: string;
@@ -80,12 +80,12 @@ export declare class PartsController {
     restock(id: string, req: any, quantity: number): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
         unitPrice: number;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
     }>;
 }
