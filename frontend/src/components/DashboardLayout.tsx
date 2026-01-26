@@ -1,13 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Box, ClipboardList, Settings, LogOut, Menu, X, Bell, UserCog, Package, ShieldCheck, Calendar, MapPin, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, Box, ClipboardList, Settings, LogOut, Menu, X, Bell, UserCog, Package, ShieldCheck, Calendar, MapPin, AlertCircle, Info, AlertTriangle, CheckCircle2, CheckCheck } from 'lucide-react';
 import apiClient from '../api/client';
+import toast from 'react-hot-toast';
 
 interface Notification {
   id: string;
   message: string;
   type: 'INFO' | 'WARNING' | 'CRITICAL' | 'MAINTENANCE';
+  createdAt: string;
+}
+
+interface UserNotification {
+  id: string;
+  message: string;
+  type: 'INFO' | 'WARNING' | 'SUCCESS' | 'ERROR';
+  isRead: boolean;
   createdAt: string;
 }
 
@@ -17,10 +26,14 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [userNotifications, setUserNotifications] = useState<UserNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   const SUPER_TENANT_ID = String(import.meta.env.VITE_SUPER_TENANT_ID || '').trim();
 
-  // Fetch active notifications
+  // Fetch active broadcast notifications
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -36,6 +49,86 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch user notifications
+  useEffect(() => {
+    fetchUserNotifications();
+    
+    // Poll every 30 seconds
+    const interval = setInterval(fetchUserNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const fetchUserNotifications = async () => {
+    try {
+      const res = await apiClient.get('/notifications');
+      setUserNotifications(res.data.notifications);
+      setUnreadCount(res.data.unreadCount);
+    } catch (err) {
+      console.error('Failed to fetch user notifications:', err);
+    }
+  };
+
+  const markAsRead = async (notificationId: string) => {
+    try {
+      await apiClient.patch(`/notifications/${notificationId}/read`);
+      await fetchUserNotifications();
+    } catch (err) {
+      toast.error('Failed to mark notification as read');
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await apiClient.patch('/notifications/read-all');
+      await fetchUserNotifications();
+      toast.success('All notifications marked as read');
+    } catch (err) {
+      toast.error('Failed to mark all as read');
+    }
+  };
+
+  // Time ago helper
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  // Get user notification icon and color
+  const getUserNotificationStyle = (type: UserNotification['type']) => {
+    switch (type) {
+      case 'ERROR':
+        return { icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' };
+      case 'WARNING':
+        return { icon: AlertTriangle, color: 'text-orange-600', bg: 'bg-orange-50' };
+      case 'SUCCESS':
+        return { icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' };
+      default:
+        return { icon: Info, color: 'text-primary', bg: 'bg-primary-50' };
+    }
+  };
 
   // Get notification styling based on type
   const getNotificationStyle = (type: Notification['type']) => {
@@ -177,10 +270,99 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
           </div>
           
           <div className="flex items-center gap-3">
-            <button className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
-            </button>
+            {/* Notification Dropdown */}
+            <div className="relative" ref={notificationRef}>
+              <button 
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all relative"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown Panel */}
+              {isNotificationOpen && (
+                <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-2xl border border-slate-200 z-50 max-h-[500px] flex flex-col">
+                  {/* Header */}
+                  <div className="px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-primary to-primary-dark rounded-t-lg">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-white">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <span className="px-2 py-0.5 bg-white/20 text-white text-xs font-medium rounded-full">
+                          {unreadCount} new
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Notification List */}
+                  <div className="flex-1 overflow-y-auto">
+                    {userNotifications.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 px-4">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                          <Bell className="w-8 h-8 text-slate-400" />
+                        </div>
+                        <p className="text-sm font-medium text-slate-900 mb-1">No notifications</p>
+                        <p className="text-xs text-slate-500 text-center">
+                          You're all caught up! We'll notify you when something important happens.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-slate-100">
+                        {userNotifications.map((notif) => {
+                          const style = getUserNotificationStyle(notif.type);
+                          const Icon = style.icon;
+                          return (
+                            <div
+                              key={notif.id}
+                              onClick={() => !notif.isRead && markAsRead(notif.id)}
+                              className={`px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer ${
+                                !notif.isRead ? 'bg-primary-50/30' : ''
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className={`w-10 h-10 ${style.bg} ${style.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                  <Icon className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm ${!notif.isRead ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'}`}>
+                                    {notif.message}
+                                  </p>
+                                  <p className="text-xs text-slate-500 mt-1">
+                                    {getTimeAgo(notif.createdAt)}
+                                  </p>
+                                </div>
+                                {!notif.isRead && (
+                                  <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  {userNotifications.length > 0 && (
+                    <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+                      <button
+                        onClick={markAllAsRead}
+                        disabled={unreadCount === 0}
+                        className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <CheckCheck className="w-4 h-4" />
+                        Mark all as read
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

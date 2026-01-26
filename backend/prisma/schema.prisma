@@ -58,6 +58,9 @@ model User {
 
   // Relation for Work Orders assigned to this user
   assignedWorkOrders WorkOrder[] @relation("AssignedWorkOrders")
+  
+  // Relation for Notifications
+  notifications Notification[]
 
   @@index([tenantId])
   @@index([role])
@@ -304,5 +307,34 @@ model GlobalNotification {
   expiresAt   DateTime?         // Optional expiration
 
   @@index([isActive])
+  @@index([createdAt])
+}
+
+// 18. User Notification Type
+enum UserNotificationType {
+  INFO
+  WARNING
+  SUCCESS
+  ERROR
+}
+
+// 19. User Notifications (Per-user or tenant-specific)
+model Notification {
+  id          String                  @id @default(uuid())
+  message     String
+  type        UserNotificationType    @default(INFO)
+  isRead      Boolean                 @default(false)
+  
+  // Link to User (who receives the notification)
+  userId      String
+  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Optional: Tenant-specific notifications (null means global)
+  tenantId    String?
+  
+  createdAt   DateTime                @default(now())
+
+  @@index([userId, isRead])
+  @@index([tenantId])
   @@index([createdAt])
 }

@@ -11,6 +11,7 @@ import { TenancyModule } from './modules/tenancy/tenancy.module';
 import { PartsModule } from './modules/parts/parts.module';
 import { MaintenancePlansModule } from './modules/maintenance-plans/maintenance-plans.module';
 import { FacilitiesModule } from './modules/facilities/facilities.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FacilitiesModule } from './modules/facilities/facilities.module';
     PartsModule,
     MaintenancePlansModule,
     FacilitiesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -69,6 +69,23 @@ async function main() {
     });
     console.log(`✅ Super Admin created: ${admin.email}`);
     console.log('--------------------------------------------------');
+    const sampleNotifications = [
+        { message: 'Welcome to AFS Nexus! Your facility management system is ready.', type: 'SUCCESS' },
+        { message: 'System backup completed successfully', type: 'INFO' },
+        { message: 'Please review pending work orders', type: 'WARNING' },
+    ];
+    for (const notif of sampleNotifications) {
+        await prisma.notification.create({
+            data: {
+                message: notif.message,
+                type: notif.type,
+                userId: admin.id,
+                tenantId: tenant.id,
+            },
+        });
+    }
+    console.log(`✅ Created ${sampleNotifications.length} sample notifications`);
+    console.log('--------------------------------------------------');
     console.log(`🚀 SYSTEM READY: Use Join Code [${MASTER_JOIN_CODE}] for new members.`);
     console.log('--------------------------------------------------');
 }
