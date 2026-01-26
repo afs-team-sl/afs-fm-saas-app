@@ -13,37 +13,42 @@ async function bootstrap() {
         forbidNonWhitelisted: true,
         transform: true,
     }));
-    const nodeEnv = configService.get('NODE_ENV') || 'development';
     const corsOrigin = configService.get('CORS_ORIGIN');
-    if (nodeEnv === 'development') {
-        app.enableCors({
-            origin: true,
-            credentials: true,
-            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID', 'Accept', 'Origin'],
-            exposedHeaders: ['Content-Length', 'Content-Type'],
-            maxAge: 86400,
-        });
-        console.log('🔓 CORS: Enabled for all origins (Development Mode)');
-    }
-    else {
-        const allowedOrigins = [
-            'http://localhost',
+    const allowedOrigins = corsOrigin
+        ? corsOrigin.split(',').map(origin => origin.trim())
+        : [
             'http://localhost:5173',
             'http://localhost:5174',
+            'http://localhost:3000',
         ];
-        if (corsOrigin) {
-            const customOrigins = corsOrigin.split(',').map(origin => origin.trim());
-            allowedOrigins.push(...customOrigins);
-        }
-        app.enableCors({
-            origin: allowedOrigins,
-            credentials: true,
-            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID'],
-        });
-        console.log(`🔒 CORS: Restricted to origins: ${allowedOrigins.join(', ')}`);
-    }
+    app.enableCors({
+        origin: (origin, callback) => {
+            if (!origin)
+                return callback(null, true);
+            if (allowedOrigins.indexOf(origin) !== -1) {
+                callback(null, true);
+            }
+            else {
+                console.warn(`⚠️  CORS blocked request from origin: ${origin}`);
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+        allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'X-Tenant-ID',
+            'Accept',
+            'Origin',
+            'X-Requested-With',
+        ],
+        exposedHeaders: ['Content-Length', 'Content-Type'],
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
+        maxAge: 86400,
+    });
+    console.log('🔒 CORS: Enabled for specific origins:', allowedOrigins);
     const config = new swagger_1.DocumentBuilder()
         .setTitle('FMS SaaS Platform API')
         .setDescription('The API documentation for Facility Management & CMMS System')
@@ -57,9 +62,13 @@ async function bootstrap() {
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api', app, document);
     const port = configService.get('PORT') || 3000;
-    await app.listen(port, '0.0.0.0');
-    console.log(`🚀 Server is running on: http://localhost:${port}`);
+    const host = '0.0.0.0';
+    await app.listen(port, host);
+    const nodeEnv = configService.get('NODE_ENV') || 'development';
+    console.log(`🚀 Server is running on: http://${host}:${port}`);
     console.log(`📚 API Docs available at: http://localhost:${port}/api`);
+    console.log(`🌍 Environment: ${nodeEnv}`);
+    console.log(`🔒 CORS Origins: ${allowedOrigins.join(', ')}`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
