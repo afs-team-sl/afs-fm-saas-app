@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle } from 'lucide-react';
+import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle, FileDown } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface WorkOrder {
   id: string; title: string; description?: string; status: string; priority: string;
@@ -11,6 +14,7 @@ interface WorkOrder {
 
 const WorkOrdersPage = () => {
   const navigate = useNavigate();
+  const { firstName, lastName } = useAuth();
   const [orders, setOrders] = useState<WorkOrder[]>([]);
   const [assets, setAssets] = useState<{id: string, name: string}[]>([]);
   const [users, setUsers] = useState<{id: string, firstName: string, lastName: string}[]>([]);
@@ -110,6 +114,112 @@ const WorkOrdersPage = () => {
     return badges[status] || 'bg-secondary-500 text-white';
   };
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    
+    // Navy Blue Color
+    const navyBlue = [30, 58, 138]; // RGB for Navy Blue
+    const lightGray = [243, 244, 246];
+    const darkGray = [75, 85, 99];
+
+    // Header with Navy Blue background
+    doc.setFillColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+    doc.rect(0, 0, pageWidth, 40, 'F');
+    
+    // Company Logo/Title
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FacilityOS', 14, 20);
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Maintenance Report', 14, 30);
+    
+    // Report Metadata
+    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+    doc.setFontSize(9);
+    const currentDate = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    doc.text(`Generated: ${currentDate}`, pageWidth - 14, 20, { align: 'right' });
+    
+    const organizationName = firstName && lastName ? `${firstName} ${lastName}'s Organization` : 'Organization';
+    doc.text(organizationName, pageWidth - 14, 26, { align: 'right' });
+    doc.text(`Total Orders: ${orders.length}`, pageWidth - 14, 32, { align: 'right' });
+    
+    // Prepare table data
+    const tableData = orders.map((order) => [
+      order.id.substring(0, 8).toUpperCase(),
+      order.title,
+      order.asset?.name || 'N/A',
+      order.assignedTo ? `${order.assignedTo.firstName} ${order.assignedTo.lastName}` : 'Unassigned',
+      order.priority,
+      order.status.replace('_', ' ')
+    ]);
+    
+    // Generate table with professional styling
+    autoTable(doc, {
+      startY: 50,
+      head: [['Order ID', 'Title', 'Asset', 'Technician', 'Priority', 'Status']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: navyBlue,
+        textColor: [255, 255, 255],
+        fontSize: 10,
+        fontStyle: 'bold',
+        halign: 'left',
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: darkGray,
+      },
+      alternateRowStyles: {
+        fillColor: lightGray,
+      },
+      styles: {
+        cellPadding: 5,
+        lineColor: [209, 213, 219],
+        lineWidth: 0.1,
+      },
+      columnStyles: {
+        0: { cellWidth: 25, fontStyle: 'bold' },
+        1: { cellWidth: 'auto' },
+        2: { cellWidth: 35 },
+        3: { cellWidth: 35 },
+        4: { cellWidth: 25, halign: 'center' },
+        5: { cellWidth: 30, halign: 'center' },
+      },
+      didDrawPage: (data) => {
+        // Footer
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        const pageCount = doc.getNumberOfPages();
+        doc.text(
+          `Page ${data.pageNumber} of ${pageCount}`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: 'center' }
+        );
+        doc.text(
+          '© 2026 FacilityOS - Confidential',
+          pageWidth - 14,
+          pageHeight - 10,
+          { align: 'right' }
+        );
+      },
+    });
+    
+    // Save the PDF
+    const filename = `Maintenance_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -117,13 +227,23 @@ const WorkOrdersPage = () => {
           <h1 className="text-2xl font-semibold text-slate-900">Work Orders</h1>
           <p className="text-sm text-slate-500 mt-1">Manage maintenance tasks and assignments</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal()} 
-          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Create Work Order
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button 
+            onClick={exportToPDF}
+            disabled={orders.length === 0}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-primary-600 text-primary-600 font-medium rounded-md hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FileDown className="w-4 h-4" />
+            Export PDF
+          </button>
+          <button 
+            onClick={() => handleOpenModal()} 
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Create Work Order
+          </button>
+        </div>
       </div>
 
       <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm">
