@@ -35,6 +35,7 @@ model Tenant {
   workOrders  WorkOrder[]
   parts       Part[]
   maintenancePlans MaintenancePlan[]
+  buildings   Building[]
 
   @@index([createdAt])
 }
@@ -82,6 +83,10 @@ model Asset {
   tenantId    String
   tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
+  // Link to Room (Space & Facility Hierarchy)
+  roomId      String?
+  room        Room?       @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   
@@ -91,6 +96,7 @@ model Asset {
   @@index([tenantId])
   @@index([status])
   @@index([category])
+  @@index([roomId])
   @@unique([tenantId, serialNo])
 }
 
@@ -222,4 +228,59 @@ model MaintenancePlan {
   @@index([assetId])
   @@index([nextDueDate])
   @@index([frequency])
+}
+
+// 13. Building (Space & Facility Hierarchy)
+model Building {
+  id          String   @id @default(uuid())
+  name        String
+  address     String?
+  
+  // Link to Tenant
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  floors      Floor[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+// 14. Floor (Space & Facility Hierarchy)
+model Floor {
+  id          String   @id @default(uuid())
+  number      String   // e.g., "Level 1", "Ground Floor", "Basement"
+  
+  // Link to Building
+  buildingId  String
+  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+
+  // Relations
+  rooms       Room[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([buildingId])
+}
+
+// 15. Room (Space & Facility Hierarchy)
+model Room {
+  id          String   @id @default(uuid())
+  name        String   // e.g., "Server Room", "Office 101", "Conference Room A"
+  
+  // Link to Floor
+  floorId     String
+  floor       Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+
+  // Relations
+  assets      Asset[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([floorId])
 }

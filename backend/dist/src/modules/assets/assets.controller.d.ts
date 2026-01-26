@@ -13,6 +13,7 @@ export declare class AssetsController {
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
     }>;
     findAll(tenantId: string, status?: string, category?: string): Promise<{
         id: string;
@@ -23,6 +24,7 @@ export declare class AssetsController {
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
         workOrders: ({
@@ -54,6 +56,7 @@ export declare class AssetsController {
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
     }>;
     update(id: string, tenantId: string, updateAssetDto: UpdateAssetDto): Promise<{
         id: string;
@@ -64,6 +67,7 @@ export declare class AssetsController {
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
     }>;
     remove(id: string, tenantId: string): Promise<{
         id: string;
@@ -74,5 +78,6 @@ export declare class AssetsController {
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
     }>;
 }

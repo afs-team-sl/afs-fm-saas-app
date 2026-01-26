@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 import { PartsModule } from './modules/parts/parts.module';
 import { MaintenancePlansModule } from './modules/maintenance-plans/maintenance-plans.module';
+import { FacilitiesModule } from './modules/facilities/facilities.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MaintenancePlansModule } from './modules/maintenance-plans/maintenance-
     TenancyModule,
     PartsModule,
     MaintenancePlansModule,
+    FacilitiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

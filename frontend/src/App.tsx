@@ -15,6 +15,7 @@ import SettingsPage from './pages/SettingsPage';
 import AssetDetailsPage from './pages/AssetDetailsPage';
 import InventoryPage from './pages/InventoryPage';
 import MaintenancePlansPage from './pages/MaintenancePlansPage';
+import LocationsPage from './pages/LocationsPage';
 
 function App() {
   const { isAuthenticated, role, tenantId } = useAuth();
@@ -44,6 +45,9 @@ function App() {
           {/* Admin/Manager Routes */}
           <Route path="/maintenance" element={
             isAuthenticated ? ((isAdmin || isManager) ? <DashboardLayout><MaintenancePlansPage /></DashboardLayout> : <Navigate to="/" replace />) : <Navigate to="/login" replace />
+          } />
+          <Route path="/locations" element={
+            isAuthenticated ? ((isAdmin || isManager) ? <DashboardLayout><LocationsPage /></DashboardLayout> : <Navigate to="/" replace />) : <Navigate to="/login" replace />
           } />
           
           {/* Admin-Only Routes */}

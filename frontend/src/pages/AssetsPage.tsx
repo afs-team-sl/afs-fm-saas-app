@@ -2,15 +2,44 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
-import { Plus, Search, Box, Trash2, Edit3, X, Loader2 } from 'lucide-react';
+import { Plus, Search, Box, Trash2, Edit3, X, Loader2, MapPin } from 'lucide-react';
 
 interface Asset {
   id: string; name: string; category: string; serialNo: string;
   status: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE' | 'RETIRED';
+  roomId?: string;
+}
+
+interface Room {
+  id: string;
+  name: string;
+  floorId: string;
+  floor: {
+    id: string;
+    number: string;
+    buildingId: string;
+    building: {
+      id: string;
+      name: string;
+    };
+  };
+}
+
+interface Floor {
+  id: string;
+  number: string;
+  buildingId: string;
+  rooms: Room[];
+}
+
+interface Building {
+  id: string;
+  name: string;
+  floors: Floor[];
 }
 
 const AssetsPage = () => {
-  const navigate = useNavigate(); // Hook එක Initialize කළා
+  const navigate = useNavigate();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -18,9 +47,18 @@ const AssetsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({ name: '', category: '', serialNo: '', status: 'ACTIVE' });
+  // Facility hierarchy data
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [selectedBuildingId, setSelectedBuildingId] = useState('');
+  const [selectedFloorId, setSelectedFloorId] = useState('');
+  const [selectedRoomId, setSelectedRoomId] = useState('');
 
-  useEffect(() => { fetchAssets(); }, []);
+  const [formData, setFormData] = useState({ name: '', category: '', serialNo: '', status: 'ACTIVE', roomId: '' });
+
+  useEffect(() => { 
+    fetchAssets(); 
+    fetchFacilities();
+  }, []);
 
   const fetchAssets = async () => {
     try {
@@ -31,26 +69,81 @@ const AssetsPage = () => {
     } finally { setLoading(false); }
   };
 
+  const fetchFacilities = async () => {
+    try {
+      const response = await apiClient.get('/facilities/tree');
+      setBuildings(response.data);
+    } catch (error) {
+      console.error('Failed to load facilities');
+    }
+  };
+
   const handleOpenModal = (asset?: Asset) => {
     if (asset) {
       setEditingId(asset.id);
-      setFormData({ name: asset.name, category: asset.category, serialNo: asset.serialNo || '', status: asset.status });
+      setFormData({ 
+        name: asset.name, 
+        category: asset.category, 
+        serialNo: asset.serialNo || '', 
+        status: asset.status,
+        roomId: asset.roomId || ''
+      });
+      
+      // Pre-select cascading dropdowns if asset has roomId
+      if (asset.roomId) {
+        setSelectedRoomId(asset.roomId);
+        // Find the room to get building and floor
+        const room = findRoomById(asset.roomId);
+        if (room) {
+          setSelectedBuildingId(room.floor.building.id);
+          setSelectedFloorId(room.floor.id);
+        }
+      }
     } else {
       setEditingId(null);
-      setFormData({ name: '', category: '', serialNo: '', status: 'ACTIVE' });
+      setFormData({ name: '', category: '', serialNo: '', status: 'ACTIVE', roomId: '' });
+      setSelectedBuildingId('');
+      setSelectedFloorId('');
+      setSelectedRoomId('');
     }
     setModalOpen(true);
+  };
+
+  const findRoomById = (roomId: string): Room | undefined => {
+    for (const building of buildings) {
+      for (const floor of building.floors) {
+        const room = floor.rooms.find(r => r.id === roomId);
+        if (room) {
+          return {
+            ...room,
+            floor: {
+              ...floor,
+              building: {
+                id: building.id,
+                name: building.name,
+              },
+            },
+          };
+        }
+      }
+    }
+    return undefined;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const payload = {
+        ...formData,
+        roomId: selectedRoomId || null, // Convert empty string to null
+      };
+      
       if (editingId) {
-        await apiClient.patch(`/assets/${editingId}`, formData);
+        await apiClient.patch(`/assets/${editingId}`, payload);
         toast.success('Asset updated');
       } else {
-        await apiClient.post('/assets', formData);
+        await apiClient.post('/assets', payload);
         toast.success('New asset created');
       }
       setModalOpen(false);
@@ -255,6 +348,90 @@ const AssetsPage = () => {
                   <option value="INACTIVE">Inactive</option>
                   <option value="RETIRED">Retired</option>
                 </select>
+              </div>
+
+              {/* Location Section - Cascading Dropdowns */}
+              <div className="space-y-4 pt-2 border-t border-secondary-200">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <MapPin className="w-4 h-4" />
+                  <span>Location (Optional)</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Building Dropdown */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Building</label>
+                    <select 
+                      className="w-full px-2 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                      value={selectedBuildingId} 
+                      onChange={(e) => {
+                        setSelectedBuildingId(e.target.value);
+                        setSelectedFloorId('');
+                        setSelectedRoomId('');
+                      }}
+                    >
+                      <option value="">Select Building</option>
+                      {buildings.map(building => (
+                        <option key={building.id} value={building.id}>{building.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Floor Dropdown */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Floor</label>
+                    <select 
+                      className="w-full px-2 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed" 
+                      value={selectedFloorId} 
+                      disabled={!selectedBuildingId}
+                      onChange={(e) => {
+                        setSelectedFloorId(e.target.value);
+                        setSelectedRoomId('');
+                      }}
+                    >
+                      <option value="">Select Floor</option>
+                      {selectedBuildingId && 
+                        buildings.find(b => b.id === selectedBuildingId)?.floors.map(floor => (
+                          <option key={floor.id} value={floor.id}>{floor.number}</option>
+                        ))
+                      }
+                    </select>
+                  </div>
+
+                  {/* Room Dropdown */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Room</label>
+                    <select 
+                      className="w-full px-2 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed" 
+                      value={selectedRoomId} 
+                      disabled={!selectedFloorId}
+                      onChange={(e) => {
+                        setSelectedRoomId(e.target.value);
+                      }}
+                    >
+                      <option value="">Select Room</option>
+                      {selectedFloorId && 
+                        buildings
+                          .find(b => b.id === selectedBuildingId)
+                          ?.floors.find(f => f.id === selectedFloorId)
+                          ?.rooms.map(room => (
+                            <option key={room.id} value={room.id}>{room.name}</option>
+                          ))
+                      }
+                    </select>
+                  </div>
+                </div>
+
+                {selectedRoomId && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-primary-50 border border-primary-200 rounded-md text-sm text-primary-700">
+                    <MapPin className="w-4 h-4" />
+                    <span>
+                      {buildings.find(b => b.id === selectedBuildingId)?.name} →{' '}
+                      {buildings.find(b => b.id === selectedBuildingId)?.floors.find(f => f.id === selectedFloorId)?.number} →{' '}
+                      {buildings.find(b => b.id === selectedBuildingId)?.floors.find(f => f.id === selectedFloorId)?.rooms.find(r => r.id === selectedRoomId)?.name}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 pt-4">

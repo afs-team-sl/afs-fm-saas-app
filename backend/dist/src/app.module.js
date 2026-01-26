@@ -19,6 +19,7 @@ const auth_module_1 = require("./modules/auth/auth.module");
 const tenancy_module_1 = require("./modules/tenancy/tenancy.module");
 const parts_module_1 = require("./modules/parts/parts.module");
 const maintenance_plans_module_1 = require("./modules/maintenance-plans/maintenance-plans.module");
+const facilities_module_1 = require("./modules/facilities/facilities.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -37,6 +38,7 @@ exports.AppModule = AppModule = __decorate([
             tenancy_module_1.TenancyModule,
             parts_module_1.PartsModule,
             maintenance_plans_module_1.MaintenancePlansModule,
+            facilities_module_1.FacilitiesModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

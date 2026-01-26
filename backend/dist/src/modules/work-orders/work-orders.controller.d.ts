@@ -34,6 +34,7 @@ export declare class WorkOrdersController {
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
         };
         assignedTo: {
             id: string;
@@ -83,6 +84,7 @@ export declare class WorkOrdersController {
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
         };
         assignedTo: {
             id: string;
@@ -132,6 +134,7 @@ export declare class WorkOrdersController {
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
         };
         assignedTo: {
             id: string;
@@ -181,6 +184,7 @@ export declare class WorkOrdersController {
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
         };
         assignedTo: {
             id: string;

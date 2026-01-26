@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Box, ClipboardList, Settings, LogOut, Menu, X, Bell, UserCog, Package, ShieldCheck, Calendar } from 'lucide-react';
+import { LayoutDashboard, Box, ClipboardList, Settings, LogOut, Menu, X, Bell, UserCog, Package, ShieldCheck, Calendar, MapPin } from 'lucide-react';
 
 const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { logout, role, tenantId, firstName, lastName } = useAuth();
@@ -32,6 +32,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
     { name: 'Work Orders', path: '/work-orders', icon: ClipboardList, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
     { name: 'Inventory', path: '/inventory', icon: Package, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
     { name: 'Maintenance Plans', path: '/maintenance', icon: Calendar, roles: ['ADMIN', 'MANAGER'] },
+    { name: 'Locations', path: '/locations', icon: MapPin, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Users', path: '/users', icon: UserCog, roles: ['ADMIN'] },
     { name: 'Super Admin', path: '/super-admin', icon: ShieldCheck, roles: ['ADMIN'] },
     { name: 'Settings', path: '/settings', icon: Settings, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
