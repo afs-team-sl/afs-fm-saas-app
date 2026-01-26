@@ -1,8 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play } from 'lucide-react';
+import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+interface Part {
+  id: string;
+  name: string;
+  partNumber: string;
+  stockLevel: number;
+  unitPrice: number;
+}
+
+interface WorkOrderPart {
+  id: string;
+  quantity: number;
+  part: Part;
+  createdAt: string;
+}
 
 interface WorkOrderDetails {
   id: string;
@@ -38,9 +53,18 @@ const WorkOrderDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completionNote, setCompletionNote] = useState('');
+  
+  // Parts Management
+  const [availableParts, setAvailableParts] = useState<Part[]>([]);
+  const [workOrderParts, setWorkOrderParts] = useState<WorkOrderPart[]>([]);
+  const [showPartsModal, setShowPartsModal] = useState(false);
+  const [selectedPartId, setSelectedPartId] = useState('');
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     fetchWorkOrderDetails();
+    fetchAvailableParts();
+    fetchWorkOrderParts();
   }, [id]);
 
   const fetchWorkOrderDetails = async () => {
@@ -53,6 +77,61 @@ const WorkOrderDetailsPage = () => {
       navigate('/work-orders');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAvailableParts = async () => {
+    try {
+      const response = await apiClient.get('/parts');
+      setAvailableParts(response.data);
+    } catch (error) {
+      console.error('Failed to load parts');
+    }
+  };
+
+  const fetchWorkOrderParts = async () => {
+    try {
+      const response = await apiClient.get(`/work-orders/${id}/parts`);
+      setWorkOrderParts(response.data);
+    } catch (error) {
+      console.error('Failed to load work order parts');
+    }
+  };
+
+  const handleAddPart = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedPartId) {
+      toast.error('Please select a part');
+      return;
+    }
+
+    try {
+      await apiClient.post(`/work-orders/${id}/parts`, {
+        partId: selectedPartId,
+        quantity: quantity,
+      });
+      toast.success('Part added successfully');
+      fetchWorkOrderParts();
+      fetchAvailableParts(); // Refresh to show updated stock levels
+      setShowPartsModal(false);
+      setSelectedPartId('');
+      setQuantity(1);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to add part');
+    }
+  };
+
+  const handleRemovePart = async (workOrderPartId: string) => {
+    if (!confirm('Remove this part? Stock will be restored.')) return;
+
+    try {
+      await apiClient.delete(`/work-orders/${id}/parts/${workOrderPartId}`);
+      toast.success('Part removed and stock restored');
+      fetchWorkOrderParts();
+      fetchAvailableParts();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to remove part');
     }
   };
 
@@ -283,6 +362,80 @@ const WorkOrderDetailsPage = () => {
             )}
           </div>
 
+          {/* Parts Used Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Package className="w-5 h-5 text-blue-600" />
+                <h3 className="text-sm font-semibold text-gray-700">Parts Used</h3>
+              </div>
+              {!isDisabled && (
+                <button
+                  onClick={() => setShowPartsModal(true)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Part
+                </button>
+              )}
+            </div>
+
+            {workOrderParts.length === 0 ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+                <Package className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">No parts added yet</p>
+              </div>
+            ) : (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-100 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Part</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Part Number</th>
+                      <th className="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase">Qty</th>
+                      <th className="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Unit Price</th>
+                      <th className="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Total</th>
+                      {!isDisabled && (
+                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase">Action</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {workOrderParts.map((wp) => (
+                      <tr key={wp.id} className="hover:bg-white transition-colors">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{wp.part.name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600 font-mono">{wp.part.partNumber}</td>
+                        <td className="px-4 py-3 text-sm text-center font-semibold text-gray-900">{wp.quantity}</td>
+                        <td className="px-4 py-3 text-sm text-right text-gray-900">${wp.part.unitPrice.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900">
+                          ${(wp.quantity * wp.part.unitPrice).toFixed(2)}
+                        </td>
+                        {!isDisabled && (
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => handleRemovePart(wp.id)}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                              title="Remove Part"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                    <tr className="bg-gray-100 font-semibold">
+                      <td colSpan={4} className="px-4 py-3 text-sm text-right text-gray-700">Total Parts Cost:</td>
+                      <td className="px-4 py-3 text-sm text-right text-gray-900">
+                        ${workOrderParts.reduce((sum, wp) => sum + wp.quantity * wp.part.unitPrice, 0).toFixed(2)}
+                      </td>
+                      {!isDisabled && <td></td>}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
           {/* Action Buttons */}
           {!isDisabled && (
             <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
@@ -324,6 +477,88 @@ const WorkOrderDetailsPage = () => {
           )}
         </div>
       </div>
+
+      {/* Add Parts Modal */}
+      {showPartsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Add Part to Work Order</h2>
+              <button
+                onClick={() => setShowPartsModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddPart} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Part <span className="text-red-600">*</span>
+                </label>
+                <select
+                  required
+                  value={selectedPartId}
+                  onChange={(e) => setSelectedPartId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                >
+                  <option value="">-- Choose a part --</option>
+                  {availableParts.map((part) => (
+                    <option key={part.id} value={part.id} disabled={part.stockLevel === 0}>
+                      {part.name} ({part.partNumber}) - Stock: {part.stockLevel}
+                      {part.stockLevel === 0 ? ' - OUT OF STOCK' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Quantity <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                />
+              </div>
+
+              {selectedPartId && (
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">Available Stock: </span>
+                    {availableParts.find((p) => p.id === selectedPartId)?.stockLevel || 0}
+                  </p>
+                  <p className="text-sm text-gray-700 mt-1">
+                    <span className="font-semibold">Unit Price: </span>
+                    ${availableParts.find((p) => p.id === selectedPartId)?.unitPrice.toFixed(2) || '0.00'}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowPartsModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Add Part
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

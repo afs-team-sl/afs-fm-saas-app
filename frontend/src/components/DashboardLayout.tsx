@@ -30,6 +30,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
     { name: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
     { name: 'Assets', path: '/assets', icon: Box, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Work Orders', path: '/work-orders', icon: ClipboardList, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
+    { name: 'Inventory', path: '/inventory', icon: Package, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
     { name: 'Users', path: '/users', icon: UserCog, roles: ['ADMIN'] },
     { name: 'Super Admin', path: '/super-admin', icon: ShieldCheck, roles: ['ADMIN'] },
     { name: 'Settings', path: '/settings', icon: Settings, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },

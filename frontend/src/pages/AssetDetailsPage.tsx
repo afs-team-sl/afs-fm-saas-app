@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { ArrowLeft, Box, History, Calendar, User, CheckCircle2, AlertTriangle, FileText, Settings } from 'lucide-react';
+import { ArrowLeft, Box, History, Calendar, User, CheckCircle2, AlertTriangle, FileText, Settings, QrCode, Printer } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { QRCodeSVG } from 'qrcode.react';
 
 const AssetDetailsPage = () => {
   const { id } = useParams();
@@ -26,6 +27,10 @@ const AssetDetailsPage = () => {
     }
   };
 
+  const handlePrintTag = () => {
+    window.print();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -40,6 +45,29 @@ const AssetDetailsPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       
+      {/* Print Styles */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #digital-twin-tag,
+          #digital-twin-tag * {
+            visibility: visible;
+          }
+          #digital-twin-tag {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+          }
+          @page {
+            margin: 0;
+            size: auto;
+          }
+        }
+      `}</style>
+
       {/* Navigation & Actions */}
       <div className="flex items-center justify-between">
         <button 
@@ -50,8 +78,12 @@ const AssetDetailsPage = () => {
           <span className="text-sm font-medium">Back to Assets</span>
         </button>
         <div className="flex gap-3">
-          <button className="px-4 py-2 border border-secondary-300 text-secondary-700 font-medium rounded-md hover:bg-secondary-50 transition-colors text-sm">
-            Print Tag
+          <button 
+            onClick={handlePrintTag}
+            className="px-4 py-2 border border-secondary-300 text-secondary-700 font-medium rounded-md hover:bg-secondary-50 transition-colors text-sm inline-flex items-center gap-2"
+          >
+            <Printer className="w-4 h-4" />
+            Print Digital Tag
           </button>
           <button className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors text-sm">
             Edit Details
@@ -91,6 +123,55 @@ const AssetDetailsPage = () => {
                 Registered: {new Date(asset.createdAt).toLocaleDateString()}
               </span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Digital Twin Tag - QR Code Component */}
+      <div id="digital-twin-tag" className="bg-white rounded-xl border-2 border-secondary-300 shadow-lg p-8 max-w-md mx-auto">
+        <div className="text-center space-y-6">
+          {/* Header */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-center gap-2 text-primary-600">
+              <QrCode className="w-6 h-6" />
+              <h2 className="text-xl font-bold">Digital Twin Tag</h2>
+            </div>
+            <div className="h-1 w-16 bg-gradient-to-r from-primary-400 to-primary-600 mx-auto rounded-full"></div>
+          </div>
+
+          {/* QR Code */}
+          <div className="bg-white p-4 rounded-lg border border-secondary-200 inline-block">
+            <QRCodeSVG 
+              value={window.location.href}
+              size={200}
+              level="H"
+              includeMargin={true}
+              fgColor="#1e293b"
+              bgColor="#ffffff"
+            />
+          </div>
+
+          {/* Asset Information */}
+          <div className="space-y-3 pt-4 border-t border-secondary-200">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-secondary-500 uppercase tracking-wider">Asset Name</p>
+              <p className="text-lg font-bold text-slate-900">{asset.name}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-secondary-500 uppercase tracking-wider">Serial Number</p>
+              <p className="text-base font-mono font-semibold text-slate-700">{asset.serialNo || 'N/A'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-secondary-500 uppercase tracking-wider">Category</p>
+              <p className="text-sm font-medium text-slate-600">{asset.category}</p>
+            </div>
+          </div>
+
+          {/* Footer Instructions */}
+          <div className="pt-4 border-t border-secondary-200">
+            <p className="text-xs text-secondary-500 leading-relaxed">
+              Scan this QR code to access complete asset history, maintenance records, and documentation
+            </p>
           </div>
         </div>
       </div>

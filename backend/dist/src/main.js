@@ -14,8 +14,16 @@ async function bootstrap() {
         transform: true,
     }));
     const corsOrigin = configService.get('CORS_ORIGIN');
+    const allowedOrigins = [
+        'http://localhost',
+        'http://localhost:5173',
+    ];
+    if (corsOrigin) {
+        const customOrigins = corsOrigin.split(',').map(origin => origin.trim());
+        allowedOrigins.push(...customOrigins);
+    }
     app.enableCors({
-        origin: corsOrigin ? corsOrigin.split(',').map(origin => origin.trim()) : '*',
+        origin: allowedOrigins,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID'],

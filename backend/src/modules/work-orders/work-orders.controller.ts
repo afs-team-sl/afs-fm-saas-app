@@ -26,6 +26,7 @@ import {
 import { WorkOrdersService } from './work-orders.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
+import { AddWorkOrderPartDto } from '../parts/dto/add-work-order-part.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Guard එක Import කරමු
 
 @ApiTags('Work Orders')
@@ -123,5 +124,51 @@ export class WorkOrdersController {
   @ApiResponse({ status: 200, description: 'Work order successfully deleted' })
   remove(@Param('id') id: string, @Headers('x-tenant-id') tenantId: string) {
     return this.workOrdersService.remove(id, tenantId);
+  }
+
+  // ===== PARTS MANAGEMENT ENDPOINTS =====
+
+  @Post(':id/parts')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Add a part to a work order (deducts stock)' })
+  @ApiParam({ name: 'id', description: 'Work Order UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  @ApiResponse({ status: 201, description: 'Part added and stock deducted' })
+  addPart(
+    @Param('id') id: string,
+    @Headers('x-tenant-id') tenantId: string,
+    @Body() addPartDto: AddWorkOrderPartDto,
+  ) {
+    return this.workOrdersService.addPart(id, tenantId, addPartDto);
+  }
+
+  @Get(':id/parts')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all parts used in a work order' })
+  @ApiParam({ name: 'id', description: 'Work Order UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  @ApiResponse({ status: 200, description: 'Parts list retrieved' })
+  getWorkOrderParts(
+    @Param('id') id: string,
+    @Headers('x-tenant-id') tenantId: string,
+  ) {
+    return this.workOrdersService.getWorkOrderParts(id, tenantId);
+  }
+
+  @Delete(':id/parts/:partId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Remove a part from work order (restores stock)',
+  })
+  @ApiParam({ name: 'id', description: 'Work Order UUID' })
+  @ApiParam({ name: 'partId', description: 'Work Order Part UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  @ApiResponse({ status: 200, description: 'Part removed and stock restored' })
+  removePart(
+    @Param('id') id: string,
+    @Param('partId') partId: string,
+    @Headers('x-tenant-id') tenantId: string,
+  ) {
+    return this.workOrdersService.removePart(id, partId, tenantId);
   }
 }

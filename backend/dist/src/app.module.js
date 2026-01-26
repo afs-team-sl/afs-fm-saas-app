@@ -17,6 +17,7 @@ const assets_module_1 = require("./modules/assets/assets.module");
 const work_orders_module_1 = require("./modules/work-orders/work-orders.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const tenancy_module_1 = require("./modules/tenancy/tenancy.module");
+const parts_module_1 = require("./modules/parts/parts.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,6 +34,7 @@ exports.AppModule = AppModule = __decorate([
             work_orders_module_1.WorkOrdersModule,
             auth_module_1.AuthModule,
             tenancy_module_1.TenancyModule,
+            parts_module_1.PartsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

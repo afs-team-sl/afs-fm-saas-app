@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
+import { AddWorkOrderPartDto } from '../parts/dto/add-work-order-part.dto';
 import { WorkOrderStatus, WorkOrderPriority } from '@prisma/client';
 
 @Injectable()
@@ -24,6 +25,11 @@ export class WorkOrdersService {
         firstName: true,
         lastName: true,
         email: true,
+      },
+    },
+    parts: {
+      include: {
+        part: true,
       },
     },
   };
@@ -149,5 +155,117 @@ export class WorkOrdersService {
     });
 
     return { message: 'Work order deleted successfully' };
+  }
+
+  /**
+   * Add a part to a work order
+   * This method deducts stock from the Part table when called
+   */
+  async addPart(
+    workOrderId: string,
+    tenantId: string,
+    dto: AddWorkOrderPartDto,
+  ) {
+    // 1. Verify work order exists and belongs to tenant
+    const workOrder = await this.findOne(workOrderId, tenantId);
+
+    // 2. Verify the part exists and belongs to the same tenant
+    const part = await this.prisma.part.findFirst({
+      where: {
+        id: dto.partId,
+        tenantId: tenantId,
+      },
+    });
+
+    if (!part) {
+      throw new NotFoundException(
+        `Part with ID ${dto.partId} not found in your organization`,
+      );
+    }
+
+    // 3. Check if sufficient stock is available
+    if (part.stockLevel < dto.quantity) {
+      throw new BadRequestException(
+        `Insufficient stock for ${part.name}. Available: ${part.stockLevel}, Required: ${dto.quantity}`,
+      );
+    }
+
+    // 4. Create the WorkOrderPart record
+    const workOrderPart = await this.prisma.workOrderPart.create({
+      data: {
+        workOrderId: workOrderId,
+        partId: dto.partId,
+        quantity: dto.quantity,
+      },
+      include: {
+        part: true,
+      },
+    });
+
+    // 5. CRITICAL: Deduct stock from the Part table
+    await this.prisma.part.update({
+      where: { id: dto.partId },
+      data: {
+        stockLevel: {
+          decrement: dto.quantity,
+        },
+      },
+    });
+
+    return workOrderPart;
+  }
+
+  /**
+   * Get all parts used in a specific work order
+   */
+  async getWorkOrderParts(workOrderId: string, tenantId: string) {
+    await this.findOne(workOrderId, tenantId);
+
+    return this.prisma.workOrderPart.findMany({
+      where: { workOrderId },
+      include: {
+        part: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Remove a part from a work order (and restore stock)
+   */
+  async removePart(
+    workOrderId: string,
+    workOrderPartId: string,
+    tenantId: string,
+  ) {
+    // Verify work order exists
+    await this.findOne(workOrderId, tenantId);
+
+    // Find the work order part
+    const workOrderPart = await this.prisma.workOrderPart.findUnique({
+      where: { id: workOrderPartId },
+      include: { part: true },
+    });
+
+    if (!workOrderPart || workOrderPart.workOrderId !== workOrderId) {
+      throw new NotFoundException('Work order part not found');
+    }
+
+    // Restore stock
+    await this.prisma.part.update({
+      where: { id: workOrderPart.partId },
+      data: {
+        stockLevel: {
+          increment: workOrderPart.quantity,
+        },
+      },
+    });
+
+    // Delete the work order part
+    await this.prisma.workOrderPart.delete({
+      where: { id: workOrderPartId },
+    });
+
+    return { message: 'Part removed and stock restored' };
   }
 }

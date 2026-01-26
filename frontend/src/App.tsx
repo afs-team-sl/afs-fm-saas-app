@@ -13,6 +13,7 @@ import UsersPage from './pages/UsersPage';
 import SuperAdminPage from './pages/SuperAdminPage';
 import SettingsPage from './pages/SettingsPage';
 import AssetDetailsPage from './pages/AssetDetailsPage';
+import InventoryPage from './pages/InventoryPage';
 
 function App() {
   const { isAuthenticated, role, tenantId } = useAuth();
@@ -36,6 +37,7 @@ function App() {
           <Route path="/assets" element={isAuthenticated ? <DashboardLayout><AssetsPage /></DashboardLayout> : <Navigate to="/login" replace />} />
           <Route path="/work-orders" element={isAuthenticated ? <DashboardLayout><WorkOrdersPage /></DashboardLayout> : <Navigate to="/login" replace />} />
           <Route path="/work-orders/:id" element={isAuthenticated ? <DashboardLayout><WorkOrderDetailsPage /></DashboardLayout> : <Navigate to="/login" replace />} />
+          <Route path="/inventory" element={isAuthenticated ? <DashboardLayout><InventoryPage /></DashboardLayout> : <Navigate to="/login" replace />} />
           
           {/* Admin-Only Routes */}
           <Route path="/users" element={

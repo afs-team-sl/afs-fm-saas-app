@@ -27,6 +27,11 @@ let WorkOrdersService = class WorkOrdersService {
                 email: true,
             },
         },
+        parts: {
+            include: {
+                part: true,
+            },
+        },
     };
     async create(tenantId, dto) {
         const asset = await this.prisma.asset.findFirst({
@@ -103,6 +108,72 @@ let WorkOrdersService = class WorkOrdersService {
             where: { id },
         });
         return { message: 'Work order deleted successfully' };
+    }
+    async addPart(workOrderId, tenantId, dto) {
+        const workOrder = await this.findOne(workOrderId, tenantId);
+        const part = await this.prisma.part.findFirst({
+            where: {
+                id: dto.partId,
+                tenantId: tenantId,
+            },
+        });
+        if (!part) {
+            throw new common_1.NotFoundException(`Part with ID ${dto.partId} not found in your organization`);
+        }
+        if (part.stockLevel < dto.quantity) {
+            throw new common_1.BadRequestException(`Insufficient stock for ${part.name}. Available: ${part.stockLevel}, Required: ${dto.quantity}`);
+        }
+        const workOrderPart = await this.prisma.workOrderPart.create({
+            data: {
+                workOrderId: workOrderId,
+                partId: dto.partId,
+                quantity: dto.quantity,
+            },
+            include: {
+                part: true,
+            },
+        });
+        await this.prisma.part.update({
+            where: { id: dto.partId },
+            data: {
+                stockLevel: {
+                    decrement: dto.quantity,
+                },
+            },
+        });
+        return workOrderPart;
+    }
+    async getWorkOrderParts(workOrderId, tenantId) {
+        await this.findOne(workOrderId, tenantId);
+        return this.prisma.workOrderPart.findMany({
+            where: { workOrderId },
+            include: {
+                part: true,
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+    async removePart(workOrderId, workOrderPartId, tenantId) {
+        await this.findOne(workOrderId, tenantId);
+        const workOrderPart = await this.prisma.workOrderPart.findUnique({
+            where: { id: workOrderPartId },
+            include: { part: true },
+        });
+        if (!workOrderPart || workOrderPart.workOrderId !== workOrderId) {
+            throw new common_1.NotFoundException('Work order part not found');
+        }
+        await this.prisma.part.update({
+            where: { id: workOrderPart.partId },
+            data: {
+                stockLevel: {
+                    increment: workOrderPart.quantity,
+                },
+            },
+        });
+        await this.prisma.workOrderPart.delete({
+            where: { id: workOrderPartId },
+        });
+        return { message: 'Part removed and stock restored' };
     }
 };
 exports.WorkOrdersService = WorkOrdersService;
