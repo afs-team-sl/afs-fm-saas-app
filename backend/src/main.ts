@@ -20,11 +20,32 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // 2. Enable CORS - Allow all origins for Docker compatibility
-  // CRITICAL: This configuration allows requests from any origin
-  // which is essential for Docker container-to-container communication
+  // 2. Enable CORS - Production-ready configuration for Azure deployment
+  // CRITICAL: When credentials: true is used, origin cannot be a wildcard (*)
+  // We use ConfigService to get allowed origins from environment variables
+  const corsOrigin = configService.get<string>('CORS_ORIGIN');
+  
+  // Parse comma-separated origins from environment variable
+  const allowedOrigins = corsOrigin 
+    ? corsOrigin.split(',').map(origin => origin.trim())
+    : [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'http://localhost:3000',
+      ];
+  
   app.enableCors({
-    origin: true, // Allow all origins
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.warn(`⚠️  CORS blocked request from origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
     allowedHeaders: [
@@ -38,9 +59,10 @@ async function bootstrap() {
     exposedHeaders: ['Content-Length', 'Content-Type'],
     preflightContinue: false,
     optionsSuccessStatus: 204,
+    maxAge: 86400, // Cache preflight requests for 24 hours
   });
   
-  console.log('🔓 CORS: Enabled for all origins');
+  console.log('🔒 CORS: Enabled for specific origins:', allowedOrigins);
 
   // 3. Swagger Setup - Configures the API Documentation page
   const config = new DocumentBuilder()
@@ -61,13 +83,18 @@ async function bootstrap() {
   // This line creates the /api path for your documentation
   SwaggerModule.setup('api', app, document);
 
-  // 4. Start the server - Listen on 0.0.0.0:3000 for Docker compatibility
-  // 0.0.0.0 allows the container to accept connections from any network interface
+  // 4. Start the server - Azure App Service compatibility
+  // Azure App Service sets the PORT environment variable dynamically
+  // Listen on 0.0.0.0 to accept connections from any network interface
   const port = configService.get<number>('PORT') || 3000;
-  await app.listen(port, '0.0.0.0');
+  const host = '0.0.0.0'; // Required for Azure App Service and Docker
   
-  console.log(`🚀 Server is running on: http://0.0.0.0:${port}`);
+  await app.listen(port, host);
+  
+  const nodeEnv = configService.get<string>('NODE_ENV') || 'development';
+  console.log(`🚀 Server is running on: http://${host}:${port}`);
   console.log(`📚 API Docs available at: http://localhost:${port}/api`);
-  console.log(`🐳 Docker: Accessible from other containers on port ${port}`);
+  console.log(`🌍 Environment: ${nodeEnv}`);
+  console.log(`🔒 CORS Origins: ${allowedOrigins.join(', ')}`);
 }
 bootstrap();
