@@ -10,6 +10,9 @@ async function bootstrap() {
   // Get ConfigService to access environment variables
   const configService = app.get(ConfigService);
 
+  // Set global prefix for all routes (optional - currently disabled)
+  // app.setGlobalPrefix('api');
+
   // 1. Global Validation - Enables automatic input data checking using DTOs
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
@@ -17,42 +20,42 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // 2. Enable CORS - Configure for production deployment
+  // 2. Enable CORS - CRITICAL: Must be configured before any routes
+  const nodeEnv = configService.get<string>('NODE_ENV') || 'development';
   const corsOrigin = configService.get<string>('CORS_ORIGIN');
   
-  // Build allowed origins list
-  const allowedOrigins = [
-    'http://localhost',        // Frontend on port 80 (Docker)
-    'http://localhost:5173',   // Vite dev server (local development)
-    'http://localhost:5174',   // Alternative Vite port
-    'http://localhost:3001',   // Alternative frontend port
-    'http://localhost:4173',   // Vite preview mode
-    'http://127.0.0.1:5173',   // IPv4 localhost
-    'http://127.0.0.1:5174',
-  ];
-  
-  // Add custom origins from environment variable
-  if (corsOrigin) {
-    const customOrigins = corsOrigin.split(',').map(origin => origin.trim());
-    allowedOrigins.push(...customOrigins);
+  if (nodeEnv === 'development') {
+    // In development, allow all origins
+    app.enableCors({
+      origin: true,
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID', 'Accept', 'Origin'],
+      exposedHeaders: ['Content-Length', 'Content-Type'],
+      maxAge: 86400,
+    });
+    console.log('🔓 CORS: Enabled for all origins (Development Mode)');
+  } else {
+    // In production, use restricted origins
+    const allowedOrigins = [
+      'http://localhost',
+      'http://localhost:5173',
+      'http://localhost:5174',
+    ];
+    
+    if (corsOrigin) {
+      const customOrigins = corsOrigin.split(',').map(origin => origin.trim());
+      allowedOrigins.push(...customOrigins);
+    }
+    
+    app.enableCors({
+      origin: allowedOrigins,
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID'],
+    });
+    console.log(`🔒 CORS: Restricted to origins: ${allowedOrigins.join(', ')}`);
   }
-  
-  app.enableCors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, Postman, or same-origin)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn(`⚠️  CORS blocked request from origin: ${origin}`);
-        callback(null, true); // Allow all origins in development
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID', 'Accept', 'Origin'],
-    exposedHeaders: ['Content-Length', 'Content-Type'],
-    maxAge: 86400, // Cache preflight requests for 24 hours
-  });
 
   // 3. Swagger Setup - Configures the API Documentation page
   const config = new DocumentBuilder()
