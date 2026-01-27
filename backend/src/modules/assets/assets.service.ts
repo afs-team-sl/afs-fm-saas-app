@@ -9,7 +9,8 @@ export class AssetsService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateAssetDto & { tenantId: string }) {
-    if (data.serialNo) {
+    // Validate unique serial number if provided
+    if (data.serialNo && data.serialNo.trim()) {
       const existing = await this.prisma.asset.findFirst({
         where: { tenantId: data.tenantId, serialNo: data.serialNo },
       });
@@ -17,7 +18,15 @@ export class AssetsService {
         throw new ConflictException('Asset with this serial number already exists');
       }
     }
-    return this.prisma.asset.create({ data });
+
+    // Clean up empty strings to null for optional fields
+    const cleanedData = {
+      ...data,
+      serialNo: data.serialNo && data.serialNo.trim() ? data.serialNo : null,
+      roomId: data.roomId && data.roomId.trim() ? data.roomId : null,
+    };
+
+    return this.prisma.asset.create({ data: cleanedData });
   }
 
   async findAll(tenantId: string) {
@@ -78,9 +87,21 @@ export class AssetsService {
 
   async update(id: string, tenantId: string, dto: UpdateAssetDto) {
     await this.findOne(id, tenantId);
+    
+    // Clean up empty strings to null for optional fields
+    const cleanedData = {
+      ...dto,
+      serialNo: dto.serialNo !== undefined 
+        ? (dto.serialNo && dto.serialNo.trim() ? dto.serialNo : null)
+        : undefined,
+      roomId: dto.roomId !== undefined
+        ? (dto.roomId && dto.roomId.trim() ? dto.roomId : null)
+        : undefined,
+    };
+
     return this.prisma.asset.update({
       where: { id },
-      data: dto,
+      data: cleanedData,
     });
   }
 

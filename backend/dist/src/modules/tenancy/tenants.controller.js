@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TenantsController = void 0;
 const common_1 = require("@nestjs/common");
@@ -53,7 +52,7 @@ __decorate([
     }),
     (0, class_validator_1.IsEnum)(client_1.NotificationType),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", typeof (_a = typeof client_1.NotificationType !== "undefined" && client_1.NotificationType) === "function" ? _a : Object)
+    __metadata("design:type", String)
 ], BroadcastDto.prototype, "type", void 0);
 let TenantsController = class TenantsController {
     tenantsService;

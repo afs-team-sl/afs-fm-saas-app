@@ -18,6 +18,7 @@ class UpdateAssetDto {
     category;
     serialNo;
     status;
+    roomId;
 }
 exports.UpdateAssetDto = UpdateAssetDto;
 __decorate([
@@ -63,4 +64,13 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateAssetDto.prototype, "status", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Room ID where the asset is located',
+        example: 'uuid-string',
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "roomId", void 0);
 //# sourceMappingURL=update-asset.dto.js.map

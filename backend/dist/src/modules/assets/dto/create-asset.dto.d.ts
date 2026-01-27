@@ -4,4 +4,5 @@ export declare class CreateAssetDto {
     category: string;
     serialNo?: string;
     status: AssetStatus;
+    roomId?: string;
 }

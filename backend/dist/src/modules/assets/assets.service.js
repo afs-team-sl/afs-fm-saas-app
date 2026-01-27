@@ -18,7 +18,7 @@ let AssetsService = class AssetsService {
         this.prisma = prisma;
     }
     async create(data) {
-        if (data.serialNo) {
+        if (data.serialNo && data.serialNo.trim()) {
             const existing = await this.prisma.asset.findFirst({
                 where: { tenantId: data.tenantId, serialNo: data.serialNo },
             });
@@ -26,7 +26,12 @@ let AssetsService = class AssetsService {
                 throw new common_1.ConflictException('Asset with this serial number already exists');
             }
         }
-        return this.prisma.asset.create({ data });
+        const cleanedData = {
+            ...data,
+            serialNo: data.serialNo && data.serialNo.trim() ? data.serialNo : null,
+            roomId: data.roomId && data.roomId.trim() ? data.roomId : null,
+        };
+        return this.prisma.asset.create({ data: cleanedData });
     }
     async findAll(tenantId) {
         return this.prisma.asset.findMany({
@@ -72,9 +77,18 @@ let AssetsService = class AssetsService {
     }
     async update(id, tenantId, dto) {
         await this.findOne(id, tenantId);
+        const cleanedData = {
+            ...dto,
+            serialNo: dto.serialNo !== undefined
+                ? (dto.serialNo && dto.serialNo.trim() ? dto.serialNo : null)
+                : undefined,
+            roomId: dto.roomId !== undefined
+                ? (dto.roomId && dto.roomId.trim() ? dto.roomId : null)
+                : undefined,
+        };
         return this.prisma.asset.update({
             where: { id },
-            data: dto,
+            data: cleanedData,
         });
     }
     async remove(id, tenantId) {

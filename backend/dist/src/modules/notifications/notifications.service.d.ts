@@ -7,8 +7,8 @@ export declare class NotificationsService {
             id: string;
             createdAt: Date;
             tenantId: string | null;
-            type: import(".prisma/client").$Enums.UserNotificationType;
             message: string;
+            type: import(".prisma/client").$Enums.UserNotificationType;
             isRead: boolean;
             userId: string;
         }[];
@@ -18,8 +18,8 @@ export declare class NotificationsService {
         id: string;
         createdAt: Date;
         tenantId: string | null;
-        type: import(".prisma/client").$Enums.UserNotificationType;
         message: string;
+        type: import(".prisma/client").$Enums.UserNotificationType;
         isRead: boolean;
         userId: string;
     }>;
@@ -31,8 +31,8 @@ export declare class NotificationsService {
         id: string;
         createdAt: Date;
         tenantId: string | null;
-        type: import(".prisma/client").$Enums.UserNotificationType;
         message: string;
+        type: import(".prisma/client").$Enums.UserNotificationType;
         isRead: boolean;
         userId: string;
     }>;

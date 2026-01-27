@@ -72,8 +72,8 @@ export declare class TenantsController {
         notification: {
             id: string;
             createdAt: Date;
-            type: import(".prisma/client").$Enums.NotificationType;
             message: string;
+            type: import(".prisma/client").$Enums.NotificationType;
             isActive: boolean;
             expiresAt: Date | null;
         };
@@ -81,8 +81,8 @@ export declare class TenantsController {
     getActiveNotifications(): Promise<{
         id: string;
         createdAt: Date;
-        type: import(".prisma/client").$Enums.NotificationType;
         message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
         isActive: boolean;
         expiresAt: Date | null;
     }[]>;

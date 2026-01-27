@@ -46,4 +46,12 @@ export class UpdateAssetDto {
   @IsEnum(AssetStatus)
   @IsOptional()
   status?: AssetStatus;
+
+  @ApiPropertyOptional({
+    description: 'Room ID where the asset is located',
+    example: 'uuid-string',
+  })
+  @IsString()
+  @IsOptional()
+  roomId?: string;
 }

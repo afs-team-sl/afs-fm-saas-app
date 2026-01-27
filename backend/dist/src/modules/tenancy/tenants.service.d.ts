@@ -69,8 +69,8 @@ export declare class TenantsService {
         notification: {
             id: string;
             createdAt: Date;
-            type: import(".prisma/client").$Enums.NotificationType;
             message: string;
+            type: import(".prisma/client").$Enums.NotificationType;
             isActive: boolean;
             expiresAt: Date | null;
         };
@@ -78,8 +78,8 @@ export declare class TenantsService {
     getActiveNotifications(): Promise<{
         id: string;
         createdAt: Date;
-        type: import(".prisma/client").$Enums.NotificationType;
         message: string;
+        type: import(".prisma/client").$Enums.NotificationType;
         isActive: boolean;
         expiresAt: Date | null;
     }[]>;

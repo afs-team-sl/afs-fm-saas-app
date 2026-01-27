@@ -134,17 +134,21 @@ const AssetsPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      // Clean up the payload - convert empty strings to null for optional fields
       const payload = {
-        ...formData,
-        roomId: selectedRoomId || null, // Convert empty string to null
+        name: formData.name.trim(),
+        category: formData.category.trim(),
+        serialNo: formData.serialNo.trim() || undefined, // undefined will be omitted from JSON
+        status: formData.status,
+        roomId: selectedRoomId || undefined, // undefined will be omitted from JSON
       };
       
       if (editingId) {
         await apiClient.patch(`/assets/${editingId}`, payload);
-        toast.success('Asset updated');
+        toast.success('Asset updated successfully');
       } else {
         await apiClient.post('/assets', payload);
-        toast.success('New asset created');
+        toast.success('Asset created successfully');
       }
       setModalOpen(false);
       fetchAssets();

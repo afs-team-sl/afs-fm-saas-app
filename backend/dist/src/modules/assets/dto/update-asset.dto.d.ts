@@ -4,4 +4,5 @@ export declare class UpdateAssetDto {
     category?: string;
     serialNo?: string;
     status?: AssetStatus;
+    roomId?: string;
 }

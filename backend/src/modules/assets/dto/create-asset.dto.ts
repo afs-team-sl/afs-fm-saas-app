@@ -50,6 +50,14 @@ export class CreateAssetDto {
   @IsNotEmpty()
   status: AssetStatus;
 
+  @ApiPropertyOptional({
+    description: 'Room ID where the asset is located',
+    example: 'uuid-string',
+  })
+  @IsString()
+  @IsOptional()
+  roomId?: string;
+
   // IMPORTANT: tenantId is removed from this DTO because it is 
   // provided via the 'x-tenant-id' header, not the request body.
 }
