@@ -6,7 +6,7 @@ import axios from 'axios';
 const apiClient = axios.create({
   // import.meta.env.VITE_API_URL එකෙන් .env ෆයිල් එකේ ඇති URL එක ගන්නවා. 
   // නැත්නම් default විදියට http://localhost:3000 පාවිච්චි කරනවා.
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_URL ,
   headers: {
     'Content-Type': 'application/json',
   },
