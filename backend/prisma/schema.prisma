@@ -345,9 +345,9 @@ model Notification {
   type    UserNotificationType @default(INFO)
   isRead  Boolean              @default(false)
 
-  // Link to User (who receives the notification)
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Link to User (who receives the notification) - OPTIONAL for global broadcasts
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Optional: Tenant-specific notifications (null means global)
   tenantId String?

@@ -91,9 +91,9 @@ export declare class TenantsService {
     remove(id: string): Promise<{
         message: string;
         deletedCounts: {
-            users: any;
-            assets: any;
-            workOrders: any;
+            users: number;
+            assets: number;
+            workOrders: number;
         };
     }>;
     getActiveNotifications(): Promise<{

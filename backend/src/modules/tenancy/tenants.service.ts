@@ -10,7 +10,10 @@ export class TenantsService {
     private jwtService: JwtService,
   ) {}
 
-  // පද්ධතියේ ඉන්න ඔක්කොම Tenants ලා සහ එයාලගේ Stats ගන්නවා
+  /**
+   * Get all tenants with their statistics
+   * SUPER_ADMIN only
+   */
   async findAll() {
     return this.prisma.tenant.findMany({
       include: {
@@ -26,7 +29,9 @@ export class TenantsService {
     });
   }
 
-  // එක Tenant එකක් ID එකෙන් ගන්නවා
+  /**
+   * Get a single tenant by ID with statistics
+   */
   async findOne(id: string) {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id },
@@ -48,7 +53,9 @@ export class TenantsService {
     return tenant;
   }
 
-  // Tenant එකක නම Update කරනවා (Admins Only)
+  /**
+   * Update tenant name (ADMIN only)
+   */
   async update(id: string, data: { name: string }) {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id },
@@ -73,7 +80,10 @@ export class TenantsService {
     });
   }
 
-  // Generate impersonation token for a tenant's admin
+  /**
+   * Generate impersonation token for a tenant's admin
+   * SUPER_ADMIN only
+   */
   async generateImpersonationToken(tenantId: string) {
     // Find the tenant
     const tenant = await this.prisma.tenant.findUnique({
@@ -126,14 +136,18 @@ export class TenantsService {
     };
   }
 
-  // Create a global announcement (tenantId = null for global)
+  /**
+   * Create a global announcement
+   * SUPER_ADMIN only
+   * Sets tenantId to null for global broadcast
+   */
   async createAnnouncement(message: string, type?: AnnouncementType) {
     const announcement = await this.prisma.announcement.create({
       data: {
         message,
         type: type || 'INFO',
         isActive: true,
-        tenantId: null, // Global announcement
+        tenantId: null, // Global announcement for all users
       },
     });
 
@@ -145,7 +159,10 @@ export class TenantsService {
     };
   }
 
-  // Get all active announcements (global + tenant-specific)
+  /**
+   * Get all active announcements
+   * Returns global announcements (tenantId: null) + tenant-specific announcements
+   */
   async getActiveAnnouncements(tenantId: string | null) {
     return this.prisma.announcement.findMany({
       where: {
@@ -159,7 +176,10 @@ export class TenantsService {
     });
   }
 
-  // Delete an announcement
+  /**
+   * Delete an announcement
+   * SUPER_ADMIN only
+   */
   async deleteAnnouncement(id: string) {
     const announcement = await this.prisma.announcement.findUnique({
       where: { id },
@@ -182,6 +202,7 @@ export class TenantsService {
 
   /**
    * Delete a tenant and all its cascading data
+   * SUPER_ADMIN only
    * WARNING: This is a destructive operation that removes:
    * - All users belonging to the tenant
    * - All assets
@@ -189,12 +210,25 @@ export class TenantsService {
    * - All parts
    * - All maintenance plans
    * - All buildings/floors/rooms
-   * - All notifications
    * Prisma's onDelete: Cascade handles this automatically
    */
   async remove(id: string) {
-    // Check if tenant exists
+    // Check if tenant exists and get counts
     const tenant = await this.prisma.tenant.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            users: true,
+            assets: true,
+            workOrders: true,
+          },
+        },
+      },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant with ID ${id} not found`);
     }
 
     console.log(`🗑️  Deleting tenant: ${tenant.name}`);
@@ -219,7 +253,10 @@ export class TenantsService {
     };
   }
 
-  // Get all active notifications
+  /**
+   * Get all active global notifications
+   * Used for system-wide broadcasts
+   */
   async getActiveNotifications() {
     return this.prisma.globalNotification.findMany({
       where: {

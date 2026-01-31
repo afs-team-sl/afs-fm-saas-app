@@ -12,7 +12,7 @@ export declare class NotificationsController {
             message: string;
             type: import(".prisma/client").$Enums.UserNotificationType;
             isRead: boolean;
-            userId: string;
+            userId: string | null;
         }[];
         unreadCount: number;
     }>;
@@ -23,7 +23,7 @@ export declare class NotificationsController {
         message: string;
         type: import(".prisma/client").$Enums.UserNotificationType;
         isRead: boolean;
-        userId: string;
+        userId: string | null;
     }>;
     markAllAsRead(req: any): Promise<{
         message: string;

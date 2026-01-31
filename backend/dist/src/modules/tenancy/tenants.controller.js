@@ -95,7 +95,37 @@ let TenantsController = class TenantsController {
         console.log('✅ IMPERSONATION ALLOWED');
         return this.tenantsService.generateImpersonationToken(tenantId);
     }
-    ;
+    async broadcastMessage(req, broadcastDto) {
+        console.log('📢 BROADCAST REQUEST');
+        console.log('User Role:', req.user.role);
+        if (req.user.role !== 'SUPER_ADMIN') {
+            console.log('❌ BROADCAST DENIED: NOT SUPER_ADMIN ROLE');
+            throw new common_1.ForbiddenException('Access Denied: Only Super Admins can create global announcements.');
+        }
+        console.log('✅ BROADCAST CREATING');
+        return this.tenantsService.createAnnouncement(broadcastDto.message, broadcastDto.type);
+    }
+    async getActiveAnnouncements(req) {
+        const tenantId = req.user?.tenantId || null;
+        return this.tenantsService.getActiveAnnouncements(tenantId);
+    }
+    async deleteAnnouncement(req, announcementId) {
+        if (req.user.role !== 'SUPER_ADMIN') {
+            throw new common_1.ForbiddenException('Access Denied: Only Super Admins can delete announcements.');
+        }
+        return this.tenantsService.deleteAnnouncement(announcementId);
+    }
+    async deleteTenant(req, tenantId) {
+        console.log('🗑️  TENANT DELETION REQUEST');
+        console.log('User Role:', req.user.role);
+        console.log('Target Tenant ID:', tenantId);
+        if (req.user.role !== 'SUPER_ADMIN') {
+            console.log('❌ DELETION DENIED: NOT SUPER_ADMIN ROLE');
+            throw new common_1.ForbiddenException('Access Denied: Only Super Admins can delete tenant organizations.');
+        }
+        console.log('✅ DELETION AUTHORIZED');
+        return this.tenantsService.remove(tenantId);
+    }
 };
 exports.TenantsController = TenantsController;
 __decorate([
@@ -144,25 +174,47 @@ __decorate([
 ], TenantsController.prototype, "impersonateTenant", null);
 __decorate([
     (0, common_1.Post)('broadcast'),
-    (0, swagger_1.ApiOperation)({ summary: 'Send system-wide broadcast message (Super Admin Only)' }),
-    (0, swagger_1.ApiResponse)({ status: 201, description: 'Broadcast message sent successfully.' }),
-    (0, swagger_1.ApiResponse)({ status: 403, Create, global, announcement(Super, Admin, Only) { }, ' }): , broadcastMessage(req, broadcastDto) {
-            console.log('📢 BROADCAST REQUEST');
-            console.log('User Role:', req.user.role);
-            if (req.user.role !== 'SUPER_ADMIN') {
-                console.log('❌ BROADCAST DENIED: NOT SUPER_ADMIN ROLE');
-                throw new common_1.ForbiddenException('Access Denied: Only Super Admins can create global announcements.');
-            }
-            console.log('✅ BROADCAST CREATING');
-            return this.tenantsService.createAnnouncement(broadcastDto.message, broadcastDto.type);
-        } }, (), getActiveAnnouncements(, req), {
-        const: tenantId = req.user?.tenantId || null,
-        return: this.tenantsService.getActiveAnnouncements(tenantId)
-    }, (), deleteAnnouncement(, req, , announcementId, string), {
-        if(req) { }, : .user.role !== 'SUPER_ADMIN'
-    }),
-    __metadata("design:type", Object)
-], TenantsController.prototype, "", void 0);
+    (0, swagger_1.ApiOperation)({ summary: 'Create global announcement (Super Admin Only)' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Announcement created successfully.' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden. You are not a Super Admin.' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, BroadcastDto]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "broadcastMessage", null);
+__decorate([
+    (0, common_1.Get)('active-announcements'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all active announcements (public endpoint)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Active announcements retrieved.' }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "getActiveAnnouncements", null);
+__decorate([
+    (0, common_1.Delete)('announcements/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete an announcement (Super Admin Only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Announcement deleted successfully.' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden. You are not a Super Admin.' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "deleteAnnouncement", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete a tenant organization (Super Admin Only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Tenant deleted successfully.' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden. You are not a Super Admin.' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Tenant not found.' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "deleteTenant", null);
 exports.TenantsController = TenantsController = __decorate([
     (0, swagger_1.ApiTags)('Tenants (Super Admin Only)'),
     (0, swagger_1.ApiBearerAuth)(),
@@ -170,19 +222,4 @@ exports.TenantsController = TenantsController = __decorate([
     (0, common_1.Controller)('tenants'),
     __metadata("design:paramtypes", [tenants_service_1.TenantsService])
 ], TenantsController);
-{
-    throw new common_1.ForbiddenException('Access Denied: Only Super Admins can delete announcements.');
-}
-return this.tenantsService.deleteAnnouncement(announcementId, , deleteTenant(, req, , tenantId, string), {
-    console, : .log('🗑️  TENANT DELETION REQUEST'),
-    console, : .log('User Role:', req.user.role),
-    console, : .log('Target Tenant ID:', tenantId),
-    if(req) { }, : .user.role !== 'SUPER_ADMIN'
-});
-{
-    console.log('❌ DELETION DENIED: NOT SUPER_ADMIN ROLE');
-    throw new common_1.ForbiddenException('Access Denied: Only Super Admins can delete tenant organizations.');
-}
-console.log('✅ DELETION AUTHORIZED');
-return this.tenantsService.remove(tenantId);
 //# sourceMappingURL=tenants.controller.js.map

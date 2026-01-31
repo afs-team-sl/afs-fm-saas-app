@@ -113,9 +113,7 @@ export class TenantsController {
   }
 
   @Post('broadcast')
-  @ApiOperation({ summary: 'Send system-wide broadcast message (Super Admin Only)' })
-  @ApiResponse({ status: 201, description: 'Broadcast message sent successfully.' })
-  @ApiResponse({ status: 403Create global announcement (Super Admin Only)' })
+  @ApiOperation({ summary: 'Create global announcement (Super Admin Only)' })
   @ApiResponse({ status: 201, description: 'Announcement created successfully.' })
   @ApiResponse({ status: 403, description: 'Forbidden. You are not a Super Admin.' })
   async broadcastMessage(@Request() req, @Body() broadcastDto: BroadcastDto) {
@@ -154,7 +152,9 @@ export class TenantsController {
       );
     }
 
-    return this.tenantsService.deleteAnnouncement(announcementId
+    return this.tenantsService.deleteAnnouncement(announcementId);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a tenant organization (Super Admin Only)' })
   @ApiResponse({ status: 200, description: 'Tenant deleted successfully.' })

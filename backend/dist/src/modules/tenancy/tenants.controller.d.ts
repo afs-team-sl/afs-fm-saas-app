@@ -1,6 +1,11 @@
 import { TenantsService } from './tenants.service';
+import { AnnouncementType } from '@prisma/client';
 declare class UpdateTenantDto {
     name: string;
+}
+declare class BroadcastDto {
+    message: string;
+    type?: AnnouncementType;
 }
 export declare class TenantsController {
     private readonly tenantsService;
@@ -62,6 +67,37 @@ export declare class TenantsController {
             name: string;
         };
     }>;
-    : any;
+    broadcastMessage(req: any, broadcastDto: BroadcastDto): Promise<{
+        message: string;
+        announcement: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            tenantId: string | null;
+            message: string;
+            type: import(".prisma/client").$Enums.AnnouncementType;
+            isActive: boolean;
+        };
+    }>;
+    getActiveAnnouncements(req: any): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.AnnouncementType;
+        isActive: boolean;
+    }[]>;
+    deleteAnnouncement(req: any, announcementId: string): Promise<{
+        message: string;
+    }>;
+    deleteTenant(req: any, tenantId: string): Promise<{
+        message: string;
+        deletedCounts: {
+            users: number;
+            assets: number;
+            workOrders: number;
+        };
+    }>;
 }
 export {};

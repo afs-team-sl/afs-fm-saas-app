@@ -2,14 +2,15 @@ import axios from 'axios';
 
 /**
  * Create an Axios instance with base configuration
+ * Supports both Docker and local development
  */
 const apiClient = axios.create({
-  // import.meta.env.VITE_API_URL එකෙන් .env ෆයිල් එකේ ඇති URL එක ගන්නවා. 
-  // නැත්නම් default විදියට http://localhost:3000 පාවිච්චි කරනවා.
+  // Use environment variable or fallback to localhost:3000
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // CRITICAL: Enables cookies and CORS credentials
 });
 
 /**

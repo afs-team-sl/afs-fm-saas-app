@@ -1,18 +1,26 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
-import { UserPlus, Shield, UserCog, User, Trash2, Edit3, X, Loader2, Search, Lock } from 'lucide-react';
+import { UserPlus, Shield, UserCog, User, Trash2, Edit3, X, Loader2, Search, Lock, Building2, Globe } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface UserData {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: 'ADMIN' | 'MANAGER' | 'TECHNICIAN' | 'OCCUPANT';
+  role: 'ADMIN' | 'MANAGER' | 'TECHNICIAN' | 'OCCUPANT' | 'SUPER_ADMIN';
   createdAt: string;
+  tenant?: {
+    id: string;
+    name: string;
+  };
 }
 
 const UsersPage = () => {
+  const { role: currentUserRole } = useAuth();
+  const isSuperAdmin = currentUserRole === 'SUPER_ADMIN';
+  
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -42,8 +50,13 @@ const UsersPage = () => {
 
   const fetchUsers = async () => {
     try {
+      // Both Super Admin and regular users use the same endpoint
+      // Backend automatically returns all users for SUPER_ADMIN or scoped users for others
       const res = await apiClient.get('/users');
       setUsers(res.data);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      toast.error('Failed to load users');
     } finally { 
       setLoading(false); 
     }
@@ -122,7 +135,8 @@ const UsersPage = () => {
   const filteredUsers = users.filter(u => 
     u.firstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
     u.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+    u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (isSuperAdmin && u.tenant?.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -130,16 +144,36 @@ const UsersPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Team Members</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage users and permissions</p>
+          {isSuperAdmin ? (
+            <>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#232249] to-[#2d2d5f] rounded-xl flex items-center justify-center shadow-lg">
+                  <Globe className="w-5 h-5 text-white" strokeWidth={2.5} />
+                </div>
+                <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  Global User Directory
+                </h1>
+              </div>
+              <p className="text-sm text-slate-500 font-medium">
+                Managing {users.length} users across all organizations
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-semibold text-slate-900">Team Members</h1>
+              <p className="text-sm text-slate-500 mt-1">Manage users and permissions</p>
+            </>
+          )}
         </div>
-        <button 
-          onClick={() => setModalOpen(true)} 
-          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
-        >
-          <UserPlus className="w-4 h-4" />
-          Add User
-        </button>
+        {!isSuperAdmin && (
+          <button 
+            onClick={() => setModalOpen(true)} 
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
+          >
+            <UserPlus className="w-4 h-4" />
+            Add User
+          </button>
+        )}
       </div>
 
       {/* Table Card */}
@@ -149,7 +183,7 @@ const UsersPage = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
             <input 
               type="text" 
-              placeholder="Search users..." 
+              placeholder={isSuperAdmin ? "Search users or organizations..." : "Search users..."} 
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" 
@@ -163,14 +197,19 @@ const UsersPage = () => {
               <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">User</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">Email</th>
+                {isSuperAdmin && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">Organization</th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">Role</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500">Actions</th>
+                {!isSuperAdmin && (
+                  <th className="px-6 py-3 text-right text-xs font-medium text-slate-500">Actions</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="py-12 text-center">
+                  <td colSpan={isSuperAdmin ? 4 : 4} className="py-12 text-center">
                     <div className="flex items-center justify-center gap-2 text-slate-400">
                       <div className="w-5 h-5 border-2 border-slate-300 border-t-primary rounded-full animate-spin"></div>
                       <span className="text-sm">Loading users...</span>
@@ -179,7 +218,7 @@ const UsersPage = () => {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="py-12 text-center text-sm text-slate-500">
+                  <td colSpan={isSuperAdmin ? 4 : 4} className="py-12 text-center text-sm text-slate-500">
                     No users found
                   </td>
                 </tr>
@@ -197,23 +236,37 @@ const UsersPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">{user.email}</td>
+                    {isSuperAdmin && (
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <Building2 className="w-4 h-4 text-primary" />
+                          </div>
+                          <span className="text-sm font-medium text-slate-900">
+                            {user.tenant?.name || 'Platform Admin'}
+                          </span>
+                        </div>
+                      </td>
+                    )}
                     <td className="px-6 py-4">{getRoleBadge(user.role)}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-end gap-2">
-                        <button 
-                          onClick={() => handleEdit(user)} 
-                          className="p-2 text-primary hover:bg-primary-50 rounded-md transition-colors"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => setDeleteConfirmUser(user)} 
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+                    {!isSuperAdmin && (
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-2">
+                          <button 
+                            onClick={() => handleEdit(user)} 
+                            className="p-2 text-primary hover:bg-primary-50 rounded-md transition-colors"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => setDeleteConfirmUser(user)} 
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

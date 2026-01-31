@@ -20,39 +20,49 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // 2. Enable CORS - Production-ready configuration for Azure deployment
+  // 2. Enable CORS - Production-ready configuration for Docker and Azure deployment
   // CRITICAL: When credentials: true is used, origin cannot be a wildcard (*)
-  // We use ConfigService to get allowed origins from environment variables
   const corsOrigin = configService.get<string>('CORS_ORIGIN');
   
-  // Parse comma-separated origins from environment variable
+  // Define all allowed origins for local Docker development and production
   const allowedOrigins = corsOrigin 
     ? corsOrigin.split(',').map(origin => origin.trim())
     : [
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'http://localhost:3000',
+        'http://localhost',           // Docker frontend on port 80
+        'http://localhost:80',        // Explicit port 80
+        'http://localhost:5173',      // Vite dev server
+        'http://localhost:5174',      // Vite alternative port
+        'http://localhost:3000',      // Backend itself (for testing)
+        'http://127.0.0.1',           // Localhost alternative
+        'http://127.0.0.1:5173',      // Localhost alternative with port
+        'http://127.0.0.1:3000',      // Localhost alternative backend
       ];
   
   app.enableCors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
-      if (!origin) return callback(null, true);
+      if (!origin) {
+        console.log('✅ CORS: Allowing request with no origin (Postman/Mobile/Server)');
+        return callback(null, true);
+      }
       
       if (allowedOrigins.indexOf(origin) !== -1) {
+        console.log(`✅ CORS: Allowing request from: ${origin}`);
         callback(null, true);
       } else {
-        console.warn(`⚠️  CORS blocked request from origin: ${origin}`);
+        console.error(`❌ CORS: Blocked request from origin: ${origin}`);
+        console.log(`   Allowed origins: ${allowedOrigins.join(', ')}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
-    credentials: true,
+    credentials: true, // CRITICAL: Allows cookies and Authorization headers
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
     allowedHeaders: [
-      'Content-Type', 
-      'Authorization', 
-      'X-Tenant-ID', 
+      'Content-Type',
       'Accept', 
+      'Authorization',
+      'x-tenant-id',     // Custom header for multi-tenancy (lowercase)
+      'X-Tenant-ID',     // Case variation support
       'Origin',
       'X-Requested-With',
     ],
@@ -83,18 +93,26 @@ async function bootstrap() {
   // This line creates the /api path for your documentation
   SwaggerModule.setup('api', app, document);
 
-  // 4. Start the server - Azure App Service compatibility
-  // Azure App Service sets the PORT environment variable dynamically
-  // Listen on 0.0.0.0 to accept connections from any network interface
+  // 4. Start the server - Docker and Azure App Service compatibility
+  // CRITICAL FOR DOCKER: Listen on 0.0.0.0 to accept connections from any network interface
+  // This is required for Docker containers to be accessible from the host machine
   const port = configService.get<number>('PORT') || 3000;
-  const host = '0.0.0.0'; // Required for Azure App Service and Docker
+  const host = '0.0.0.0'; // DO NOT CHANGE - Required for Docker networking
   
   await app.listen(port, host);
   
   const nodeEnv = configService.get<string>('NODE_ENV') || 'development';
-  console.log(`🚀 Server is running on: http://${host}:${port}`);
-  console.log(`📚 API Docs available at: http://localhost:${port}/api`);
-  console.log(`🌍 Environment: ${nodeEnv}`);
-  console.log(`🔒 CORS Origins: ${allowedOrigins.join(', ')}`);
+  console.log('');
+  console.log('╔═══════════════════════════════════════════════════════════════════╗');
+  console.log('║  🚀  AFS NEXUS - FACILITY MANAGEMENT SYSTEM                       ║');
+  console.log('╚═══════════════════════════════════════════════════════════════════╝');
+  console.log('');
+  console.log(`📡 Server listening on:     http://${host}:${port}`);
+  console.log(`📚 API Documentation:       http://localhost:${port}/api`);
+  console.log(`🌍 Environment:             ${nodeEnv}`);
+  console.log(`🔒 CORS Enabled for:        ${allowedOrigins.length} origins`);
+  console.log('');
+  console.log('✅ Server is ready to accept connections!');
+  console.log('');
 }
 bootstrap();

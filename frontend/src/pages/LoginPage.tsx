@@ -22,7 +22,7 @@ const LoginPage = () => {
 
       const userId = String(user.id || '').trim();
       const userRole = user.role; // Can be 'SUPER_ADMIN', 'ADMIN', 'MANAGER', 'TECHNICIAN'
-      const userTenantId = user.tenantId; // Can be null for SUPER_ADMIN
+      const userTenantId = user.tenantId || null; // Can be null for SUPER_ADMIN
       const userFirstName = user.firstName || '';
       const userLastName = user.lastName || '';
 
@@ -32,19 +32,25 @@ const LoginPage = () => {
       console.group('🔐 LOGIN - Super Admin Detection');
       console.log('User Tenant ID:', userTenantId || 'null');
       console.log('User Role:', userRole);
+      console.log('User First Name:', userFirstName);
+      console.log('User Last Name:', userLastName);
       console.log('Is Super Admin?', isSuperAdmin);
       console.groupEnd();
 
-      // Update AuthContext with user data
+      // Update AuthContext with all 6 parameters
       login(access_token, userTenantId, userRole, userId, userFirstName, userLastName);
       
-      toast.success(`Welcome back, ${user.firstName}!`);
+      toast.success(`Welcome back, ${userFirstName || 'User'}!`);
 
-      // Redirect based on role
+      // Redirect based on role - SUPER_ADMIN goes to /super-admin
       setTimeout(() => {
-        const targetRoute = isSuperAdmin ? '/super-admin' : '/';
-        console.log(`🚀 Navigating to: ${targetRoute}`);
-        navigate(targetRoute, { replace: true });
+        if (isSuperAdmin) {
+          console.log(`🚀 Navigating Super Admin to: /super-admin`);
+          navigate('/super-admin', { replace: true });
+        } else {
+          console.log(`🚀 Navigating Regular User to: /`);
+          navigate('/', { replace: true });
+        }
       }, 600);
 
     } catch (err: any) {

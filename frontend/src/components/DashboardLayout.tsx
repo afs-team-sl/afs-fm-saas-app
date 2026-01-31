@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Box, ClipboardList, Settings, LogOut, Menu, X, Bell, UserCog, Package, ShieldCheck, Calendar, MapPin, AlertCircle, Info, AlertTriangle, CheckCircle2, CheckCheck } from 'lucide-react';
+import { LayoutDashboard, Box, ClipboardList, Settings, LogOut, Menu, X, Bell, UserCog, Package, ShieldCheck, Calendar, MapPin, AlertCircle, Info, AlertTriangle, CheckCircle2, CheckCheck, Globe, Users, Activity } from 'lucide-react';
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
 
@@ -10,6 +10,14 @@ interface UserNotification {
   message: string;
   type: 'INFO' | 'WARNING' | 'SUCCESS' | 'ERROR';
   isRead: boolean;
+  createdAt: string;
+}
+
+interface Announcement {
+  id: string;
+  message: string;
+  type: 'INFO' | 'WARNING' | 'DANGER';
+  isActive: boolean;
   createdAt: string;
 }
 
@@ -22,14 +30,28 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [dismissedAnnouncements, setDismissedAnnouncements] = useState<string[]>([]);
 
   // Fetch user notifications on mount and every 60 seconds (real-time feel)
   useEffect(() => {
     fetchUserNotifications();
+    fetchAnnouncements();
     
-    // Poll every 60 seconds for new notifications
-    const interval = setInterval(fetchUserNotifications, 60000);
+    // Poll every 60 seconds for new notifications and announcements
+    const interval = setInterval(() => {
+      fetchUserNotifications();
+      fetchAnnouncements();
+    }, 60000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Load dismissed announcements from localStorage
+  useEffect(() => {
+    const dismissed = localStorage.getItem('dismissedAnnouncements');
+    if (dismissed) {
+      setDismissedAnnouncements(JSON.parse(dismissed));
+    }
   }, []);
 
   // Close dropdown when clicking outside
@@ -51,6 +73,32 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
       setUnreadCount(res.data.unreadCount);
     } catch (err) {
       console.error('Failed to fetch user notifications:', err);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await apiClient.get('/tenants/active-announcements');
+      setAnnouncements(res.data);
+    } catch (err) {
+      console.error('Failed to fetch announcements:', err);
+    }
+  };
+
+  const dismissAnnouncement = (id: string) => {
+    const newDismissed = [...dismissedAnnouncements, id];
+    setDismissedAnnouncements(newDismissed);
+    localStorage.setItem('dismissedAnnouncements', JSON.stringify(newDismissed));
+  };
+
+  const getAnnouncementStyle = (type: Announcement['type']) => {
+    switch (type) {
+      case 'DANGER':
+        return { bg: 'bg-red-600', border: 'border-red-700', text: 'text-white', icon: AlertCircle };
+      case 'WARNING':
+        return { bg: 'bg-orange-500', border: 'border-orange-600', text: 'text-white', icon: AlertTriangle };
+      default:
+        return { bg: 'bg-blue-500', border: 'border-blue-600', text: 'text-white', icon: Info };
     }
   };
 
@@ -119,23 +167,34 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   };
 
   const menuItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: false },
+    // Regular User Dashboard
+    { name: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: true },
+    
+    // Super Admin Dashboard
+    { name: 'Platform Overview', path: '/', icon: Globe, roles: ['SUPER_ADMIN'], superAdminOnly: true, hideForSuperAdmin: false },
+    
+    // Regular Tenant Operations
     { name: 'Assets', path: '/assets', icon: Box, roles: ['ADMIN', 'MANAGER'], superAdminOnly: false, hideForSuperAdmin: true },
     { name: 'Work Orders', path: '/work-orders', icon: ClipboardList, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: true },
     { name: 'Inventory', path: '/inventory', icon: Package, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: true },
     { name: 'Maintenance Plans', path: '/maintenance', icon: Calendar, roles: ['ADMIN', 'MANAGER'], superAdminOnly: false, hideForSuperAdmin: true },
     { name: 'Locations', path: '/locations', icon: MapPin, roles: ['ADMIN', 'MANAGER'], superAdminOnly: false, hideForSuperAdmin: true },
     { name: 'Users', path: '/users', icon: UserCog, roles: ['ADMIN'], superAdminOnly: false, hideForSuperAdmin: true },
-    { name: 'Global Control', path: '/super-admin', icon: ShieldCheck, roles: ['SUPER_ADMIN'], superAdminOnly: true, hideForSuperAdmin: false },
-    { name: 'Team Management', path: '/users', icon: UserCog, roles: ['SUPER_ADMIN'], superAdminOnly: true, hideForSuperAdmin: false },
-    { name: 'Settings', path: '/settings', icon: Settings, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN', 'SUPER_ADMIN'], superAdminOnly: false, hideForSuperAdmin: false },
+    
+    // Super Admin Exclusive
+    { name: 'Global Users', path: '/users', icon: Users, roles: ['SUPER_ADMIN'], superAdminOnly: true, hideForSuperAdmin: false },
+    { name: 'Tenant Management', path: '/super-admin', icon: ShieldCheck, roles: ['SUPER_ADMIN'], superAdminOnly: true, hideForSuperAdmin: false },
+    { name: 'Security Logs', path: '/settings', icon: Activity, roles: ['SUPER_ADMIN'], superAdminOnly: true, hideForSuperAdmin: false },
+    
+    // Common
+    { name: 'Settings', path: '/settings', icon: Settings, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: true },
   ];
 
   /**
    * STRICT ROLE-BASED SIDEBAR FILTERING
    * 
    * SUPER_ADMIN (tenantId: null):
-   * - Shows: Global Control, Team Management, Settings
+   * - Shows: Dashboard, Global Control, Team Management, Settings
    * - Hides: Assets, Work Orders, Inventory, Maintenance, Locations, regular Users
    * 
    * ADMIN (tenantId: set):
@@ -153,9 +212,12 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
     const currentRole = role || '';
     const isSuperAdmin = currentRole === 'SUPER_ADMIN';
 
-    // If SUPER_ADMIN: Show only items marked for SUPER_ADMIN
+    // If SUPER_ADMIN: Show only items marked for SUPER_ADMIN or items that are not hidden for super admin
     if (isSuperAdmin) {
-      return item.superAdminOnly || (!item.hideForSuperAdmin && item.roles.includes('SUPER_ADMIN'));
+      if (item.hideForSuperAdmin) {
+        return false;
+      }
+      return item.roles.includes('SUPER_ADMIN');
     }
 
     // For regular users: Hide SUPER_ADMIN-only items
@@ -341,6 +403,36 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
             </div>
           </div>
         </header>
+
+        {/* Global Announcements Banner */}
+        {announcements
+          .filter(a => a.isActive && !dismissedAnnouncements.includes(a.id))
+          .map((announcement) => {
+            const style = getAnnouncementStyle(announcement.type);
+            const Icon = style.icon;
+            return (
+              <div
+                key={announcement.id}
+                className={`${style.bg} ${style.border} border-b-2 px-4 md:px-6 py-3 flex items-center gap-3 shadow-sm`}
+              >
+                <div className={`w-8 h-8 ${style.text} bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold ${style.text}`}>
+                    {announcement.message}
+                  </p>
+                </div>
+                <button
+                  onClick={() => dismissAnnouncement(announcement.id)}
+                  className={`${style.text} hover:bg-white/20 p-2 rounded-lg transition-colors flex-shrink-0`}
+                  title="Dismiss"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })}
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto bg-slate-50">

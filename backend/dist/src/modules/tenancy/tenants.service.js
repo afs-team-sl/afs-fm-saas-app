@@ -157,7 +157,22 @@ let TenantsService = class TenantsService {
         };
     }
     async remove(id) {
-        const tenant = await this.prisma.tenant.findUnique({}, console.log(`🗑️  Deleting tenant: ${tenant.name}`));
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        users: true,
+                        assets: true,
+                        workOrders: true,
+                    },
+                },
+            },
+        });
+        if (!tenant) {
+            throw new common_1.NotFoundException(`Tenant with ID ${id} not found`);
+        }
+        console.log(`🗑️  Deleting tenant: ${tenant.name}`);
         console.log(`   - ${tenant._count.users} users`);
         console.log(`   - ${tenant._count.assets} assets`);
         console.log(`   - ${tenant._count.workOrders} work orders`);

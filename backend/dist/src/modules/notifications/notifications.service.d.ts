@@ -13,7 +13,7 @@ export declare class NotificationsService {
             message: string;
             type: import(".prisma/client").$Enums.UserNotificationType;
             isRead: boolean;
-            userId: string;
+            userId: string | null;
         }[];
         unreadCount: number;
     }>;
@@ -24,7 +24,7 @@ export declare class NotificationsService {
         message: string;
         type: import(".prisma/client").$Enums.UserNotificationType;
         isRead: boolean;
-        userId: string;
+        userId: string | null;
     }>;
     markAllAsRead(userId: string): Promise<{
         message: string;
@@ -37,7 +37,7 @@ export declare class NotificationsService {
         message: string;
         type: import(".prisma/client").$Enums.UserNotificationType;
         isRead: boolean;
-        userId: string;
+        userId: string | null;
     }>;
     private verifySuperAdmin;
     getAllGlobalNotifications(activeOnly?: boolean): Promise<{

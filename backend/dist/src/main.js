@@ -17,19 +17,28 @@ async function bootstrap() {
     const allowedOrigins = corsOrigin
         ? corsOrigin.split(',').map(origin => origin.trim())
         : [
+            'http://localhost',
+            'http://localhost:80',
             'http://localhost:5173',
             'http://localhost:5174',
             'http://localhost:3000',
+            'http://127.0.0.1',
+            'http://127.0.0.1:5173',
+            'http://127.0.0.1:3000',
         ];
     app.enableCors({
         origin: (origin, callback) => {
-            if (!origin)
+            if (!origin) {
+                console.log('✅ CORS: Allowing request with no origin (Postman/Mobile/Server)');
                 return callback(null, true);
+            }
             if (allowedOrigins.indexOf(origin) !== -1) {
+                console.log(`✅ CORS: Allowing request from: ${origin}`);
                 callback(null, true);
             }
             else {
-                console.warn(`⚠️  CORS blocked request from origin: ${origin}`);
+                console.error(`❌ CORS: Blocked request from origin: ${origin}`);
+                console.log(`   Allowed origins: ${allowedOrigins.join(', ')}`);
                 callback(new Error('Not allowed by CORS'));
             }
         },
@@ -37,9 +46,10 @@ async function bootstrap() {
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
         allowedHeaders: [
             'Content-Type',
-            'Authorization',
-            'X-Tenant-ID',
             'Accept',
+            'Authorization',
+            'x-tenant-id',
+            'X-Tenant-ID',
             'Origin',
             'X-Requested-With',
         ],
@@ -65,10 +75,18 @@ async function bootstrap() {
     const host = '0.0.0.0';
     await app.listen(port, host);
     const nodeEnv = configService.get('NODE_ENV') || 'development';
-    console.log(`🚀 Server is running on: http://${host}:${port}`);
-    console.log(`📚 API Docs available at: http://localhost:${port}/api`);
-    console.log(`🌍 Environment: ${nodeEnv}`);
-    console.log(`🔒 CORS Origins: ${allowedOrigins.join(', ')}`);
+    console.log('');
+    console.log('╔═══════════════════════════════════════════════════════════════════╗');
+    console.log('║  🚀  AFS NEXUS - FACILITY MANAGEMENT SYSTEM                       ║');
+    console.log('╚═══════════════════════════════════════════════════════════════════╝');
+    console.log('');
+    console.log(`📡 Server listening on:     http://${host}:${port}`);
+    console.log(`📚 API Documentation:       http://localhost:${port}/api`);
+    console.log(`🌍 Environment:             ${nodeEnv}`);
+    console.log(`🔒 CORS Enabled for:        ${allowedOrigins.length} origins`);
+    console.log('');
+    console.log('✅ Server is ready to accept connections!');
+    console.log('');
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
