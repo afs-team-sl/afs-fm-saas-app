@@ -58,6 +58,104 @@ export class CreateAssetDto {
   @IsOptional()
   roomId?: string;
 
+  // Advanced HVAC/Mechanical Fields
+  @ApiPropertyOptional({
+    description: 'Site location of the asset',
+    example: 'Main Campus',
+    maxLength: 255,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  site?: string;
+
+  @ApiPropertyOptional({
+    description: 'Specific location within site',
+    example: 'Building A - Roof',
+    maxLength: 255,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  location?: string;
+
+  @ApiPropertyOptional({
+    description: 'Custom ID for the asset',
+    example: 'HVAC-001',
+    maxLength: 100,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  customId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Asset number',
+    example: 'A-2024-001',
+    maxLength: 100,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  assetNumber?: string;
+
+  @ApiPropertyOptional({
+    description: 'Manufacturer of the asset',
+    example: 'Carrier',
+    maxLength: 255,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  manufacturer?: string;
+
+  @ApiPropertyOptional({
+    description: 'Model number',
+    example: '30RB-080',
+    maxLength: 100,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  modelNumber?: string;
+
+  @ApiPropertyOptional({
+    description: 'Year of installation',
+    example: 2020,
+  })
+  @IsOptional()
+  installYear?: number;
+
+  @ApiPropertyOptional({
+    description: 'Filter size specification',
+    example: '20x25x4',
+    maxLength: 100,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  filterSize?: string;
+
+  @ApiPropertyOptional({
+    description: 'Belt size specification',
+    example: 'B-54',
+    maxLength: 100,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  beltSize?: string;
+
+  @ApiPropertyOptional({
+    description: 'Additional notes about the asset',
+    example: 'Requires quarterly maintenance',
+    maxLength: 1000,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(1000)
+  notes?: string;
+
   // IMPORTANT: tenantId is removed from this DTO because it is 
   // provided via the 'x-tenant-id' header, not the request body.
 }

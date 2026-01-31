@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { ArrowLeft, Box, History, Calendar, User, CheckCircle2, AlertTriangle, FileText, Settings, QrCode, Printer } from 'lucide-react';
+import { ArrowLeft, Box, History, Calendar, User, CheckCircle2, AlertTriangle, FileText, Settings, QrCode, Printer, Settings2, MapPin, Wrench, ClipboardList } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -98,8 +98,13 @@ const AssetDetailsPage = () => {
             <Box className="w-8 h-8" />
           </div>
           <div className="flex-1 space-y-3">
-            <div className="flex flex-col md:flex-row md:items-center gap-3">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 flex-wrap">
               <h1 className="text-2xl font-semibold text-slate-900">{asset.name}</h1>
+              {asset.assetNumber && (
+                <span className="inline-flex items-center px-3 py-1.5 rounded-md bg-[#232249] text-white text-sm font-semibold border-2 border-[#232249]">
+                  Tag: {asset.assetNumber}
+                </span>
+              )}
               <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
                 asset.status === 'ACTIVE' ? 'bg-status-success-light text-status-success-dark border-status-success' :
                 asset.status === 'MAINTENANCE' ? 'bg-status-warning-light text-status-warning-dark border-status-warning' :
@@ -114,10 +119,12 @@ const AssetDetailsPage = () => {
                 <Settings className="w-4 h-4" />
                 {asset.category}
               </span>
-              <span className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                SN: {asset.serialNo || 'N/A'}
-              </span>
+              {asset.serialNo && (
+                <span className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  SN: {asset.serialNo}
+                </span>
+              )}
               <span className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Registered: {new Date(asset.createdAt).toLocaleDateString()}
@@ -175,6 +182,100 @@ const AssetDetailsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Technical Specifications Section */}
+      {(asset.manufacturer || asset.modelNumber || asset.assetNumber || asset.serialNo || asset.installYear || asset.filterSize || asset.beltSize || asset.site || asset.location) && (
+        <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Settings2 className="w-5 h-5 text-[#232249]" />
+            <h3 className="text-lg font-semibold text-slate-900">Technical Specifications</h3>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {asset.assetNumber && (
+              <div className="p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                <p className="text-xs font-semibold text-blue-600 mb-1">Asset Number (Tag)</p>
+                <p className="text-sm font-bold text-blue-900 font-mono">{asset.assetNumber}</p>
+              </div>
+            )}
+            
+            {asset.serialNo && (
+              <div className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+                <p className="text-xs font-medium text-secondary-500 mb-1">Serial Number</p>
+                <p className="text-sm font-semibold text-slate-900 font-mono">{asset.serialNo}</p>
+              </div>
+            )}
+            
+            {asset.manufacturer && (
+              <div className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+                <p className="text-xs font-medium text-secondary-500 mb-1">Manufacturer</p>
+                <p className="text-sm font-semibold text-slate-900">{asset.manufacturer}</p>
+              </div>
+            )}
+            
+            {asset.modelNumber && (
+              <div className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+                <p className="text-xs font-medium text-secondary-500 mb-1">Model Number</p>
+                <p className="text-sm font-semibold text-slate-900">{asset.modelNumber}</p>
+              </div>
+            )}
+            
+            {asset.installYear && (
+              <div className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+                <p className="text-xs font-medium text-secondary-500 mb-1">Install Year</p>
+                <p className="text-sm font-semibold text-slate-900">{asset.installYear}</p>
+              </div>
+            )}
+            
+            {asset.filterSize && (
+              <div className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+                <p className="text-xs font-medium text-secondary-500 mb-1">Filter Size</p>
+                <p className="text-sm font-semibold text-slate-900">{asset.filterSize}</p>
+              </div>
+            )}
+            
+            {asset.beltSize && (
+              <div className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+                <p className="text-xs font-medium text-secondary-500 mb-1">Belt Size</p>
+                <p className="text-sm font-semibold text-slate-900">{asset.beltSize}</p>
+              </div>
+            )}
+            
+            {asset.site && (
+              <div className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+                <p className="text-xs font-medium text-secondary-500 mb-1 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  Site
+                </p>
+                <p className="text-sm font-semibold text-slate-900">{asset.site}</p>
+              </div>
+            )}
+            
+            {asset.location && (
+              <div className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+                <p className="text-xs font-medium text-secondary-500 mb-1 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  Location
+                </p>
+                <p className="text-sm font-semibold text-slate-900">{asset.location}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Notes Section */}
+      {asset.notes && (
+        <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <ClipboardList className="w-5 h-5 text-[#232249]" />
+            <h3 className="text-lg font-semibold text-slate-900">Notes</h3>
+          </div>
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-slate-700 whitespace-pre-wrap">{asset.notes}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
          

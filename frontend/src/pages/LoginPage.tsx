@@ -12,9 +12,6 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
-  // --- CONFIGURATION ---
-  const SUPER_TENANT_ID = import.meta.env.VITE_SUPER_TENANT_ID;
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -23,30 +20,27 @@ const LoginPage = () => {
       const response = await apiClient.post('/auth/login', { email, password });
       const { access_token, user } = response.data;
 
-      // Sanitize IDs (remove whitespace, newlines, quotes)
-      const userTenantId = String(user.tenantId || '').trim();
       const userId = String(user.id || '').trim();
-      const envSuperTenantId = String(SUPER_TENANT_ID || '').trim();
-      const userRole = user.role;
+      const userRole = user.role; // Can be 'SUPER_ADMIN', 'ADMIN', 'MANAGER', 'TECHNICIAN'
+      const userTenantId = user.tenantId; // Can be null for SUPER_ADMIN
       const userFirstName = user.firstName || '';
       const userLastName = user.lastName || '';
 
-      // Super Admin check: Must have ADMIN role AND match Super Tenant ID
-      const isSuperAdmin = userRole === 'ADMIN' && userTenantId === envSuperTenantId;
+      // SUPER_ADMIN check: role === 'SUPER_ADMIN' (tenantId will be null)
+      const isSuperAdmin = userRole === 'SUPER_ADMIN';
 
       console.group('🔐 LOGIN - Super Admin Detection');
-      console.log('User Tenant ID:', userTenantId);
+      console.log('User Tenant ID:', userTenantId || 'null');
       console.log('User Role:', userRole);
-      console.log('Super Tenant ID:', envSuperTenantId);
       console.log('Is Super Admin?', isSuperAdmin);
       console.groupEnd();
 
-      // Update AuthContext with user data including firstName and lastName
+      // Update AuthContext with user data
       login(access_token, userTenantId, userRole, userId, userFirstName, userLastName);
       
       toast.success(`Welcome back, ${user.firstName}!`);
 
-      // Redirect based on Super Admin status
+      // Redirect based on role
       setTimeout(() => {
         const targetRoute = isSuperAdmin ? '/super-admin' : '/';
         console.log(`🚀 Navigating to: ${targetRoute}`);

@@ -77,7 +77,34 @@ let UsersService = class UsersService {
             },
         });
     }
-    async findAll(tenantId) {
+    async findAll(tenantId, role) {
+        if (role === 'SUPER_ADMIN') {
+            console.log('🔓 SUPER_ADMIN access: Fetching ALL users across all tenants');
+            return this.prisma.user.findMany({
+                select: {
+                    id: true,
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                    role: true,
+                    tenantId: true,
+                    tenant: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+                orderBy: [
+                    { tenantId: 'asc' },
+                    { createdAt: 'desc' },
+                ],
+            });
+        }
+        if (!tenantId) {
+            throw new common_1.BadRequestException('Non-SUPER_ADMIN users must have a valid tenantId');
+        }
+        console.log(`🔒 Regular user access: Fetching users for tenant ${tenantId}`);
         return this.prisma.user.findMany({
             where: { tenantId },
             select: {
@@ -87,10 +114,40 @@ let UsersService = class UsersService {
                 lastName: true,
                 role: true,
             },
+            orderBy: {
+                createdAt: 'desc',
+            },
         });
     }
-    async findOne(id, tenantId) {
+    async findOne(id, tenantId, role) {
         try {
+            if (role === 'SUPER_ADMIN') {
+                const user = await this.prisma.user.findUnique({
+                    where: { id },
+                    select: {
+                        id: true,
+                        email: true,
+                        firstName: true,
+                        lastName: true,
+                        role: true,
+                        tenantId: true,
+                        tenant: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                        createdAt: true,
+                    },
+                });
+                if (!user) {
+                    throw new common_1.NotFoundException(`User with ID ${id} not found`);
+                }
+                return user;
+            }
+            if (!tenantId) {
+                throw new common_1.BadRequestException('Non-SUPER_ADMIN users must have a valid tenantId');
+            }
             const user = await this.prisma.user.findFirst({
                 where: { id, tenantId },
                 select: {
@@ -109,15 +166,15 @@ let UsersService = class UsersService {
             return user;
         }
         catch (error) {
-            if (error instanceof common_1.NotFoundException) {
+            if (error instanceof common_1.NotFoundException || error instanceof common_1.BadRequestException) {
                 throw error;
             }
             console.error('Error finding user:', error);
             throw new common_1.NotFoundException(`Unable to find user with ID ${id}`);
         }
     }
-    async update(id, tenantId, updateUserDto) {
-        await this.findOne(id, tenantId);
+    async update(id, tenantId, role, updateUserDto) {
+        await this.findOne(id, tenantId, role);
         const updateData = { ...updateUserDto };
         if (updateUserDto.password && updateUserDto.password.trim() !== '') {
             const salt = await bcrypt.genSalt();
@@ -138,8 +195,8 @@ let UsersService = class UsersService {
             },
         });
     }
-    async remove(id, tenantId) {
-        await this.findOne(id, tenantId);
+    async remove(id, tenantId, role) {
+        await this.findOne(id, tenantId, role);
         await this.prisma.user.delete({
             where: { id },
         });

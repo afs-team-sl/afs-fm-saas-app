@@ -5,13 +5,6 @@ import { LayoutDashboard, Box, ClipboardList, Settings, LogOut, Menu, X, Bell, U
 import apiClient from '../api/client';
 import toast from 'react-hot-toast';
 
-interface Notification {
-  id: string;
-  message: string;
-  type: 'INFO' | 'WARNING' | 'CRITICAL' | 'MAINTENANCE';
-  createdAt: string;
-}
-
 interface UserNotification {
   id: string;
   message: string;
@@ -25,37 +18,17 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userNotifications, setUserNotifications] = useState<UserNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
 
-  const SUPER_TENANT_ID = String(import.meta.env.VITE_SUPER_TENANT_ID || '').trim();
-
-  // Fetch active broadcast notifications
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await apiClient.get('/tenants/notifications/active');
-        setNotifications(res.data);
-      } catch (err) {
-        console.error('Failed to fetch notifications:', err);
-      }
-    };
-    fetchNotifications();
-    
-    // Poll every 30 seconds for new notifications
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Fetch user notifications
+  // Fetch user notifications on mount and every 60 seconds (real-time feel)
   useEffect(() => {
     fetchUserNotifications();
     
-    // Poll every 30 seconds
-    const interval = setInterval(fetchUserNotifications, 30000);
+    // Poll every 60 seconds for new notifications
+    const interval = setInterval(fetchUserNotifications, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -130,20 +103,6 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
     }
   };
 
-  // Get notification styling based on type
-  const getNotificationStyle = (type: Notification['type']) => {
-    switch (type) {
-      case 'CRITICAL':
-        return { bg: 'bg-red-600', icon: AlertCircle, text: 'text-white' };
-      case 'WARNING':
-        return { bg: 'bg-orange-500', icon: AlertTriangle, text: 'text-white' };
-      case 'MAINTENANCE':
-        return { bg: 'bg-amber-500', icon: Settings, text: 'text-white' };
-      default:
-        return { bg: 'bg-primary', icon: Info, text: 'text-white' };
-    }
-  };
-
   // Generate user initials from first and last name
   const getUserInitials = () => {
     const first = (firstName || 'U').charAt(0).toUpperCase();
@@ -160,35 +119,52 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   };
 
   const menuItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
-    { name: 'Assets', path: '/assets', icon: Box, roles: ['ADMIN', 'MANAGER'] },
-    { name: 'Work Orders', path: '/work-orders', icon: ClipboardList, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
-    { name: 'Inventory', path: '/inventory', icon: Package, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
-    { name: 'Maintenance Plans', path: '/maintenance', icon: Calendar, roles: ['ADMIN', 'MANAGER'] },
-    { name: 'Locations', path: '/locations', icon: MapPin, roles: ['ADMIN', 'MANAGER'] },
-    { name: 'Users', path: '/users', icon: UserCog, roles: ['ADMIN'] },
-    { name: 'Super Admin', path: '/super-admin', icon: ShieldCheck, roles: ['ADMIN'] },
-    { name: 'Settings', path: '/settings', icon: Settings, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'] },
+    { name: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: false },
+    { name: 'Assets', path: '/assets', icon: Box, roles: ['ADMIN', 'MANAGER'], superAdminOnly: false, hideForSuperAdmin: true },
+    { name: 'Work Orders', path: '/work-orders', icon: ClipboardList, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: true },
+    { name: 'Inventory', path: '/inventory', icon: Package, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: true },
+    { name: 'Maintenance Plans', path: '/maintenance', icon: Calendar, roles: ['ADMIN', 'MANAGER'], superAdminOnly: false, hideForSuperAdmin: true },
+    { name: 'Locations', path: '/locations', icon: MapPin, roles: ['ADMIN', 'MANAGER'], superAdminOnly: false, hideForSuperAdmin: true },
+    { name: 'Users', path: '/users', icon: UserCog, roles: ['ADMIN'], superAdminOnly: false, hideForSuperAdmin: true },
+    { name: 'Global Control', path: '/super-admin', icon: ShieldCheck, roles: ['SUPER_ADMIN'], superAdminOnly: true, hideForSuperAdmin: false },
+    { name: 'Team Management', path: '/users', icon: UserCog, roles: ['SUPER_ADMIN'], superAdminOnly: true, hideForSuperAdmin: false },
+    { name: 'Settings', path: '/settings', icon: Settings, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN', 'SUPER_ADMIN'], superAdminOnly: false, hideForSuperAdmin: false },
   ];
 
+  /**
+   * STRICT ROLE-BASED SIDEBAR FILTERING
+   * 
+   * SUPER_ADMIN (tenantId: null):
+   * - Shows: Global Control, Team Management, Settings
+   * - Hides: Assets, Work Orders, Inventory, Maintenance, Locations, regular Users
+   * 
+   * ADMIN (tenantId: set):
+   * - Shows: Everything except Global Control
+   * 
+   * MANAGER:
+   * - Shows: Dashboard, Assets, Work Orders, Inventory, Maintenance, Locations, Settings
+   * - Hides: Users, Global Control
+   * 
+   * TECHNICIAN:
+   * - Shows: Dashboard, Work Orders, Inventory, Settings
+   * - Hides: Everything else
+   */
   const filteredMenu = menuItems.filter(item => {
-    const hasRoleAccess = item.roles.includes(role || '');
-    if (!hasRoleAccess) return false;
-
-    const currentTenantId = String(tenantId || '').trim();
     const currentRole = role || '';
-    
-    const isSuperAdmin = currentRole === 'ADMIN' && currentTenantId === SUPER_TENANT_ID;
+    const isSuperAdmin = currentRole === 'SUPER_ADMIN';
 
-    if (item.path === '/super-admin') {
-      return isSuperAdmin;
+    // If SUPER_ADMIN: Show only items marked for SUPER_ADMIN
+    if (isSuperAdmin) {
+      return item.superAdminOnly || (!item.hideForSuperAdmin && item.roles.includes('SUPER_ADMIN'));
     }
 
-    if (isSuperAdmin && ['/assets', '/work-orders'].includes(item.path)) {
+    // For regular users: Hide SUPER_ADMIN-only items
+    if (item.superAdminOnly) {
       return false;
     }
 
-    return true;
+    // Check if user's role has access to this menu item
+    return item.roles.includes(currentRole);
   });
 
   const currentPage = menuItems.find(i => i.path === location.pathname);
@@ -365,27 +341,6 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
             </div>
           </div>
         </header>
-
-        {/* Broadcast Notifications Banner */}
-        {notifications.length > 0 && (
-          <div className="space-y-0">
-            {notifications.map((notif) => {
-              const style = getNotificationStyle(notif.type);
-              const Icon = style.icon;
-              return (
-                <div key={notif.id} className={`${style.bg} ${style.text} px-4 md:px-6 py-3 flex items-center gap-3 shadow-sm`}>
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{notif.message}</p>
-                  </div>
-                  <span className="text-xs opacity-75 whitespace-nowrap">
-                    {notif.type}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto bg-slate-50">

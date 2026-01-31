@@ -18,40 +18,48 @@ const swagger_1 = require("@nestjs/swagger");
 const users_service_1 = require("./users.service");
 const create_user_dto_1 = require("./dto/create-user.dto");
 const update_user_dto_1 = require("./dto/update-user.dto");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 let UsersController = class UsersController {
     usersService;
     constructor(usersService) {
         this.usersService = usersService;
     }
-    create(tenantId, createUserDto) {
-        if (!tenantId) {
-            throw new common_1.BadRequestException('x-tenant-id header is required');
+    create(req, createUserDto) {
+        const tenantId = req.user.tenantId;
+        const role = req.user.role;
+        if (role === 'SUPER_ADMIN' || !tenantId) {
+            throw new common_1.BadRequestException('SUPER_ADMIN users cannot create organization users. Please use an organization admin account.');
         }
         return this.usersService.create(tenantId, createUserDto);
     }
-    findAll(tenantId) {
-        if (!tenantId) {
-            throw new common_1.BadRequestException('x-tenant-id header is required');
-        }
-        return this.usersService.findAll(tenantId);
+    findAll(req) {
+        const tenantId = req.user.tenantId;
+        const role = req.user.role;
+        console.log('📋 GET /users - User Context:');
+        console.log('   Role:', role);
+        console.log('   Tenant ID:', tenantId || 'null (SUPER_ADMIN)');
+        return this.usersService.findAll(tenantId, role);
     }
-    findOne(id, tenantId) {
-        if (!tenantId) {
-            throw new common_1.BadRequestException('x-tenant-id header is required');
-        }
-        return this.usersService.findOne(id, tenantId);
+    findOne(id, req) {
+        const tenantId = req.user.tenantId;
+        const role = req.user.role;
+        return this.usersService.findOne(id, tenantId, role);
     }
-    update(id, tenantId, updateUserDto) {
-        if (!tenantId) {
-            throw new common_1.BadRequestException('x-tenant-id header is required');
+    update(id, req, updateUserDto) {
+        const tenantId = req.user.tenantId;
+        const role = req.user.role;
+        if (role === 'SUPER_ADMIN' || !tenantId) {
+            throw new common_1.BadRequestException('SUPER_ADMIN users cannot update organization users. Please use an organization admin account.');
         }
-        return this.usersService.update(id, tenantId, updateUserDto);
+        return this.usersService.update(id, tenantId, role, updateUserDto);
     }
-    remove(id, tenantId) {
-        if (!tenantId) {
-            throw new common_1.BadRequestException('x-tenant-id header is required');
+    remove(id, req) {
+        const tenantId = req.user.tenantId;
+        const role = req.user.role;
+        if (role === 'SUPER_ADMIN' || !tenantId) {
+            throw new common_1.BadRequestException('SUPER_ADMIN users cannot delete organization users. Please use an organization admin account.');
         }
-        return this.usersService.remove(id, tenantId);
+        return this.usersService.remove(id, tenantId, role);
     }
 };
 exports.UsersController = UsersController;
@@ -59,32 +67,23 @@ __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
     (0, swagger_1.ApiOperation)({ summary: 'Create a new user' }),
-    (0, swagger_1.ApiHeader)({
-        name: 'x-tenant-id',
-        description: 'Tenant ID for data isolation',
-        required: true,
-    }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'User successfully created' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid tenant or SUPER_ADMIN cannot create users' }),
     (0, swagger_1.ApiResponse)({ status: 409, description: 'User with this email already exists' }),
-    __param(0, (0, common_1.Headers)('x-tenant-id')),
+    __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, create_user_dto_1.CreateUserDto]),
+    __metadata("design:paramtypes", [Object, create_user_dto_1.CreateUserDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: 'Get all users for a tenant' }),
-    (0, swagger_1.ApiHeader)({
-        name: 'x-tenant-id',
-        description: 'Tenant ID for data isolation',
-        required: true,
-    }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all users (scoped by role)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'List of users retrieved successfully' }),
-    __param(0, (0, common_1.Headers)('x-tenant-id')),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findAll", null);
 __decorate([
@@ -92,17 +91,12 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: 'Get a specific user by ID' }),
     (0, swagger_1.ApiParam)({ name: 'id', description: 'User UUID' }),
-    (0, swagger_1.ApiHeader)({
-        name: 'x-tenant-id',
-        description: 'Tenant ID for data isolation',
-        required: true,
-    }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'User retrieved successfully' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findOne", null);
 __decorate([
@@ -110,17 +104,13 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: 'Update a user' }),
     (0, swagger_1.ApiParam)({ name: 'id', description: 'User UUID' }),
-    (0, swagger_1.ApiHeader)({
-        name: 'x-tenant-id',
-        description: 'Tenant ID for data isolation',
-        required: true,
-    }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'User successfully updated' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'SUPER_ADMIN cannot update organization users' }),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __param(1, (0, common_1.Request)()),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, update_user_dto_1.UpdateUserDto]),
+    __metadata("design:paramtypes", [String, Object, update_user_dto_1.UpdateUserDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "update", null);
 __decorate([
@@ -128,20 +118,18 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: 'Delete a user' }),
     (0, swagger_1.ApiParam)({ name: 'id', description: 'User UUID' }),
-    (0, swagger_1.ApiHeader)({
-        name: 'x-tenant-id',
-        description: 'Tenant ID for data isolation',
-        required: true,
-    }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'User successfully deleted' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'SUPER_ADMIN cannot delete organization users' }),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('users'),
     __metadata("design:paramtypes", [users_service_1.UsersService])
 ], UsersController);

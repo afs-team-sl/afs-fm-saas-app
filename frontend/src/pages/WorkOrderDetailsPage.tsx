@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2 } from 'lucide-react';
+import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2, Timer, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Part {
@@ -28,6 +28,9 @@ interface WorkOrderDetails {
   completionNote?: string;
   assetId: string;
   assignedToId?: string;
+  startedAt?: string;
+  dueDate?: string;
+  laborHours?: number;
   asset: {
     id: string;
     name: string;
@@ -61,11 +64,30 @@ const WorkOrderDetailsPage = () => {
   const [selectedPartId, setSelectedPartId] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  // Labor Timer
+  const [elapsedTime, setElapsedTime] = useState<string>('0h 0m');
+
   useEffect(() => {
     fetchWorkOrderDetails();
     fetchAvailableParts();
     fetchWorkOrderParts();
   }, [id]);
+
+  // Timer Effect - Updates every minute when work order is IN_PROGRESS
+  useEffect(() => {
+    if (workOrder?.status === 'IN_PROGRESS' && workOrder.startedAt) {
+      const timer = setInterval(() => {
+        const start = new Date(workOrder.startedAt!);
+        const now = new Date();
+        const diffMs = now.getTime() - start.getTime();
+        const hours = Math.floor(diffMs / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        setElapsedTime(`${hours}h ${minutes}m`);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [workOrder]);
 
   const fetchWorkOrderDetails = async () => {
     try {
@@ -332,6 +354,127 @@ const WorkOrderDetailsPage = () => {
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               <span>Updated: {new Date(workOrder.updatedAt).toLocaleString()}</span>
+            </div>
+          </div>
+
+          {/* Labor Timer Section - SLA Tracking */}
+          <div className="border-t border-gray-200 pt-6">
+            <div className="bg-gradient-to-r from-[#232249] to-[#2d2d5f] rounded-lg p-6 text-white">
+              <div className="flex items-center gap-3 mb-4">
+                <Timer className="w-6 h-6" />
+                <h3 className="text-lg font-semibold">Labor Time Tracking</h3>
+              </div>
+
+              {/* OPEN Status - Ready to Start */}
+              {workOrder.status === 'OPEN' && (
+                <div className="space-y-4">
+                  <p className="text-blue-100">This work order is ready to begin. Click the button below to start the timer.</p>
+                  <button
+                    onClick={handleMarkInProgress}
+                    disabled={isSubmitting}
+                    className="inline-flex items-center gap-3 px-6 py-3 bg-white text-[#232249] font-semibold rounded-lg hover:bg-blue-50 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Starting Mission...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-5 h-5" />
+                        START MISSION
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* IN_PROGRESS Status - Active Timer */}
+              {workOrder.status === 'IN_PROGRESS' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-green-200">ACTIVE - Work in Progress</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                      <p className="text-xs font-medium text-blue-200 mb-1">Started At</p>
+                      <p className="text-xl font-bold">
+                        {workOrder.startedAt 
+                          ? new Date(workOrder.startedAt).toLocaleString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          : 'Not recorded'}
+                      </p>
+                    </div>
+
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                      <p className="text-xs font-medium text-blue-200 mb-1 flex items-center gap-1">
+                        <Zap className="w-3 h-3" />
+                        Elapsed Time
+                      </p>
+                      <p className="text-xl font-bold tabular-nums">{elapsedTime}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* COMPLETED Status - Final Labor Hours */}
+              {workOrder.status === 'COMPLETED' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span className="text-sm font-medium text-green-200">Mission Complete</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                      <p className="text-xs font-medium text-blue-200 mb-1">Started</p>
+                      <p className="text-sm font-semibold">
+                        {workOrder.startedAt 
+                          ? new Date(workOrder.startedAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          : 'N/A'}
+                      </p>
+                    </div>
+
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                      <p className="text-xs font-medium text-blue-200 mb-1">Completed</p>
+                      <p className="text-sm font-semibold">
+                        {new Date(workOrder.updatedAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+
+                    <div className="bg-green-400 rounded-lg p-4 border-2 border-green-300 shadow-lg">
+                      <p className="text-xs font-medium text-green-900 mb-1 flex items-center gap-1">
+                        <Timer className="w-3 h-3" />
+                        Total Labor Hours
+                      </p>
+                      <p className="text-2xl font-bold text-green-900 tabular-nums">
+                        {workOrder.laborHours ? `${workOrder.laborHours.toFixed(2)} hrs` : 'Not calculated'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Other statuses */}
+              {!['OPEN', 'IN_PROGRESS', 'COMPLETED'].includes(workOrder.status) && (
+                <p className="text-blue-100">Labor tracking not available for this status.</p>
+              )}
             </div>
           </div>
 

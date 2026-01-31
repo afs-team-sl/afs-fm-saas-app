@@ -37,7 +37,7 @@ class BroadcastDto {
 }
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'The broadcast message to send to all users',
+        description: 'The announcement message',
         example: 'System maintenance scheduled for tomorrow at 2 AM EST',
     }),
     (0, class_validator_1.IsString)(),
@@ -46,11 +46,11 @@ __decorate([
 ], BroadcastDto.prototype, "message", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Type of notification',
-        enum: client_1.NotificationType,
+        description: 'Type of announcement',
+        enum: client_1.AnnouncementType,
         example: 'INFO',
     }),
-    (0, class_validator_1.IsEnum)(client_1.NotificationType),
+    (0, class_validator_1.IsEnum)(client_1.AnnouncementType),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], BroadcastDto.prototype, "type", void 0);
@@ -71,48 +71,31 @@ let TenantsController = class TenantsController {
         return this.tenantsService.update(tenantId, { name: updateTenantDto.name });
     }
     async findAll(req) {
-        const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
-        const currentUserTenantId = req.user.tenantId;
         console.log('-------------------------------------------');
-        console.log('🛡️  SUPER ADMIN SECURITY CHECK');
-        console.log('Logged User Tenant ID:', currentUserTenantId);
-        console.log('System Required ID:   ', masterSuperId);
-        if (currentUserTenantId?.trim() !== masterSuperId?.trim()) {
-            console.log('❌ ACCESS DENIED: ID MISMATCH');
-            throw new common_1.ForbiddenException('Access Denied: Your organization does not have permission to view global data.');
+        console.log('🛡️  SUPER ADMIN SECURITY CHECK - findAll()');
+        console.log('User Role:', req.user.role);
+        console.log('User Tenant ID:', req.user.tenantId);
+        if (req.user.role !== 'SUPER_ADMIN') {
+            console.log('❌ ACCESS DENIED: NOT SUPER_ADMIN ROLE');
+            console.log('-------------------------------------------');
+            throw new common_1.ForbiddenException('Access Denied: Only Super Admins can view all organizations.');
         }
-        console.log('✅ ACCESS GRANTED: WELCOME MASTER ADMIN');
+        console.log('✅ ACCESS GRANTED: SUPER_ADMIN VERIFIED');
         console.log('-------------------------------------------');
         return this.tenantsService.findAll();
     }
     async impersonateTenant(req, tenantId) {
-        const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
-        const currentUserTenantId = req.user.tenantId;
         console.log('🎭 IMPERSONATION REQUEST');
-        console.log('Requester Tenant ID:', currentUserTenantId);
+        console.log('User Role:', req.user.role);
         console.log('Target Tenant ID:', tenantId);
-        if (currentUserTenantId?.trim() !== masterSuperId?.trim()) {
-            console.log('❌ IMPERSONATION DENIED: NOT SUPER ADMIN');
-            throw new common_1.ForbiddenException('Access Denied: Only Super Admin can impersonate other tenants.');
+        if (req.user.role !== 'SUPER_ADMIN') {
+            console.log('❌ IMPERSONATION DENIED: NOT SUPER_ADMIN ROLE');
+            throw new common_1.ForbiddenException('Access Denied: Only Super Admins can impersonate other tenants.');
         }
         console.log('✅ IMPERSONATION ALLOWED');
         return this.tenantsService.generateImpersonationToken(tenantId);
     }
-    async broadcastMessage(req, broadcastDto) {
-        const masterSuperId = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
-        const currentUserTenantId = req.user.tenantId;
-        console.log('📢 BROADCAST REQUEST');
-        console.log('Requester Tenant ID:', currentUserTenantId);
-        if (currentUserTenantId?.trim() !== masterSuperId?.trim()) {
-            console.log('❌ BROADCAST DENIED: NOT SUPER ADMIN');
-            throw new common_1.ForbiddenException('Access Denied: Only Super Admin can send broadcast messages.');
-        }
-        console.log('✅ BROADCAST SENDING');
-        return this.tenantsService.createBroadcast(broadcastDto.message, broadcastDto.type);
-    }
-    async getActiveNotifications() {
-        return this.tenantsService.getActiveNotifications();
-    }
+    ;
 };
 exports.TenantsController = TenantsController;
 __decorate([
@@ -139,7 +122,7 @@ __decorate([
 ], TenantsController.prototype, "updateCurrentTenant", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get all registered organizations (Internal Use Only)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all registered organizations (Super Admin Only)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'List of all tenants retrieved.' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden. You are not a Super Admin.' }),
     __param(0, (0, common_1.Request)()),
@@ -163,21 +146,23 @@ __decorate([
     (0, common_1.Post)('broadcast'),
     (0, swagger_1.ApiOperation)({ summary: 'Send system-wide broadcast message (Super Admin Only)' }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'Broadcast message sent successfully.' }),
-    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden. You are not a Super Admin.' }),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, BroadcastDto]),
-    __metadata("design:returntype", Promise)
-], TenantsController.prototype, "broadcastMessage", null);
-__decorate([
-    (0, common_1.Get)('notifications/active'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get active broadcast notifications for all users' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Active notifications retrieved.' }),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], TenantsController.prototype, "getActiveNotifications", null);
+    (0, swagger_1.ApiResponse)({ status: 403, Create, global, announcement(Super, Admin, Only) { }, ' }): , broadcastMessage(req, broadcastDto) {
+            console.log('📢 BROADCAST REQUEST');
+            console.log('User Role:', req.user.role);
+            if (req.user.role !== 'SUPER_ADMIN') {
+                console.log('❌ BROADCAST DENIED: NOT SUPER_ADMIN ROLE');
+                throw new common_1.ForbiddenException('Access Denied: Only Super Admins can create global announcements.');
+            }
+            console.log('✅ BROADCAST CREATING');
+            return this.tenantsService.createAnnouncement(broadcastDto.message, broadcastDto.type);
+        } }, (), getActiveAnnouncements(, req), {
+        const: tenantId = req.user?.tenantId || null,
+        return: this.tenantsService.getActiveAnnouncements(tenantId)
+    }, (), deleteAnnouncement(, req, , announcementId, string), {
+        if(req) { }, : .user.role !== 'SUPER_ADMIN'
+    }),
+    __metadata("design:type", Object)
+], TenantsController.prototype, "", void 0);
 exports.TenantsController = TenantsController = __decorate([
     (0, swagger_1.ApiTags)('Tenants (Super Admin Only)'),
     (0, swagger_1.ApiBearerAuth)(),
@@ -185,4 +170,19 @@ exports.TenantsController = TenantsController = __decorate([
     (0, common_1.Controller)('tenants'),
     __metadata("design:paramtypes", [tenants_service_1.TenantsService])
 ], TenantsController);
+{
+    throw new common_1.ForbiddenException('Access Denied: Only Super Admins can delete announcements.');
+}
+return this.tenantsService.deleteAnnouncement(announcementId, , deleteTenant(, req, , tenantId, string), {
+    console, : .log('🗑️  TENANT DELETION REQUEST'),
+    console, : .log('User Role:', req.user.role),
+    console, : .log('Target Tenant ID:', tenantId),
+    if(req) { }, : .user.role !== 'SUPER_ADMIN'
+});
+{
+    console.log('❌ DELETION DENIED: NOT SUPER_ADMIN ROLE');
+    throw new common_1.ForbiddenException('Access Denied: Only Super Admins can delete tenant organizations.');
+}
+console.log('✅ DELETION AUTHORIZED');
+return this.tenantsService.remove(tenantId);
 //# sourceMappingURL=tenants.controller.js.map

@@ -46,6 +46,12 @@ let AssetsController = class AssetsController {
     remove(id, tenantId) {
         return this.assetsService.remove(id, tenantId);
     }
+    bulkCreate(assets, tenantId) {
+        return this.assetsService.createBulk(tenantId, assets);
+    }
+    removeAll(tenantId) {
+        return this.assetsService.removeAll(tenantId);
+    }
 };
 exports.AssetsController = AssetsController;
 __decorate([
@@ -103,6 +109,27 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], AssetsController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('bulk'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    (0, swagger_1.ApiOperation)({ summary: 'Bulk import assets from Excel/CSV' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Array, String]),
+    __metadata("design:returntype", void 0)
+], AssetsController.prototype, "bulkCreate", null);
+__decorate([
+    (0, common_1.Delete)('bulk/all'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete all assets for a tenant' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    __param(0, (0, common_1.Headers)('x-tenant-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AssetsController.prototype, "removeAll", null);
 exports.AssetsController = AssetsController = __decorate([
     (0, swagger_1.ApiTags)('Assets'),
     (0, swagger_1.ApiBearerAuth)(),

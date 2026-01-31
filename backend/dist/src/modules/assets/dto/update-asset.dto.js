@@ -19,6 +19,16 @@ class UpdateAssetDto {
     serialNo;
     status;
     roomId;
+    site;
+    location;
+    customId;
+    assetNumber;
+    manufacturer;
+    modelNumber;
+    installYear;
+    filterSize;
+    beltSize;
+    notes;
 }
 exports.UpdateAssetDto = UpdateAssetDto;
 __decorate([
@@ -73,4 +83,111 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateAssetDto.prototype, "roomId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated site location',
+        example: 'Main Campus',
+        maxLength: 255,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "site", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated specific location',
+        example: 'Building A - Roof',
+        maxLength: 255,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "location", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated custom ID',
+        example: 'HVAC-001',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "customId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated asset number',
+        example: 'A-2024-001',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "assetNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated manufacturer',
+        example: 'Carrier',
+        maxLength: 255,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "manufacturer", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated model number',
+        example: '30RB-080',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "modelNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated year of installation',
+        example: 2020,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateAssetDto.prototype, "installYear", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated filter size',
+        example: '20x25x4',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "filterSize", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated belt size',
+        example: 'B-54',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "beltSize", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Updated notes',
+        example: 'Requires quarterly maintenance',
+        maxLength: 1000,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(1000),
+    __metadata("design:type", String)
+], UpdateAssetDto.prototype, "notes", void 0);
 //# sourceMappingURL=update-asset.dto.js.map

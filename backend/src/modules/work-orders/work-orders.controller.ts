@@ -88,6 +88,27 @@ export class WorkOrdersController {
     return this.workOrdersService.findAll(tenantId, userId, role);
   }
 
+  @Get('overdue/list')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all overdue work orders (SLA breached)' })
+  @ApiHeader({
+    name: 'x-tenant-id',
+    description: 'Tenant ID for data isolation',
+    required: true,
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'List of overdue work orders (dueDate < now and status != COMPLETED)' 
+  })
+  findOverdue(
+    @Headers('x-tenant-id') tenantId: string,
+    @Request() req?: any,
+  ) {
+    const userId = req?.user?.sub;
+    const role = req?.user?.role;
+    return this.workOrdersService.findOverdue(tenantId, role, userId);
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get a specific work order by ID' })

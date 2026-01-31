@@ -1,6 +1,6 @@
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { NotificationType } from '@prisma/client';
+import { AnnouncementType } from '@prisma/client';
 export declare class TenantsService {
     private prisma;
     private jwtService;
@@ -57,22 +57,43 @@ export declare class TenantsService {
             firstName: string;
             lastName: string;
             role: import(".prisma/client").$Enums.UserRole;
-            tenantId: string;
+            tenantId: string | null;
         };
         tenant: {
             id: string;
             name: string;
         };
     }>;
-    createBroadcast(message: string, type?: NotificationType): Promise<{
+    createAnnouncement(message: string, type?: AnnouncementType): Promise<{
         message: string;
-        notification: {
+        announcement: {
             id: string;
             createdAt: Date;
+            updatedAt: Date;
+            tenantId: string | null;
             message: string;
-            type: import(".prisma/client").$Enums.NotificationType;
+            type: import(".prisma/client").$Enums.AnnouncementType;
             isActive: boolean;
-            expiresAt: Date | null;
+        };
+    }>;
+    getActiveAnnouncements(tenantId: string | null): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string | null;
+        message: string;
+        type: import(".prisma/client").$Enums.AnnouncementType;
+        isActive: boolean;
+    }[]>;
+    deleteAnnouncement(id: string): Promise<{
+        message: string;
+    }>;
+    remove(id: string): Promise<{
+        message: string;
+        deletedCounts: {
+            users: any;
+            assets: any;
+            workOrders: any;
         };
     }>;
     getActiveNotifications(): Promise<{

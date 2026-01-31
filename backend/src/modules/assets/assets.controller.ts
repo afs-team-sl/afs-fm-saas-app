@@ -86,4 +86,23 @@ export class AssetsController { // Ensure 'export' keyword is present
   remove(@Param('id') id: string, @Headers('x-tenant-id') tenantId: string) {
     return this.assetsService.remove(id, tenantId);
   }
+
+  @Post('bulk')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Bulk import assets from Excel/CSV' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  bulkCreate(
+    @Body() assets: CreateAssetDto[],
+    @Headers('x-tenant-id') tenantId: string,
+  ) {
+    return this.assetsService.createBulk(tenantId, assets);
+  }
+
+  @Delete('bulk/all')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete all assets for a tenant' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  removeAll(@Headers('x-tenant-id') tenantId: string) {
+    return this.assetsService.removeAll(tenantId);
+  }
 }

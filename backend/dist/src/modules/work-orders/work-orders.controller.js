@@ -37,6 +37,11 @@ let WorkOrdersController = class WorkOrdersController {
             return this.workOrdersService.findByPriority(tenantId, priority);
         return this.workOrdersService.findAll(tenantId, userId, role);
     }
+    findOverdue(tenantId, req) {
+        const userId = req?.user?.sub;
+        const role = req?.user?.role;
+        return this.workOrdersService.findOverdue(tenantId, role, userId);
+    }
     findOne(id, tenantId) {
         return this.workOrdersService.findOne(id, tenantId);
     }
@@ -102,6 +107,25 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, Object]),
     __metadata("design:returntype", void 0)
 ], WorkOrdersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('overdue/list'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all overdue work orders (SLA breached)' }),
+    (0, swagger_1.ApiHeader)({
+        name: 'x-tenant-id',
+        description: 'Tenant ID for data isolation',
+        required: true,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'List of overdue work orders (dueDate < now and status != COMPLETED)'
+    }),
+    __param(0, (0, common_1.Headers)('x-tenant-id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], WorkOrdersController.prototype, "findOverdue", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),

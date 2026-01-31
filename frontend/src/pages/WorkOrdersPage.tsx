@@ -1,15 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle, FileDown } from 'lucide-react';
+import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle, FileDown, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 interface WorkOrder {
-  id: string; title: string; description?: string; status: string; priority: string;
-  assetId: string; assignedToId?: string; asset: { name: string };
-  assignedTo?: { firstName: string, lastName: string }; createdAt: string;
+  id: string; 
+  title: string; 
+  description?: string; 
+  status: string; 
+  priority: string;
+  assetId: string; 
+  assignedToId?: string; 
+  dueDate?: string;
+  asset: { name: string };
+  assignedTo?: { firstName: string, lastName: string }; 
+  createdAt: string;
 }
 
 const WorkOrdersPage = () => {
@@ -112,6 +120,14 @@ const WorkOrdersPage = () => {
       OPEN: 'bg-status-info text-white',
     };
     return badges[status] || 'bg-secondary-500 text-white';
+  };
+
+  // Check if work order is overdue (SLA breached)
+  const isOverdue = (order: WorkOrder) => {
+    if (!order.dueDate || order.status === 'COMPLETED' || order.status === 'CANCELLED') {
+      return false;
+    }
+    return new Date(order.dueDate) < new Date();
   };
 
   const exportToPDF = () => {
@@ -276,18 +292,39 @@ const WorkOrdersPage = () => {
                     <p className="text-sm text-secondary-500">No work orders found</p>
                   </td>
                 </tr>
-              ) : orders.map((order) => (
-                <tr key={order.id} className="hover:bg-secondary-50 transition-colors">
+              ) : orders.map((order) => {
+                const overdue = isOverdue(order);
+                return (
+                <tr 
+                  key={order.id} 
+                  className={`hover:bg-secondary-50 transition-colors ${overdue ? 'bg-red-50 border-l-4 border-l-red-600' : ''}`}
+                >
                   <td className="px-6 py-4">
-                    <button 
-                      onClick={() => navigate(`/work-orders/${order.id}`)} 
-                      className="text-sm font-medium text-primary hover:text-primary-dark hover:underline text-left"
-                    >
-                      {order.title}
-                    </button>
-                    <div className="flex items-center gap-1.5 mt-1 text-xs text-secondary-500">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(order.createdAt).toLocaleDateString()}
+                    <div className="flex items-center gap-2">
+                      {overdue && (
+                        <div className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                        </div>
+                      )}
+                      <div>
+                        <button 
+                          onClick={() => navigate(`/work-orders/${order.id}`)} 
+                          className="text-sm font-medium text-primary hover:text-primary-dark hover:underline text-left"
+                        >
+                          {order.title}
+                        </button>
+                        {overdue && (
+                          <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-600 text-white border border-red-700">
+                            <AlertTriangle className="w-3 h-3" />
+                            DELAYED
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1.5 mt-1 text-xs text-secondary-500">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -340,7 +377,8 @@ const WorkOrdersPage = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )})}
+
             </tbody>
           </table>
         </div>

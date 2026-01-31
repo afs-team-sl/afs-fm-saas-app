@@ -6,4 +6,7 @@ export declare class UpdateWorkOrderDto {
     priority?: WorkOrderPriority;
     completionNote?: string;
     assignedToId?: string;
+    dueDate?: string;
+    startedAt?: string;
+    laborHours?: number;
 }

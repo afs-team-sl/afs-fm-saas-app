@@ -96,7 +96,18 @@ let WorkOrdersService = class WorkOrdersService {
     }
     async update(id, tenantId, dto) {
         const existingWorkOrder = await this.findOne(id, tenantId);
+        const isStarting = dto.status === 'IN_PROGRESS' && existingWorkOrder.status !== 'IN_PROGRESS';
+        if (isStarting && !dto.startedAt) {
+            dto.startedAt = new Date().toISOString();
+        }
         const isBeingCompleted = dto.status === 'COMPLETED' && existingWorkOrder.status !== 'COMPLETED';
+        if (isBeingCompleted) {
+            const startTime = existingWorkOrder.startedAt || new Date();
+            const endTime = new Date();
+            const diffMs = endTime.getTime() - new Date(startTime).getTime();
+            const hours = diffMs / (1000 * 60 * 60);
+            dto.laborHours = parseFloat(hours.toFixed(2));
+        }
         if (isBeingCompleted) {
             return this.prisma.$transaction(async (tx) => {
                 const workOrderParts = await tx.workOrderPart.findMany({
@@ -118,14 +129,22 @@ let WorkOrdersService = class WorkOrdersService {
                 }
                 return tx.workOrder.update({
                     where: { id },
-                    data: dto,
+                    data: {
+                        ...dto,
+                        startedAt: dto.startedAt ? new Date(dto.startedAt) : undefined,
+                        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+                    },
                     include: this.includeRelations,
                 });
             });
         }
         return this.prisma.workOrder.update({
             where: { id },
-            data: dto,
+            data: {
+                ...dto,
+                startedAt: dto.startedAt ? new Date(dto.startedAt) : undefined,
+                dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+            },
             include: this.includeRelations,
         });
     }
@@ -135,6 +154,26 @@ let WorkOrdersService = class WorkOrdersService {
             where: { id },
         });
         return { message: 'Work order deleted successfully' };
+    }
+    async findOverdue(tenantId, role, userId) {
+        const now = new Date();
+        const whereClause = {
+            tenantId,
+            dueDate: {
+                lt: now,
+            },
+            status: {
+                not: 'COMPLETED',
+            },
+        };
+        if (role === 'TECHNICIAN' && userId) {
+            whereClause.assignedToId = userId;
+        }
+        return this.prisma.workOrder.findMany({
+            where: whereClause,
+            include: this.includeRelations,
+            orderBy: { dueDate: 'asc' },
+        });
     }
     async addPart(workOrderId, tenantId, dto) {
         const workOrder = await this.findOne(workOrderId, tenantId);

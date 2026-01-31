@@ -8,8 +8,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// 2. Roles (User lge types)
+// 2. Roles (User Privilege types)
 enum UserRole {
+  SUPER_ADMIN // Global Platform Administrator (tenantId: null)
   ADMIN       // Company Admin
   MANAGER
   TECHNICIAN
@@ -18,47 +19,47 @@ enum UserRole {
 
 // 3. Tenant (Company / Organization)
 model Tenant {
-  id          String   @id @default(uuid())
-  name        String
-  
+  id   String @id @default(uuid())
+  name String
+
   // මෙන්න අපේ අලුත් Join Code එක 🔑
   // මේකෙන් තමයි අලුත් Technician කෙනෙක්ට කොම්පැණිය හොයාගන්න ලේසි වෙන්නේ.
-  joinCode    String   @unique @default(cuid()) 
-  
-  domain      String?  @unique // e.g., alpha.fms.com
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  joinCode String @unique @default(cuid())
+
+  domain    String?  @unique // e.g., alpha.fms.com
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  users       User[]
-  assets      Asset[]
-  workOrders  WorkOrder[]
-  parts       Part[]
+  users            User[]
+  assets           Asset[]
+  workOrders       WorkOrder[]
+  parts            Part[]
   maintenancePlans MaintenancePlan[]
-  buildings   Building[]
+  buildings        Building[]
 
   @@index([createdAt])
 }
 
 // 4. Users table
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  password    String   
-  firstName   String
-  lastName    String
-  role        UserRole @default(OCCUPANT)
-  
-  // Link to Tenant
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole @default(OCCUPANT)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  // Link to Tenant - OPTIONAL for SUPER_ADMIN (tenantId: null)
+  tenantId String?
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relation for Work Orders assigned to this user
   assignedWorkOrders WorkOrder[] @relation("AssignedWorkOrders")
-  
+
   // Relation for Notifications
   notifications Notification[]
 
@@ -77,30 +78,42 @@ enum AssetStatus {
 
 // 6. Assets (Inventory)
 model Asset {
-  id          String      @id @default(uuid())
-  name        String
-  category    String
-  serialNo    String?
-  status      AssetStatus @default(ACTIVE)
+  id       String      @id @default(uuid())
+  name     String
+  category String // Used for 'Type' in the UI
+  serialNo String?
+  status   AssetStatus @default(ACTIVE)
 
-  tenantId    String
-  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // Advanced HVAC/Mechanical Fields
+  site         String?
+  location     String?
+  customId     String?
+  assetNumber  String?
+  manufacturer String?
+  modelNumber  String?
+  installYear  Int?
+  filterSize   String?
+  beltSize     String?
+  notes        String?
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Link to Room (Space & Facility Hierarchy)
-  roomId      String?
-  room        Room?       @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  roomId String?
+  room   Room?   @relation(fields: [roomId], references: [id], onDelete: SetNull)
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  
-  workOrders  WorkOrder[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workOrders       WorkOrder[]
   maintenancePlans MaintenancePlan[]
 
+  @@unique([tenantId, serialNo])
   @@index([tenantId])
   @@index([status])
   @@index([category])
   @@index([roomId])
-  @@unique([tenantId, serialNo])
 }
 
 // 7. Maintenance Frequency
@@ -130,32 +143,37 @@ enum WorkOrderPriority {
 
 // 9. Work Orders 
 model WorkOrder {
-  id              String             @id @default(uuid())
-  title           String
-  description     String?
-  status          WorkOrderStatus    @default(OPEN)
-  priority        WorkOrderPriority  @default(MEDIUM)
+  id          String            @id @default(uuid())
+  title       String
+  description String?
+  status      WorkOrderStatus   @default(OPEN)
+  priority    WorkOrderPriority @default(MEDIUM)
 
   // Link to Asset
-  assetId         String
-  asset           Asset              @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assetId String
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
   // Link to Tenant
-  tenantId        String
-  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Link to Assigned Technician
-  assignedToId    String?            
-  assignedTo      User?              @relation("AssignedWorkOrders", fields: [assignedToId], references: [id])
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedWorkOrders", fields: [assignedToId], references: [id])
 
   // Completion Note (Written by Technician)
-  completionNote  String?
+  completionNote String?
+
+  // Labor Time Tracking & SLA Fields
+  startedAt  DateTime? // When technician starts work
+  dueDate    DateTime? // SLA deadline
+  laborHours Float? // Total hours spent (auto-calculated)
 
   // Parts used in this work order
-  parts           WorkOrderPart[]
+  parts WorkOrderPart[]
 
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([assetId])
@@ -163,26 +181,27 @@ model WorkOrder {
   @@index([priority])
   @@index([createdAt])
   @@index([assignedToId])
+  @@index([dueDate])
 }
 
 // 10. Parts (Inventory & Spare Parts)
 model Part {
-  id          String   @id @default(uuid())
-  name        String
-  partNumber  String   
-  stockLevel  Int      @default(0)
-  minStock    Int      @default(10)
-  unitPrice   Float    @default(0.0)
+  id         String @id @default(uuid())
+  name       String
+  partNumber String
+  stockLevel Int    @default(0)
+  minStock   Int    @default(10)
+  unitPrice  Float  @default(0.0)
 
   // Link to Tenant
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Parts used in work orders
   workOrderParts WorkOrderPart[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([tenantId, partNumber])
   @@index([tenantId])
@@ -191,25 +210,26 @@ model Part {
 
 // 11. Work Order Parts (Junction table for materials used)
 model WorkOrderPart {
-  id           String    @id @default(uuid())
-  quantity     Int
+  id       String @id @default(uuid())
+  quantity Int
 
   // Link to Work Order
-  workOrderId  String
-  workOrder    WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  workOrderId String
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
 
   // Link to Part
-  partId       String
-  part         Part      @relation(fields: [partId], references: [id], onDelete: Cascade)
+  partId String
+  part   Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   @@index([workOrderId])
   @@index([partId])
 }
+
 // 12. Maintenance Plans (Preventive Maintenance Scheduler)
 model MaintenancePlan {
-  id              String                @id @default(uuid())
+  id              String               @id @default(uuid())
   title           String
   description     String?
   frequency       MaintenanceFrequency
@@ -217,15 +237,15 @@ model MaintenancePlan {
   lastGeneratedAt DateTime?
 
   // Link to Asset
-  assetId         String
-  asset           Asset                 @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assetId String
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
   // Link to Tenant
-  tenantId        String
-  tenant          Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([assetId])
@@ -235,55 +255,55 @@ model MaintenancePlan {
 
 // 13. Building (Space & Facility Hierarchy)
 model Building {
-  id          String   @id @default(uuid())
-  name        String
-  address     String?
-  
+  id      String  @id @default(uuid())
+  name    String
+  address String?
+
   // Link to Tenant
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Relations
-  floors      Floor[]
+  floors Floor[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
 }
 
 // 14. Floor (Space & Facility Hierarchy)
 model Floor {
-  id          String   @id @default(uuid())
-  number      String   // e.g., "Level 1", "Ground Floor", "Basement"
-  
+  id     String @id @default(uuid())
+  number String // e.g., "Level 1", "Ground Floor", "Basement"
+
   // Link to Building
-  buildingId  String
-  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
 
   // Relations
-  rooms       Room[]
+  rooms Room[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([buildingId])
 }
 
 // 15. Room (Space & Facility Hierarchy)
 model Room {
-  id          String   @id @default(uuid())
-  name        String   // e.g., "Server Room", "Office 101", "Conference Room A"
-  
+  id   String @id @default(uuid())
+  name String // e.g., "Server Room", "Office 101", "Conference Room A"
+
   // Link to Floor
-  floorId     String
-  floor       Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  floorId String
+  floor   Floor  @relation(fields: [floorId], references: [id], onDelete: Cascade)
 
   // Relations
-  assets      Asset[]
+  assets Asset[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([floorId])
 }
@@ -298,13 +318,13 @@ enum NotificationType {
 
 // 17. Global Notifications (Super Admin Broadcasts)
 model GlobalNotification {
-  id          String            @id @default(uuid())
-  message     String
-  type        NotificationType  @default(INFO)
-  isActive    Boolean           @default(true)
-  
-  createdAt   DateTime          @default(now())
-  expiresAt   DateTime?         // Optional expiration
+  id       String           @id @default(uuid())
+  message  String
+  type     NotificationType @default(INFO)
+  isActive Boolean          @default(true)
+
+  createdAt DateTime  @default(now())
+  expiresAt DateTime? // Optional expiration
 
   @@index([isActive])
   @@index([createdAt])
@@ -320,21 +340,47 @@ enum UserNotificationType {
 
 // 19. User Notifications (Per-user or tenant-specific)
 model Notification {
-  id          String                  @id @default(uuid())
-  message     String
-  type        UserNotificationType    @default(INFO)
-  isRead      Boolean                 @default(false)
-  
+  id      String               @id @default(uuid())
+  message String
+  type    UserNotificationType @default(INFO)
+  isRead  Boolean              @default(false)
+
   // Link to User (who receives the notification)
-  userId      String
-  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Optional: Tenant-specific notifications (null means global)
-  tenantId    String?
-  
-  createdAt   DateTime                @default(now())
+  tenantId String?
+
+  createdAt DateTime @default(now())
 
   @@index([userId, isRead])
+  @@index([tenantId])
+  @@index([createdAt])
+}
+
+// Announcement Type
+enum AnnouncementType {
+  INFO
+  WARNING
+  DANGER
+}
+
+// System Announcements (Global or Tenant-specific)
+model Announcement {
+  id        String           @id @default(uuid())
+  message   String
+  type      AnnouncementType @default(INFO)
+  isActive  Boolean          @default(true)
+  
+  // null tenantId = Global announcement for all users
+  // non-null = Tenant-specific announcement
+  tenantId  String?
+  
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([isActive])
   @@index([tenantId])
   @@index([createdAt])
 }

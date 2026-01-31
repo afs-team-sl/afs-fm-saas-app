@@ -2,12 +2,12 @@ import React, { createContext, useContext, useState } from 'react';
 
 interface AuthContextType {
   token: string | null;
-  tenantId: string | null;
+  tenantId: string | null; // Can be null for SUPER_ADMIN
   role: string | null;
   userId: string | null;
   firstName: string | null;
   lastName: string | null;
-  login: (token: string, tenantId: string, role: string, userId: string, firstName: string, lastName: string) => void;
+  login: (token: string, tenantId: string | null, role: string, userId: string, firstName: string, lastName: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -24,18 +24,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (
     newToken: string,
-    newTenantId: string,
+    newTenantId: string | null, // Allow null for SUPER_ADMIN
     newRole: string,
     newUserId: string,
     newFirstName: string,
     newLastName: string
   ) => {
     localStorage.setItem('access_token', newToken);
-    localStorage.setItem('tenant_id', newTenantId);
     localStorage.setItem('user_role', newRole);
     localStorage.setItem('user_id', newUserId);
     localStorage.setItem('user_first_name', newFirstName);
     localStorage.setItem('user_last_name', newLastName);
+    
+    // Handle null tenantId for SUPER_ADMIN
+    if (newTenantId) {
+      localStorage.setItem('tenant_id', newTenantId);
+    } else {
+      localStorage.removeItem('tenant_id');
+    }
     
     setToken(newToken);
     setTenantId(newTenantId);

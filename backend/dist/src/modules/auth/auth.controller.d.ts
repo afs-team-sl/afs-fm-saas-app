@@ -18,7 +18,7 @@ export declare class AuthController {
             firstName: string;
             lastName: string;
             role: import(".prisma/client").$Enums.UserRole;
-            tenantId: string;
+            tenantId: string | null;
         };
     }>;
     signIn(loginDto: LoginDto): Promise<{
@@ -28,7 +28,7 @@ export declare class AuthController {
             firstName: string;
             lastName: string;
             role: import(".prisma/client").$Enums.UserRole;
-            tenantId: string;
+            tenantId: string | null;
         };
     }>;
     joinOrganization(joinDto: JoinOrganizationDto): Promise<{
@@ -44,7 +44,7 @@ export declare class AuthController {
             firstName: string;
             lastName: string;
             role: import(".prisma/client").$Enums.UserRole;
-            tenantId: string;
+            tenantId: string | null;
         };
     }>;
 }

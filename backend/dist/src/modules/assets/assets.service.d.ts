@@ -16,6 +16,16 @@ export declare class AssetsService {
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
         roomId: string | null;
+        site: string | null;
+        location: string | null;
+        customId: string | null;
+        assetNumber: string | null;
+        manufacturer: string | null;
+        modelNumber: string | null;
+        installYear: number | null;
+        filterSize: string | null;
+        beltSize: string | null;
+        notes: string | null;
     }>;
     findAll(tenantId: string): Promise<{
         id: string;
@@ -27,6 +37,16 @@ export declare class AssetsService {
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
         roomId: string | null;
+        site: string | null;
+        location: string | null;
+        customId: string | null;
+        assetNumber: string | null;
+        manufacturer: string | null;
+        modelNumber: string | null;
+        installYear: number | null;
+        filterSize: string | null;
+        beltSize: string | null;
+        notes: string | null;
     }[]>;
     findByStatus(tenantId: string, status: string): Promise<{
         id: string;
@@ -38,6 +58,16 @@ export declare class AssetsService {
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
         roomId: string | null;
+        site: string | null;
+        location: string | null;
+        customId: string | null;
+        assetNumber: string | null;
+        manufacturer: string | null;
+        modelNumber: string | null;
+        installYear: number | null;
+        filterSize: string | null;
+        beltSize: string | null;
+        notes: string | null;
     }[]>;
     findByCategory(tenantId: string, category: string): Promise<{
         id: string;
@@ -49,6 +79,16 @@ export declare class AssetsService {
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
         roomId: string | null;
+        site: string | null;
+        location: string | null;
+        customId: string | null;
+        assetNumber: string | null;
+        manufacturer: string | null;
+        modelNumber: string | null;
+        installYear: number | null;
+        filterSize: string | null;
+        beltSize: string | null;
+        notes: string | null;
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
         workOrders: ({
@@ -70,6 +110,9 @@ export declare class AssetsService {
             assetId: string;
             assignedToId: string | null;
             completionNote: string | null;
+            dueDate: Date | null;
+            startedAt: Date | null;
+            laborHours: number | null;
         })[];
     } & {
         id: string;
@@ -81,6 +124,16 @@ export declare class AssetsService {
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
         roomId: string | null;
+        site: string | null;
+        location: string | null;
+        customId: string | null;
+        assetNumber: string | null;
+        manufacturer: string | null;
+        modelNumber: string | null;
+        installYear: number | null;
+        filterSize: string | null;
+        beltSize: string | null;
+        notes: string | null;
     }>;
     update(id: string, tenantId: string, dto: UpdateAssetDto): Promise<{
         id: string;
@@ -92,6 +145,16 @@ export declare class AssetsService {
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
         roomId: string | null;
+        site: string | null;
+        location: string | null;
+        customId: string | null;
+        assetNumber: string | null;
+        manufacturer: string | null;
+        modelNumber: string | null;
+        installYear: number | null;
+        filterSize: string | null;
+        beltSize: string | null;
+        notes: string | null;
     }>;
     remove(id: string, tenantId: string): Promise<{
         id: string;
@@ -103,5 +166,23 @@ export declare class AssetsService {
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
         roomId: string | null;
+        site: string | null;
+        location: string | null;
+        customId: string | null;
+        assetNumber: string | null;
+        manufacturer: string | null;
+        modelNumber: string | null;
+        installYear: number | null;
+        filterSize: string | null;
+        beltSize: string | null;
+        notes: string | null;
+    }>;
+    createBulk(tenantId: string, assets: CreateAssetDto[]): Promise<{
+        count: number;
+        message: string;
+    }>;
+    removeAll(tenantId: string): Promise<{
+        count: number;
+        message: string;
     }>;
 }

@@ -87,6 +87,7 @@ let AuthService = class AuthService {
             email: result.user.email,
             tenantId: result.user.tenantId,
             role: result.user.role,
+            userId: result.user.id,
         };
         return {
             message: 'Registration successful',
@@ -114,8 +115,14 @@ let AuthService = class AuthService {
                 sub: user.id,
                 email: user.email,
                 tenantId: user.tenantId,
-                role: user.role
+                role: user.role,
+                userId: user.id,
             };
+            console.log('🔐 LOGIN SUCCESS');
+            console.log('User ID:', user.id);
+            console.log('Email:', user.email);
+            console.log('Role:', user.role);
+            console.log('Tenant ID:', user.tenantId || 'null (SUPER_ADMIN)');
             return {
                 access_token: await this.jwtService.signAsync(payload),
                 user: {

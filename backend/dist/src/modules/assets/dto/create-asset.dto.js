@@ -19,6 +19,16 @@ class CreateAssetDto {
     serialNo;
     status;
     roomId;
+    site;
+    location;
+    customId;
+    assetNumber;
+    manufacturer;
+    modelNumber;
+    installYear;
+    filterSize;
+    beltSize;
+    notes;
 }
 exports.CreateAssetDto = CreateAssetDto;
 __decorate([
@@ -74,4 +84,111 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateAssetDto.prototype, "roomId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Site location of the asset',
+        example: 'Main Campus',
+        maxLength: 255,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "site", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Specific location within site',
+        example: 'Building A - Roof',
+        maxLength: 255,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "location", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Custom ID for the asset',
+        example: 'HVAC-001',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "customId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Asset number',
+        example: 'A-2024-001',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "assetNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Manufacturer of the asset',
+        example: 'Carrier',
+        maxLength: 255,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "manufacturer", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Model number',
+        example: '30RB-080',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "modelNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Year of installation',
+        example: 2020,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateAssetDto.prototype, "installYear", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Filter size specification',
+        example: '20x25x4',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "filterSize", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Belt size specification',
+        example: 'B-54',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "beltSize", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Additional notes about the asset',
+        example: 'Requires quarterly maintenance',
+        maxLength: 1000,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(1000),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "notes", void 0);
 //# sourceMappingURL=create-asset.dto.js.map

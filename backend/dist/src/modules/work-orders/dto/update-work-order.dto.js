@@ -20,6 +20,9 @@ class UpdateWorkOrderDto {
     priority;
     completionNote;
     assignedToId;
+    dueDate;
+    startedAt;
+    laborHours;
 }
 exports.UpdateWorkOrderDto = UpdateWorkOrderDto;
 __decorate([
@@ -80,4 +83,31 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateWorkOrderDto.prototype, "assignedToId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'SLA due date for this work order (ISO 8601 format)',
+        example: '2026-02-15T17:00:00Z',
+    }),
+    (0, class_validator_1.IsISO8601)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateWorkOrderDto.prototype, "dueDate", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'When the technician started working (auto-set on IN_PROGRESS)',
+        example: '2026-01-31T14:30:00Z',
+    }),
+    (0, class_validator_1.IsISO8601)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateWorkOrderDto.prototype, "startedAt", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Total labor hours spent (auto-calculated on COMPLETED)',
+        example: 2.5,
+    }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateWorkOrderDto.prototype, "laborHours", void 0);
 //# sourceMappingURL=update-work-order.dto.js.map

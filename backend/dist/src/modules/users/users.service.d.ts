@@ -11,32 +11,32 @@ export declare class UsersService {
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
-        tenantId: string;
+        tenantId: string | null;
     }>;
-    findAll(tenantId: string): Promise<{
+    findAll(tenantId: string | null, role: string): Promise<{
         id: string;
         email: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
     }[]>;
-    findOne(id: string, tenantId: string): Promise<{
+    findOne(id: string, tenantId: string | null, role: string): Promise<{
         id: string;
         createdAt: Date;
         email: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
-        tenantId: string;
+        tenantId: string | null;
     }>;
-    update(id: string, tenantId: string, updateUserDto: UpdateUserDto): Promise<{
+    update(id: string, tenantId: string | null, role: string, updateUserDto: UpdateUserDto): Promise<{
         id: string;
         email: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
     }>;
-    remove(id: string, tenantId: string): Promise<{
+    remove(id: string, tenantId: string | null, role: string): Promise<{
         message: string;
     }>;
 }

@@ -15,6 +15,7 @@ export class AuthService {
 
   /**
    * Public registration logic: Creates a new Tenant and its first ADMIN user.
+   * NOTE: NEVER creates SUPER_ADMIN - only regular tenant ADMIN users.
    */
   async register(registerDto: RegisterDto) {
     const { companyName, email, password, firstName, lastName } = registerDto;
@@ -37,18 +38,18 @@ export class AuthService {
       const tenant = await prisma.tenant.create({
         data: {
           name: companyName,
-          // You can also add a domain here if needed
         },
       });
 
       // Create the primary ADMIN user linked to the tenant
+      // IMPORTANT: Public registration NEVER creates SUPER_ADMIN
       const user = await prisma.user.create({
         data: {
           email,
           password: hashedPassword,
           firstName,
           lastName,
-          role: 'ADMIN',
+          role: 'ADMIN', // Always ADMIN for public registration
           tenantId: tenant.id,
         },
       });
@@ -62,6 +63,7 @@ export class AuthService {
       email: result.user.email,
       tenantId: result.user.tenantId,
       role: result.user.role,
+      userId: result.user.id,
     };
 
     return {
@@ -84,6 +86,9 @@ export class AuthService {
 
   /**
    * Login logic: Authenticates user and returns JWT + User Metadata
+   * Supports both:
+   * - Regular users (with tenantId)
+   * - SUPER_ADMIN users (tenantId: null)
    */
   async login(email: string, pass: string) {
     // 1. Find user by email
@@ -94,14 +99,22 @@ export class AuthService {
     // 2. Compare the provided password with the stored hash
     if (user && (await bcrypt.compare(pass, user.password))) {
       // 3. Generate JWT Payload
+      // IMPORTANT: tenantId can be null for SUPER_ADMIN
       const payload = { 
         sub: user.id, 
         email: user.email, 
-        tenantId: user.tenantId, 
-        role: user.role 
+        tenantId: user.tenantId, // null for SUPER_ADMIN
+        role: user.role,
+        userId: user.id,
       };
       
-      // 4. Return the Token along with necessary user metadata for Frontend 🚀
+      console.log('🔐 LOGIN SUCCESS');
+      console.log('User ID:', user.id);
+      console.log('Email:', user.email);
+      console.log('Role:', user.role);
+      console.log('Tenant ID:', user.tenantId || 'null (SUPER_ADMIN)');
+      
+      // 4. Return the Token along with necessary user metadata for Frontend
       return {
         access_token: await this.jwtService.signAsync(payload),
         user: {
@@ -109,7 +122,7 @@ export class AuthService {
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
-          tenantId: user.tenantId,
+          tenantId: user.tenantId, // null for SUPER_ADMIN
         }
       };
     }

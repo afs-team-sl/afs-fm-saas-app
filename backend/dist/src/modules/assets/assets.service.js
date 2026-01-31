@@ -95,6 +95,40 @@ let AssetsService = class AssetsService {
         await this.findOne(id, tenantId);
         return this.prisma.asset.delete({ where: { id } });
     }
+    async createBulk(tenantId, assets) {
+        const cleanedAssets = assets.map(asset => ({
+            ...asset,
+            tenantId,
+            serialNo: asset.serialNo ? String(asset.serialNo).trim() || null : null,
+            roomId: asset.roomId && asset.roomId.trim() ? asset.roomId : null,
+            site: asset.site && asset.site.trim() ? asset.site : null,
+            location: asset.location && asset.location.trim() ? asset.location : null,
+            customId: asset.customId && asset.customId.trim() ? asset.customId : null,
+            assetNumber: asset.assetNumber ? String(asset.assetNumber).trim() || null : null,
+            manufacturer: asset.manufacturer && asset.manufacturer.trim() ? asset.manufacturer : null,
+            modelNumber: asset.modelNumber && asset.modelNumber.trim() ? asset.modelNumber : null,
+            filterSize: asset.filterSize && asset.filterSize.trim() ? asset.filterSize : null,
+            beltSize: asset.beltSize && asset.beltSize.trim() ? asset.beltSize : null,
+            notes: asset.notes && asset.notes.trim() ? asset.notes : null,
+        }));
+        const result = await this.prisma.asset.createMany({
+            data: cleanedAssets,
+            skipDuplicates: true,
+        });
+        return {
+            count: result.count,
+            message: `Successfully imported ${result.count} asset(s)`,
+        };
+    }
+    async removeAll(tenantId) {
+        const result = await this.prisma.asset.deleteMany({
+            where: { tenantId },
+        });
+        return {
+            count: result.count,
+            message: `Successfully deleted ${result.count} asset(s)`,
+        };
+    }
 };
 exports.AssetsService = AssetsService;
 exports.AssetsService = AssetsService = __decorate([

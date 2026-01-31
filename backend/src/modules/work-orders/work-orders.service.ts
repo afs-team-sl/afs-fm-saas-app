@@ -132,14 +132,30 @@ export class WorkOrdersService {
 
   /**
    * Update a work order
-   * CRITICAL: When status changes to 'COMPLETED', deduct stock for all linked parts
+   * CRITICAL: 
+   * - When status changes to 'IN_PROGRESS', auto-set startedAt to current time
+   * - When status changes to 'COMPLETED', auto-calculate laborHours and deduct stock
    */
   async update(id: string, tenantId: string, dto: UpdateWorkOrderDto) {
     // Check if it exists in this tenant first
     const existingWorkOrder = await this.findOne(id, tenantId);
 
-    // Check if status is changing to COMPLETED
+    // Auto-set startedAt when status changes to IN_PROGRESS
+    const isStarting = dto.status === 'IN_PROGRESS' && existingWorkOrder.status !== 'IN_PROGRESS';
+    if (isStarting && !dto.startedAt) {
+      dto.startedAt = new Date().toISOString();
+    }
+
+    // Auto-calculate laborHours when status changes to COMPLETED
     const isBeingCompleted = dto.status === 'COMPLETED' && existingWorkOrder.status !== 'COMPLETED';
+    if (isBeingCompleted) {
+      // Calculate labor hours if startedAt exists
+      const startTime = existingWorkOrder.startedAt || new Date();
+      const endTime = new Date();
+      const diffMs = endTime.getTime() - new Date(startTime).getTime();
+      const hours = diffMs / (1000 * 60 * 60);
+      dto.laborHours = parseFloat(hours.toFixed(2)); // Round to 2 decimal places
+    }
 
     if (isBeingCompleted) {
       // Use transaction to ensure atomicity
@@ -170,19 +186,27 @@ export class WorkOrdersService {
           });
         }
 
-        // 3. Update the work order status
+        // 3. Update the work order with labor tracking data
         return tx.workOrder.update({
           where: { id },
-          data: dto,
+          data: {
+            ...dto,
+            startedAt: dto.startedAt ? new Date(dto.startedAt) : undefined,
+            dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+          },
           include: this.includeRelations,
         });
       });
     }
 
-    // If not being completed, just update normally
+    // If not being completed, just update normally (with labor tracking fields)
     return this.prisma.workOrder.update({
       where: { id },
-      data: dto,
+      data: {
+        ...dto,
+        startedAt: dto.startedAt ? new Date(dto.startedAt) : undefined,
+        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+      },
       include: this.includeRelations,
     });
   }
@@ -198,6 +222,35 @@ export class WorkOrdersService {
     });
 
     return { message: 'Work order deleted successfully' };
+  }
+
+  /**
+   * Find all overdue work orders (SLA breached)
+   * Returns work orders where dueDate < now AND status is not COMPLETED
+   */
+  async findOverdue(tenantId: string, role?: string, userId?: string) {
+    const now = new Date();
+    
+    const whereClause: any = {
+      tenantId,
+      dueDate: {
+        lt: now, // Less than current time
+      },
+      status: {
+        not: 'COMPLETED', // Exclude completed orders
+      },
+    };
+
+    // If technician, show only their assigned tasks
+    if (role === 'TECHNICIAN' && userId) {
+      whereClause.assignedToId = userId;
+    }
+
+    return this.prisma.workOrder.findMany({
+      where: whereClause,
+      include: this.includeRelations,
+      orderBy: { dueDate: 'asc' }, // Most overdue first
+    });
   }
 
   /**

@@ -17,20 +17,29 @@ let NotificationsService = class NotificationsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async getUserNotifications(userId) {
+    SUPER_TENANT_ID = process.env.SUPER_TENANT_ID || '05642b69-8f04-44d0-b74c-27c9db4b4969';
+    async getUserNotifications(userId, tenantId) {
         const notifications = await this.prisma.notification.findMany({
             where: {
                 userId,
+                OR: [
+                    { tenantId: tenantId },
+                    { tenantId: null },
+                ],
             },
             orderBy: {
                 createdAt: 'desc',
             },
-            take: 5,
+            take: 10,
         });
         const unreadCount = await this.prisma.notification.count({
             where: {
                 userId,
                 isRead: false,
+                OR: [
+                    { tenantId: tenantId },
+                    { tenantId: null },
+                ],
             },
         });
         return {
@@ -77,6 +86,109 @@ let NotificationsService = class NotificationsService {
                 tenantId,
             },
         });
+    }
+    verifySuperAdmin(tenantId) {
+        if (tenantId?.trim() !== this.SUPER_TENANT_ID?.trim()) {
+            throw new common_1.ForbiddenException('Access Denied: Only Super Admin can manage global notifications');
+        }
+    }
+    async getAllGlobalNotifications(activeOnly = false) {
+        const where = activeOnly ? { isActive: true } : {};
+        return this.prisma.globalNotification.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+    async getGlobalNotification(id) {
+        const notification = await this.prisma.globalNotification.findUnique({
+            where: { id },
+        });
+        if (!notification) {
+            throw new common_1.NotFoundException(`Global notification with ID ${id} not found`);
+        }
+        return notification;
+    }
+    async createGlobalNotification(tenantId, dto) {
+        this.verifySuperAdmin(tenantId);
+        const notification = await this.prisma.globalNotification.create({
+            data: {
+                message: dto.message,
+                type: dto.type || 'INFO',
+                isActive: dto.isActive !== undefined ? dto.isActive : true,
+                expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+            },
+        });
+        console.log(`📢 Global notification created: "${notification.message}" (Type: ${notification.type})`);
+        if (notification.isActive) {
+            const allUsers = await this.prisma.user.findMany({
+                select: { id: true },
+            });
+            const userNotificationType = this.mapGlobalToUserNotificationType(dto.type || 'INFO');
+            await this.prisma.notification.createMany({
+                data: allUsers.map((user) => ({
+                    userId: user.id,
+                    message: dto.message,
+                    type: userNotificationType,
+                    tenantId: null,
+                    isRead: false,
+                })),
+            });
+            console.log(`📬 Created ${allUsers.length} user notifications for global broadcast`);
+        }
+        return notification;
+    }
+    mapGlobalToUserNotificationType(type) {
+        switch (type) {
+            case 'CRITICAL':
+                return 'ERROR';
+            case 'MAINTENANCE':
+            case 'WARNING':
+                return 'WARNING';
+            default:
+                return 'INFO';
+        }
+    }
+    async updateGlobalNotification(tenantId, id, dto) {
+        this.verifySuperAdmin(tenantId);
+        const existing = await this.prisma.globalNotification.findUnique({
+            where: { id },
+        });
+        if (!existing) {
+            throw new common_1.NotFoundException(`Global notification with ID ${id} not found`);
+        }
+        const updateData = {};
+        if (dto.message !== undefined)
+            updateData.message = dto.message;
+        if (dto.type !== undefined)
+            updateData.type = dto.type;
+        if (dto.isActive !== undefined)
+            updateData.isActive = dto.isActive;
+        if (dto.expiresAt !== undefined) {
+            updateData.expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
+        }
+        const updated = await this.prisma.globalNotification.update({
+            where: { id },
+            data: updateData,
+        });
+        console.log(`✏️ Global notification updated: ID ${id}`);
+        return updated;
+    }
+    async deleteGlobalNotification(tenantId, id) {
+        this.verifySuperAdmin(tenantId);
+        const existing = await this.prisma.globalNotification.findUnique({
+            where: { id },
+        });
+        if (!existing) {
+            throw new common_1.NotFoundException(`Global notification with ID ${id} not found`);
+        }
+        await this.prisma.globalNotification.delete({
+            where: { id },
+        });
+        console.log(`🗑️ Global notification deleted: ID ${id}`);
+        return {
+            message: 'Global notification deleted successfully',
+            id,
+        };
     }
 };
 exports.NotificationsService = NotificationsService;

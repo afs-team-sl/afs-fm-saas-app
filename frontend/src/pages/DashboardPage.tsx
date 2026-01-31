@@ -4,11 +4,23 @@ import { useAuth } from '../context/AuthContext';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
 } from 'recharts';
-import { Box, Activity, CheckCircle, Users, Wrench, Briefcase, Clock, Globe, Zap, TrendingUp, ArrowUpRight } from 'lucide-react';
+import { Box, Activity, CheckCircle, Users, Wrench, Briefcase, Clock, Globe, Zap, TrendingUp, ArrowUpRight, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+
+interface WorkOrder {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  dueDate?: string;
+  asset: { name: string };
+  assignedTo?: { firstName: string; lastName: string };
+}
 
 const DashboardPage = () => {
   const { role, userId, tenantId } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalAssets: 0,
     openOrders: 0,
@@ -17,6 +29,7 @@ const DashboardPage = () => {
     tenantsCount: 0
   });
   const [chartData, setChartData] = useState<any[]>([]);
+  const [overdueOrders, setOverdueOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   const SUPER_TENANT_ID = import.meta.env.VITE_SUPER_TENANT_ID;
@@ -62,6 +75,14 @@ const DashboardPage = () => {
           { name: 'Done', value: done }
         ]);
 
+        // Fetch overdue orders
+        try {
+          const overdueRes = await apiClient.get('/work-orders/overdue/list');
+          setOverdueOrders(overdueRes.data || []);
+        } catch (err) {
+          console.error('Failed to fetch overdue orders');
+        }
+
       } else {
         const [assetsRes, ordersRes, usersRes] = await Promise.all([
           apiClient.get('/assets'),
@@ -85,6 +106,14 @@ const DashboardPage = () => {
           { name: 'Active', value: ordersRes.data.filter((o: any) => o.status === 'IN_PROGRESS').length },
           { name: 'Done', value: completed }
         ]);
+
+        // Fetch overdue orders for managers/admins
+        try {
+          const overdueRes = await apiClient.get('/work-orders/overdue/list');
+          setOverdueOrders(overdueRes.data || []);
+        } catch (err) {
+          console.error('Failed to fetch overdue orders');
+        }
       }
     } catch (error) {
       toast.error("Failed to load dashboard data.");
@@ -167,6 +196,95 @@ const DashboardPage = () => {
           </div>
         ))}
       </div>
+
+      {/* Overdue Work Orders Alert */}
+      {overdueOrders.length > 0 && (
+        <div className="bg-red-50 border-l-4 border-l-red-600 rounded-lg p-5 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="relative flex h-6 w-6 flex-shrink-0 mt-0.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-6 w-6 bg-red-600 items-center justify-center">
+                <AlertTriangle className="w-4 h-4 text-white" />
+              </span>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-red-900">
+                    ⚠️ SLA Alert: {overdueOrders.length} Overdue Work Order{overdueOrders.length !== 1 ? 's' : ''}
+                  </h3>
+                  <p className="text-sm text-red-700 mt-1">
+                    These work orders have passed their due date and require immediate attention.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/work-orders')}
+                  className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors text-sm"
+                >
+                  View All
+                </button>
+              </div>
+              
+              <div className="space-y-2 mt-4">
+                {overdueOrders.slice(0, 3).map((order) => (
+                  <div 
+                    key={order.id}
+                    onClick={() => navigate(`/work-orders/${order.id}`)}
+                    className="bg-white border border-red-200 rounded-lg p-4 hover:border-red-400 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-600 text-white">
+                            <AlertTriangle className="w-3 h-3" />
+                            DELAYED
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            order.priority === 'URGENT' ? 'bg-red-100 text-red-800' :
+                            order.priority === 'HIGH' ? 'bg-orange-100 text-orange-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {order.priority}
+                          </span>
+                        </div>
+                        <h4 className="font-semibold text-gray-900 text-sm mb-1">{order.title}</h4>
+                        <div className="flex items-center gap-4 text-xs text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Box className="w-3 h-3" />
+                            {order.asset?.name}
+                          </span>
+                          {order.assignedTo && (
+                            <span>
+                              {order.assignedTo.firstName} {order.assignedTo.lastName}
+                            </span>
+                          )}
+                          {order.dueDate && (
+                            <span className="text-red-600 font-medium">
+                              Due: {new Date(order.dueDate).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className={`px-2.5 py-1 rounded-md text-xs font-medium ${
+                        order.status === 'OPEN' ? 'bg-blue-100 text-blue-800' :
+                        order.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {order.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {overdueOrders.length > 3 && (
+                  <p className="text-sm text-red-700 font-medium pt-2">
+                    + {overdueOrders.length - 3} more overdue work order{overdueOrders.length - 3 !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

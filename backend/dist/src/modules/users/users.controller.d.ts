@@ -4,39 +4,39 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
-    create(tenantId: string, createUserDto: CreateUserDto): Promise<{
+    create(req: any, createUserDto: CreateUserDto): Promise<{
         id: string;
         createdAt: Date;
         email: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
-        tenantId: string;
+        tenantId: string | null;
     }>;
-    findAll(tenantId: string): Promise<{
+    findAll(req: any): Promise<{
         id: string;
         email: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
     }[]>;
-    findOne(id: string, tenantId: string): Promise<{
+    findOne(id: string, req: any): Promise<{
         id: string;
         createdAt: Date;
         email: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
-        tenantId: string;
+        tenantId: string | null;
     }>;
-    update(id: string, tenantId: string, updateUserDto: UpdateUserDto): Promise<{
+    update(id: string, req: any, updateUserDto: UpdateUserDto): Promise<{
         id: string;
         email: string;
         firstName: string;
         lastName: string;
         role: import(".prisma/client").$Enums.UserRole;
     }>;
-    remove(id: string, tenantId: string): Promise<{
+    remove(id: string, req: any): Promise<{
         message: string;
     }>;
 }

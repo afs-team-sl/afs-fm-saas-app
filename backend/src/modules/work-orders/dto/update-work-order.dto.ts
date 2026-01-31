@@ -6,6 +6,8 @@ import {
   IsUUID,
   IsOptional,
   MaxLength,
+  IsISO8601,
+  IsNumber,
 } from 'class-validator';
 import { WorkOrderStatus, WorkOrderPriority } from '@prisma/client';
 
@@ -61,4 +63,28 @@ export class UpdateWorkOrderDto {
   @IsUUID()
   @IsOptional()
   assignedToId?: string; // Prisma Schema එකේ නමට සමාන කළා
+
+  @ApiPropertyOptional({
+    description: 'SLA due date for this work order (ISO 8601 format)',
+    example: '2026-02-15T17:00:00Z',
+  })
+  @IsISO8601()
+  @IsOptional()
+  dueDate?: string;
+
+  @ApiPropertyOptional({
+    description: 'When the technician started working (auto-set on IN_PROGRESS)',
+    example: '2026-01-31T14:30:00Z',
+  })
+  @IsISO8601()
+  @IsOptional()
+  startedAt?: string;
+
+  @ApiPropertyOptional({
+    description: 'Total labor hours spent (auto-calculated on COMPLETED)',
+    example: 2.5,
+  })
+  @IsNumber()
+  @IsOptional()
+  laborHours?: number;
 }
