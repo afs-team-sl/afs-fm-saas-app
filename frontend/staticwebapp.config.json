@@ -1,5 +1,12 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html"
-  }
+  },
+  "routes": [
+    {
+      "route": "/api/*",
+      "rewrite": "https://be-fms-dev-h6fed7awcqd7cxb5.centralus-01.azurewebsites.net/*",
+      "allowedRoles": ["anonymous"]
+    }
+  ]
 }
