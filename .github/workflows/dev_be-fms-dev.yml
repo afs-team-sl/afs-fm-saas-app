@@ -1,0 +1,63 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - be-fms-dev
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to container registry
+        uses: docker/login-action@v2
+        with:
+          registry: acrfms.azurecr.io/
+          username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_81AFED908ACC49289F99EA3E1E402F59 }}
+          password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD_F5EF07A265BF482D8EC656B474A7BE44 }}
+
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: acrfms.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_81AFED908ACC49289F99EA3E1E402F59 }}/be-fms-backend:${{ github.sha }}
+          file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    needs: build
+    
+    steps:
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_4A29186476E6483DA4F055A60D699CA5 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_E56B8F23D4FD4DCA84627BC9DAF74FDE }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_05C05E534C3B41F5961B4927D6AA4D7E }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'be-fms-dev'
+          slot-name: 'Production'
+          images: 'acrfms.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_81AFED908ACC49289F99EA3E1E402F59 }}/be-fms-backend:${{ github.sha }}'
+          
