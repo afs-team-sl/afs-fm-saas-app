@@ -6,7 +6,7 @@ import axios from 'axios';
  */
 const apiClient = axios.create({
   // Use environment variable or fallback to localhost:3000
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_URL || 'https://be-fms-dev-h6fed7awcqd7cxb5.centralus-01.azurewebsites.net',
   headers: {
     'Content-Type': 'application/json',
   },
