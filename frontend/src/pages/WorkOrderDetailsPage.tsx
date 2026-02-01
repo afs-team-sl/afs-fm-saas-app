@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2, Timer, Zap } from 'lucide-react';
+import { uploadAttachment, getAttachments, deleteAttachment } from '../api/workOrder.api';
+import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2, Timer, Zap, Upload, Camera, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 interface Part {
   id: string;
@@ -16,6 +18,16 @@ interface WorkOrderPart {
   id: string;
   quantity: number;
   part: Part;
+  createdAt: string;
+}
+
+interface Attachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedBy?: string;
   createdAt: string;
 }
 
@@ -51,6 +63,8 @@ interface WorkOrderDetails {
 const WorkOrderDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [workOrder, setWorkOrder] = useState<WorkOrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,6 +78,10 @@ const WorkOrderDetailsPage = () => {
   const [selectedPartId, setSelectedPartId] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  // Photo Evidence Upload
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
+
   // Labor Timer
   const [elapsedTime, setElapsedTime] = useState<string>('0h 0m');
 
@@ -71,6 +89,7 @@ const WorkOrderDetailsPage = () => {
     fetchWorkOrderDetails();
     fetchAvailableParts();
     fetchWorkOrderParts();
+    fetchAttachments();
   }, [id]);
 
   // Timer Effect - Updates every minute when work order is IN_PROGRESS
@@ -118,6 +137,79 @@ const WorkOrderDetailsPage = () => {
     } catch (error) {
       console.error('Failed to load work order parts');
     }
+  };
+
+  const fetchAttachments = async () => {
+    if (!id) return;
+    try {
+      const data = await getAttachments(id);
+      setAttachments(data);
+    } catch (error) {
+      console.error('Failed to load attachments');
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size must be less than 10MB');
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Only JPG, PNG, GIF, and PDF files are allowed');
+        return;
+      }
+
+      handleUpload(file);
+    }
+  };
+
+  const handleUpload = async (file: File) => {
+    if (!id) return;
+
+    setUploadingFile(true);
+    try {
+      await uploadAttachment(id, file);
+      toast.success(`${file.name} uploaded successfully`);
+      fetchAttachments();
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to upload file');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId: string, fileName: string) => {
+    if (!id) return;
+    if (!confirm(`Delete "${fileName}"?`)) return;
+
+    try {
+      await deleteAttachment(id, attachmentId);
+      toast.success('Attachment deleted');
+      fetchAttachments();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete attachment');
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const isImageFile = (mimeType: string): boolean => {
+    return mimeType.startsWith('image/');
   };
 
   const handleAddPart = async (e: React.FormEvent) => {
@@ -174,6 +266,12 @@ const WorkOrderDetailsPage = () => {
   };
 
   const handleCompleteWorkOrder = async () => {
+    // Safety Protocol: Require at least one photo evidence
+    if (attachments.length === 0) {
+      toast.error('⚠️ Safety Protocol: Please upload at least one photo evidence before completing the work order');
+      return;
+    }
+
     if (!completionNote.trim()) {
       toast.error('Please provide a completion note before finalizing');
       return;
@@ -185,7 +283,7 @@ const WorkOrderDetailsPage = () => {
         status: 'COMPLETED',
         completionNote: completionNote,
       });
-      toast.success('Work order completed! Stock has been deducted for used parts.');
+      toast.success('✅ Work order completed successfully!');
       fetchWorkOrderDetails();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to complete work order');
@@ -246,6 +344,7 @@ const WorkOrderDetailsPage = () => {
   const isCompleted = workOrder.status === 'COMPLETED';
   const isCancelled = workOrder.status === 'CANCELLED';
   const isDisabled = isCompleted || isCancelled;
+  const canComplete = attachments.length > 0; // Safety check
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -478,6 +577,116 @@ const WorkOrderDetailsPage = () => {
             </div>
           </div>
 
+          {/* Photo Evidence Upload Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <div className="bg-gradient-to-r from-[#232249] to-[#2d2d5f] rounded-lg p-6 text-white">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Camera className="w-6 h-6" />
+                  <h3 className="text-lg font-semibold">Photo Evidence</h3>
+                </div>
+                {!isDisabled && (
+                  <div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingFile}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#232249] font-semibold rounded-lg hover:bg-blue-50 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploadingFile ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-5 h-5" />
+                          Upload Photo Evidence
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Safety Protocol Notice */}
+              {!isDisabled && attachments.length === 0 && (
+                <div className="bg-yellow-500/20 border border-yellow-400/50 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-yellow-100 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="font-semibold">Safety Protocol:</span>
+                    At least one photo evidence is required before completing this work order.
+                  </p>
+                </div>
+              )}
+
+              {/* Attachments Grid */}
+              {attachments.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {attachments.map((attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden border border-white/20 hover:border-white/40 transition-all group"
+                    >
+                      <div className="aspect-square bg-gray-800 flex items-center justify-center relative">
+                        {isImageFile(attachment.mimeType) ? (
+                          <img
+                            src={attachment.fileUrl}
+                            alt={attachment.fileName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-white/60">
+                            <ImageIcon className="w-12 h-12" />
+                            <span className="text-xs">{attachment.mimeType.split('/')[1].toUpperCase()}</span>
+                          </div>
+                        )}
+                        {!isDisabled && (
+                          <button
+                            onClick={() => handleDeleteAttachment(attachment.id, attachment.fileName)}
+                            className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                            title="Delete attachment"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="p-2">
+                        <p className="text-xs text-white/80 truncate" title={attachment.fileName}>
+                          {attachment.fileName}
+                        </p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-xs text-white/60">
+                            {formatFileSize(attachment.fileSize)}
+                          </span>
+                          <a
+                            href={attachment.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-300 hover:text-blue-200 underline"
+                          >
+                            View
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Camera className="w-12 h-12 text-white/30 mx-auto mb-3" />
+                  <p className="text-white/60 text-sm">No photos uploaded yet</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Completion Note Section */}
           <div className="border-t border-gray-200 pt-6">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -621,7 +830,8 @@ const WorkOrderDetailsPage = () => {
               </button>
               <button
                 onClick={handleCompleteWorkOrder}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !canComplete}
+                title={!canComplete ? 'Upload at least one photo evidence to complete' : ''}
                 className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? (
@@ -632,10 +842,22 @@ const WorkOrderDetailsPage = () => {
                 ) : (
                   <>
                     <CheckCircle className="w-5 h-5" />
+                    {!canComplete && '🔒 '}
                     Finalize &amp; Complete
                   </>
                 )}
               </button>
+            </div>
+          )}
+
+          {/* Safety Protocol Warning */}
+          {!isDisabled && !canComplete && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-yellow-800">
+                <p className="font-semibold mb-1">🔒 Safety Protocol Active</p>
+                <p>To complete this work order, you must upload at least one photo evidence documenting the completed work. This ensures quality control and accountability.</p>
+              </div>
             </div>
           )}
         </div>

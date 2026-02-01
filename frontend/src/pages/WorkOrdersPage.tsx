@@ -22,7 +22,7 @@ interface WorkOrder {
 
 const WorkOrdersPage = () => {
   const navigate = useNavigate();
-  const { firstName, lastName } = useAuth();
+  const { firstName, lastName, role } = useAuth();
   const [orders, setOrders] = useState<WorkOrder[]>([]);
   const [assets, setAssets] = useState<{id: string, name: string}[]>([]);
   const [users, setUsers] = useState<{id: string, firstName: string, lastName: string}[]>([]);
@@ -252,13 +252,16 @@ const WorkOrdersPage = () => {
             <FileDown className="w-4 h-4" />
             Export PDF
           </button>
-          <button 
-            onClick={() => handleOpenModal()} 
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Create Work Order
-          </button>
+          {/* Hide Create Button for Technicians */}
+          {role !== 'TECHNICIAN' && (
+            <button 
+              onClick={() => handleOpenModal()} 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Create Work Order
+            </button>
+          )}
         </div>
       </div>
 
