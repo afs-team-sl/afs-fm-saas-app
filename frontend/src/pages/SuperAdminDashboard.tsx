@@ -202,9 +202,9 @@ const SuperAdminDashboard = () => {
     }
 
     try {
-      await apiClient.post('/notifications/system-announcement', {
+      await apiClient.post('/tenants/broadcast', {
         message: announcementModal.message,
-        severity: announcementModal.severity
+        type: announcementModal.severity.toUpperCase()
       });
 
       toast.success('System-wide announcement broadcasted successfully!');
