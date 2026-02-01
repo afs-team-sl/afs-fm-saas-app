@@ -3,28 +3,18 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetStatus } from '@prisma/client';
+import { SubscriptionService } from '../shared/subscription/subscription.service';
 
 @Injectable()
 export class AssetsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private subscriptionService: SubscriptionService,
+  ) {}
 
   async create(data: CreateAssetDto & { tenantId: string }) {
-    // 🔒 CHECK SUBSCRIPTION PLAN LIMITS
-    const tenant = await this.prisma.tenant.findUnique({
-      where: { id: data.tenantId },
-      include: { _count: { select: { assets: true } } }
-    });
-
-    if (!tenant) {
-      throw new NotFoundException('Tenant not found');
-    }
-
-    // Check if tenant has reached their asset limit
-    if (tenant._count.assets >= tenant.maxAssets) {
-      throw new ForbiddenException(
-        `Plan limit exceeded. Your ${tenant.plan} plan allows up to ${tenant.maxAssets} assets. Please upgrade your plan.`
-      );
-    }
+    // 🔒 VALIDATE SUBSCRIPTION LIMITS FIRST
+    await this.subscriptionService.validateAssetLimit(data.tenantId);
 
     // Validate unique serial number if provided
     if (data.serialNo && data.serialNo.trim()) {

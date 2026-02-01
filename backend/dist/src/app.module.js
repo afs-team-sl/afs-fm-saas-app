@@ -23,6 +23,7 @@ const maintenance_plans_module_1 = require("./modules/maintenance-plans/maintena
 const facilities_module_1 = require("./modules/facilities/facilities.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
 const system_module_1 = require("./modules/system/system.module");
+const subscription_module_1 = require("./modules/shared/subscription/subscription.module");
 const maintenance_mode_guard_1 = require("./common/guards/maintenance-mode.guard");
 let AppModule = class AppModule {
 };
@@ -45,6 +46,7 @@ exports.AppModule = AppModule = __decorate([
             facilities_module_1.FacilitiesModule,
             notifications_module_1.NotificationsModule,
             system_module_1.SystemModule,
+            subscription_module_1.SubscriptionModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [

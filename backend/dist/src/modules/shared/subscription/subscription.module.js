@@ -6,20 +6,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AssetsModule = void 0;
+exports.SubscriptionModule = void 0;
 const common_1 = require("@nestjs/common");
-const assets_service_1 = require("./assets.service");
-const assets_controller_1 = require("./assets.controller");
-const subscription_module_1 = require("../shared/subscription/subscription.module");
-let AssetsModule = class AssetsModule {
+const subscription_service_1 = require("./subscription.service");
+const prisma_module_1 = require("../../../common/prisma/prisma.module");
+let SubscriptionModule = class SubscriptionModule {
 };
-exports.AssetsModule = AssetsModule;
-exports.AssetsModule = AssetsModule = __decorate([
+exports.SubscriptionModule = SubscriptionModule;
+exports.SubscriptionModule = SubscriptionModule = __decorate([
     (0, common_1.Module)({
-        imports: [subscription_module_1.SubscriptionModule],
-        controllers: [assets_controller_1.AssetsController],
-        providers: [assets_service_1.AssetsService],
-        exports: [assets_service_1.AssetsService],
+        imports: [prisma_module_1.PrismaModule],
+        providers: [subscription_service_1.SubscriptionService],
+        exports: [subscription_service_1.SubscriptionService],
     })
-], AssetsModule);
-//# sourceMappingURL=assets.module.js.map
+], SubscriptionModule);
+//# sourceMappingURL=subscription.module.js.map

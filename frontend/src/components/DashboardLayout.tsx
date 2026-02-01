@@ -339,50 +339,102 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
                   {/* Notification List */}
                   <div className="flex-1 overflow-y-auto">
-                    {userNotifications.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-12 px-4">
-                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3">
-                          <Bell className="w-8 h-8 text-slate-400" />
-                        </div>
-                        <p className="text-sm font-medium text-slate-900 mb-1">No notifications</p>
-                        <p className="text-xs text-slate-500 text-center">
-                          You're all caught up! We'll notify you when something important happens.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="divide-y divide-slate-100">
-                        {userNotifications.map((notif) => {
-                          const style = getUserNotificationStyle(notif.type);
-                          const Icon = style.icon;
-                          return (
-                            <div
-                              key={notif.id}
-                              onClick={() => !notif.isRead && markAsRead(notif.id)}
-                              className={`px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer ${
-                                !notif.isRead ? 'bg-primary-50/30' : ''
-                              }`}
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className={`w-10 h-10 ${style.bg} ${style.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                                  <Icon className="w-5 h-5" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className={`text-sm ${!notif.isRead ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'}`}>
-                                    {notif.message}
-                                  </p>
-                                  <p className="text-xs text-slate-500 mt-1">
-                                    {getTimeAgo(notif.createdAt)}
-                                  </p>
-                                </div>
-                                {!notif.isRead && (
-                                  <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
-                                )}
-                              </div>
+                    {(() => {
+                      // Merge user notifications and announcements
+                      const combinedItems = [
+                        ...userNotifications.map(n => ({ ...n, itemType: 'notification' as const })),
+                        ...announcements.map(a => ({ ...a, itemType: 'announcement' as const }))
+                      ];
+
+                      // Sort by date (newest first)
+                      combinedItems.sort((a, b) => 
+                        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                      );
+
+                      if (combinedItems.length === 0) {
+                        return (
+                          <div className="flex flex-col items-center justify-center py-12 px-4">
+                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                              <Bell className="w-8 h-8 text-slate-400" />
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                            <p className="text-sm font-medium text-slate-900 mb-1">No notifications</p>
+                            <p className="text-xs text-slate-500 text-center">
+                              You're all caught up! We'll notify you when something important happens.
+                            </p>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="divide-y divide-slate-100">
+                          {combinedItems.map((item) => {
+                            if (item.itemType === 'announcement') {
+                              // Render Announcement
+                              const announcement = item as Announcement & { itemType: 'announcement' };
+                              const announcementStyle = getAnnouncementStyle(announcement.type);
+                              const AnnouncementIcon = announcementStyle.icon;
+                              
+                              return (
+                                <div
+                                  key={`announcement-${announcement.id}`}
+                                  className="px-4 py-3 hover:bg-slate-50 transition-colors"
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <div className={`w-10 h-10 ${announcementStyle.bg} rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                                      <AnnouncementIcon className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Globe className="w-3.5 h-3.5 text-primary" />
+                                        <span className="text-xs font-bold text-primary uppercase tracking-wide">Broadcast</span>
+                                      </div>
+                                      <p className="text-sm font-medium text-slate-800">
+                                        {announcement.message}
+                                      </p>
+                                      <p className="text-xs text-slate-500 mt-1">
+                                        {getTimeAgo(announcement.createdAt)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            } else {
+                              // Render User Notification
+                              const notif = item as UserNotification & { itemType: 'notification' };
+                              const style = getUserNotificationStyle(notif.type);
+                              const Icon = style.icon;
+                              
+                              return (
+                                <div
+                                  key={`notification-${notif.id}`}
+                                  onClick={() => !notif.isRead && markAsRead(notif.id)}
+                                  className={`px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer ${
+                                    !notif.isRead ? 'bg-primary-50/30' : ''
+                                  }`}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <div className={`w-10 h-10 ${style.bg} ${style.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                      <Icon className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className={`text-sm ${!notif.isRead ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'}`}>
+                                        {notif.message}
+                                      </p>
+                                      <p className="text-xs text-slate-500 mt-1">
+                                        {getTimeAgo(notif.createdAt)}
+                                      </p>
+                                    </div>
+                                    {!notif.isRead && (
+                                      <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            }
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Footer */}

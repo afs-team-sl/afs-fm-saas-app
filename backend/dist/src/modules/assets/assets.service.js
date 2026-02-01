@@ -12,22 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssetsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../common/prisma/prisma.service");
+const subscription_service_1 = require("../shared/subscription/subscription.service");
 let AssetsService = class AssetsService {
     prisma;
-    constructor(prisma) {
+    subscriptionService;
+    constructor(prisma, subscriptionService) {
         this.prisma = prisma;
+        this.subscriptionService = subscriptionService;
     }
     async create(data) {
-        const tenant = await this.prisma.tenant.findUnique({
-            where: { id: data.tenantId },
-            include: { _count: { select: { assets: true } } }
-        });
-        if (!tenant) {
-            throw new common_1.NotFoundException('Tenant not found');
-        }
-        if (tenant._count.assets >= tenant.maxAssets) {
-            throw new common_1.ForbiddenException(`Plan limit exceeded. Your ${tenant.plan} plan allows up to ${tenant.maxAssets} assets. Please upgrade your plan.`);
-        }
+        await this.subscriptionService.validateAssetLimit(data.tenantId);
         if (data.serialNo && data.serialNo.trim()) {
             const existing = await this.prisma.asset.findFirst({
                 where: { tenantId: data.tenantId, serialNo: data.serialNo },
@@ -156,6 +150,7 @@ let AssetsService = class AssetsService {
 exports.AssetsService = AssetsService;
 exports.AssetsService = AssetsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        subscription_service_1.SubscriptionService])
 ], AssetsService);
 //# sourceMappingURL=assets.service.js.map
