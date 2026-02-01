@@ -11,9 +11,13 @@ export declare class AssetsService {
     }): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -24,17 +28,17 @@ export declare class AssetsService {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }>;
     findAll(tenantId: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -45,17 +49,17 @@ export declare class AssetsService {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }[]>;
     findByStatus(tenantId: string, status: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -66,17 +70,17 @@ export declare class AssetsService {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }[]>;
     findByCategory(tenantId: string, category: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -87,10 +91,6 @@ export declare class AssetsService {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
         workOrders: ({
@@ -102,26 +102,30 @@ export declare class AssetsService {
             } | null;
         } & {
             id: string;
-            status: import(".prisma/client").$Enums.WorkOrderStatus;
             createdAt: Date;
             updatedAt: Date;
             tenantId: string;
-            title: string;
             description: string | null;
+            title: string;
+            status: import(".prisma/client").$Enums.WorkOrderStatus;
             priority: import(".prisma/client").$Enums.WorkOrderPriority;
             assetId: string;
             assignedToId: string | null;
             completionNote: string | null;
-            startedAt: Date | null;
             dueDate: Date | null;
+            startedAt: Date | null;
             laborHours: number | null;
         })[];
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -132,17 +136,17 @@ export declare class AssetsService {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }>;
     update(id: string, tenantId: string, dto: UpdateAssetDto): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -153,17 +157,17 @@ export declare class AssetsService {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }>;
     remove(id: string, tenantId: string, userEmail?: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -174,10 +178,6 @@ export declare class AssetsService {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }>;
     createBulk(tenantId: string, assets: CreateAssetDto[]): Promise<{
         count: number;

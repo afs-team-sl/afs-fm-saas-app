@@ -364,4 +364,27 @@ export declare class WorkOrdersController {
     removePart(id: string, partId: string, tenantId: string): Promise<{
         message: string;
     }>;
+    uploadAttachment(id: string, tenantId: string, req: any, file: Express.Multer.File): Promise<{
+        id: string;
+        createdAt: Date;
+        workOrderId: string;
+        fileName: string;
+        fileUrl: string;
+        fileSize: number;
+        mimeType: string;
+        uploadedBy: string | null;
+    }>;
+    getAttachments(id: string, tenantId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        workOrderId: string;
+        fileName: string;
+        fileUrl: string;
+        fileSize: number;
+        mimeType: string;
+        uploadedBy: string | null;
+    }[]>;
+    deleteAttachment(id: string, attachmentId: string, tenantId: string): Promise<{
+        message: string;
+    }>;
 }

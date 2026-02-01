@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const work_orders_service_1 = require("./work-orders.service");
 const work_orders_controller_1 = require("./work-orders.controller");
 const prisma_module_1 = require("../../common/prisma/prisma.module");
+const storage_module_1 = require("../shared/storage/storage.module");
 let WorkOrdersModule = class WorkOrdersModule {
 };
 exports.WorkOrdersModule = WorkOrdersModule;
 exports.WorkOrdersModule = WorkOrdersModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, storage_module_1.StorageModule],
         controllers: [work_orders_controller_1.WorkOrdersController],
         providers: [work_orders_service_1.WorkOrdersService],
         exports: [work_orders_service_1.WorkOrdersService],

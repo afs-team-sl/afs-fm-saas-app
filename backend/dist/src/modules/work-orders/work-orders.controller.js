@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorkOrdersController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const swagger_1 = require("@nestjs/swagger");
 const work_orders_service_1 = require("./work-orders.service");
 const create_work_order_dto_1 = require("./dto/create-work-order.dto");
@@ -59,6 +60,16 @@ let WorkOrdersController = class WorkOrdersController {
     }
     removePart(id, partId, tenantId) {
         return this.workOrdersService.removePart(id, partId, tenantId);
+    }
+    uploadAttachment(id, tenantId, req, file) {
+        const userId = req?.user?.sub;
+        return this.workOrdersService.addAttachment(id, tenantId, file, userId);
+    }
+    getAttachments(id, tenantId) {
+        return this.workOrdersService.getAttachments(id, tenantId);
+    }
+    deleteAttachment(id, attachmentId, tenantId) {
+        return this.workOrdersService.deleteAttachment(attachmentId, id, tenantId);
     }
 };
 exports.WorkOrdersController = WorkOrdersController;
@@ -211,6 +222,87 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)
 ], WorkOrdersController.prototype, "removePart", null);
+__decorate([
+    (0, common_1.Post)(':id/upload'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, swagger_1.ApiOperation)({ summary: 'Upload an attachment to a work order' }),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Work Order UUID' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'File to upload (max 10MB, supported: jpg, jpeg, png, gif, pdf, doc, docx, xls, xlsx)',
+                },
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'File uploaded successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                id: { type: 'string' },
+                fileName: { type: 'string' },
+                fileUrl: { type: 'string' },
+                fileSize: { type: 'number' },
+                mimeType: { type: 'string' },
+                uploadedBy: { type: 'string', nullable: true },
+                createdAt: { type: 'string', format: 'date-time' },
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid file format or size' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __param(2, (0, common_1.Request)()),
+    __param(3, (0, common_1.UploadedFile)(new common_1.ParseFilePipe({
+        validators: [
+            new common_1.MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+            new common_1.FileTypeValidator({
+                fileType: /(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx)$/,
+            }),
+        ],
+    }))),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object, Object]),
+    __metadata("design:returntype", void 0)
+], WorkOrdersController.prototype, "uploadAttachment", null);
+__decorate([
+    (0, common_1.Get)(':id/attachments'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all attachments for a work order' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Work Order UUID' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Attachments retrieved' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], WorkOrdersController.prototype, "getAttachments", null);
+__decorate([
+    (0, common_1.Delete)(':id/attachments/:attachmentId'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete an attachment from a work order' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Work Order UUID' }),
+    (0, swagger_1.ApiParam)({ name: 'attachmentId', description: 'Attachment UUID' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Attachment deleted successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Attachment not found' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('attachmentId')),
+    __param(2, (0, common_1.Headers)('x-tenant-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], WorkOrdersController.prototype, "deleteAttachment", null);
 exports.WorkOrdersController = WorkOrdersController = __decorate([
     (0, swagger_1.ApiTags)('Work Orders'),
     (0, swagger_1.ApiBearerAuth)(),

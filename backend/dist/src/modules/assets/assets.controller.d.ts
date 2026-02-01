@@ -7,9 +7,13 @@ export declare class AssetsController {
     create(createAssetDto: CreateAssetDto, tenantId: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -20,17 +24,17 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }>;
     findAll(tenantId: string, status?: string, category?: string): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -41,10 +45,6 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
         workOrders: ({
@@ -56,26 +56,30 @@ export declare class AssetsController {
             } | null;
         } & {
             id: string;
-            status: import(".prisma/client").$Enums.WorkOrderStatus;
             createdAt: Date;
             updatedAt: Date;
             tenantId: string;
-            title: string;
             description: string | null;
+            title: string;
+            status: import(".prisma/client").$Enums.WorkOrderStatus;
             priority: import(".prisma/client").$Enums.WorkOrderPriority;
             assetId: string;
             assignedToId: string | null;
             completionNote: string | null;
-            startedAt: Date | null;
             dueDate: Date | null;
+            startedAt: Date | null;
             laborHours: number | null;
         })[];
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -86,17 +90,17 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }>;
     update(id: string, tenantId: string, updateAssetDto: UpdateAssetDto): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -107,17 +111,17 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }>;
     remove(id: string, tenantId: string, req: any): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -128,10 +132,6 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        tenantId: string;
-        roomId: string | null;
     }>;
     bulkCreate(assets: CreateAssetDto[], tenantId: string): Promise<{
         count: number;

@@ -184,6 +184,9 @@ model WorkOrder {
   // Parts used in this work order
   parts WorkOrderPart[]
 
+  // Attachments (evidence photos, documents)
+  attachments WorkOrderAttachment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -237,6 +240,21 @@ model WorkOrderPart {
 
   @@index([workOrderId])
   @@index([partId])
+}
+
+// 11.1 Work Order Attachments (Evidence Photos & Documents)
+model WorkOrderAttachment {
+  id          String    @id @default(uuid())
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  mimeType    String
+  uploadedBy  String? // User ID who uploaded
+  workOrderId String
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@index([workOrderId])
 }
 
 // 12. Maintenance Plans (Preventive Maintenance Scheduler)

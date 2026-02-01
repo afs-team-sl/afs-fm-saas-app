@@ -8,10 +8,14 @@ import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { AddWorkOrderPartDto } from '../parts/dto/add-work-order-part.dto';
 import { WorkOrderStatus, WorkOrderPriority } from '@prisma/client';
+import { StorageService } from '../shared/storage/storage.service';
 
 @Injectable()
 export class WorkOrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   /**
    * Helper to include relations in queries
@@ -365,5 +369,95 @@ export class WorkOrdersService {
     });
 
     return { message: 'Part removed from work order' };
+  }
+
+  /**
+   * Add an attachment to a work order
+   * @param workOrderId - Work Order UUID
+   * @param tenantId - Tenant ID for validation
+   * @param file - Uploaded file from multer
+   * @param uploadedBy - User ID who uploaded the file (optional)
+   */
+  async addAttachment(
+    workOrderId: string,
+    tenantId: string,
+    file: Express.Multer.File,
+    uploadedBy?: string,
+  ) {
+    // 1. Verify work order exists and belongs to tenant
+    const workOrder = await this.findOne(workOrderId, tenantId);
+
+    if (!workOrder) {
+      throw new NotFoundException(
+        `Work order with ID ${workOrderId} not found`,
+      );
+    }
+
+    // 2. Upload file to Azure Blob Storage
+    const fileUrl = await this.storageService.uploadFile(
+      file,
+      'work-order-evidence',
+    );
+
+    // 3. Create attachment record in database
+    const attachment = await this.prisma.workOrderAttachment.create({
+      data: {
+        workOrderId,
+        fileName: file.originalname,
+        fileUrl,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+        uploadedBy,
+      },
+    });
+
+    return attachment;
+  }
+
+  /**
+   * Get all attachments for a work order
+   */
+  async getAttachments(workOrderId: string, tenantId: string) {
+    // Verify work order exists and belongs to tenant
+    await this.findOne(workOrderId, tenantId);
+
+    return this.prisma.workOrderAttachment.findMany({
+      where: { workOrderId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Delete an attachment from a work order
+   */
+  async deleteAttachment(
+    attachmentId: string,
+    workOrderId: string,
+    tenantId: string,
+  ) {
+    // 1. Verify work order exists and belongs to tenant
+    await this.findOne(workOrderId, tenantId);
+
+    // 2. Find the attachment
+    const attachment = await this.prisma.workOrderAttachment.findUnique({
+      where: { id: attachmentId },
+    });
+
+    if (!attachment || attachment.workOrderId !== workOrderId) {
+      throw new NotFoundException('Attachment not found');
+    }
+
+    // 3. Delete from Azure Blob Storage
+    await this.storageService.deleteFile(
+      attachment.fileUrl,
+      'work-order-evidence',
+    );
+
+    // 4. Delete database record
+    await this.prisma.workOrderAttachment.delete({
+      where: { id: attachmentId },
+    });
+
+    return { message: 'Attachment deleted successfully' };
   }
 }

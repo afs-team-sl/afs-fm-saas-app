@@ -2,9 +2,11 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { AddWorkOrderPartDto } from '../parts/dto/add-work-order-part.dto';
+import { StorageService } from '../shared/storage/storage.service';
 export declare class WorkOrdersService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly storageService;
+    constructor(prisma: PrismaService, storageService: StorageService);
     private readonly includeRelations;
     create(tenantId: string, dto: CreateWorkOrderDto): Promise<{
         parts: ({
@@ -489,6 +491,29 @@ export declare class WorkOrdersService {
         workOrderId: string;
     })[]>;
     removePart(workOrderId: string, workOrderPartId: string, tenantId: string): Promise<{
+        message: string;
+    }>;
+    addAttachment(workOrderId: string, tenantId: string, file: Express.Multer.File, uploadedBy?: string): Promise<{
+        id: string;
+        createdAt: Date;
+        workOrderId: string;
+        fileName: string;
+        fileUrl: string;
+        fileSize: number;
+        mimeType: string;
+        uploadedBy: string | null;
+    }>;
+    getAttachments(workOrderId: string, tenantId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        workOrderId: string;
+        fileName: string;
+        fileUrl: string;
+        fileSize: number;
+        mimeType: string;
+        uploadedBy: string | null;
+    }[]>;
+    deleteAttachment(attachmentId: string, workOrderId: string, tenantId: string): Promise<{
         message: string;
     }>;
 }

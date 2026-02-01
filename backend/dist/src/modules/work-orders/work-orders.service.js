@@ -12,10 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorkOrdersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../common/prisma/prisma.service");
+const storage_service_1 = require("../shared/storage/storage.service");
 let WorkOrdersService = class WorkOrdersService {
     prisma;
-    constructor(prisma) {
+    storageService;
+    constructor(prisma, storageService) {
         this.prisma = prisma;
+        this.storageService = storageService;
     }
     includeRelations = {
         asset: true,
@@ -234,10 +237,50 @@ let WorkOrdersService = class WorkOrdersService {
         });
         return { message: 'Part removed from work order' };
     }
+    async addAttachment(workOrderId, tenantId, file, uploadedBy) {
+        const workOrder = await this.findOne(workOrderId, tenantId);
+        if (!workOrder) {
+            throw new common_1.NotFoundException(`Work order with ID ${workOrderId} not found`);
+        }
+        const fileUrl = await this.storageService.uploadFile(file, 'work-order-evidence');
+        const attachment = await this.prisma.workOrderAttachment.create({
+            data: {
+                workOrderId,
+                fileName: file.originalname,
+                fileUrl,
+                fileSize: file.size,
+                mimeType: file.mimetype,
+                uploadedBy,
+            },
+        });
+        return attachment;
+    }
+    async getAttachments(workOrderId, tenantId) {
+        await this.findOne(workOrderId, tenantId);
+        return this.prisma.workOrderAttachment.findMany({
+            where: { workOrderId },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+    async deleteAttachment(attachmentId, workOrderId, tenantId) {
+        await this.findOne(workOrderId, tenantId);
+        const attachment = await this.prisma.workOrderAttachment.findUnique({
+            where: { id: attachmentId },
+        });
+        if (!attachment || attachment.workOrderId !== workOrderId) {
+            throw new common_1.NotFoundException('Attachment not found');
+        }
+        await this.storageService.deleteFile(attachment.fileUrl, 'work-order-evidence');
+        await this.prisma.workOrderAttachment.delete({
+            where: { id: attachmentId },
+        });
+        return { message: 'Attachment deleted successfully' };
+    }
 };
 exports.WorkOrdersService = WorkOrdersService;
 exports.WorkOrdersService = WorkOrdersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        storage_service_1.StorageService])
 ], WorkOrdersService);
 //# sourceMappingURL=work-orders.service.js.map

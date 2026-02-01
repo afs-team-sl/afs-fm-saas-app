@@ -12,8 +12,14 @@ import {
   Headers,
   Query,
   UseGuards,
-  Request, // For extracting JWT user data
+  Request,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -21,7 +27,9 @@ import {
   ApiParam,
   ApiHeader,
   ApiQuery,
-  ApiBearerAuth, // Swagger Lock icon එක සඳහා
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { WorkOrdersService } from './work-orders.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
@@ -191,5 +199,90 @@ export class WorkOrdersController {
     @Headers('x-tenant-id') tenantId: string,
   ) {
     return this.workOrdersService.removePart(id, partId, tenantId);
+  }
+
+  @Post(':id/upload')
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload an attachment to a work order' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'Work Order UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'File to upload (max 10MB, supported: jpg, jpeg, png, gif, pdf, doc, docx, xls, xlsx)',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'File uploaded successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        fileName: { type: 'string' },
+        fileUrl: { type: 'string' },
+        fileSize: { type: 'number' },
+        mimeType: { type: 'string' },
+        uploadedBy: { type: 'string', nullable: true },
+        createdAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid file format or size' })
+  uploadAttachment(
+    @Param('id') id: string,
+    @Headers('x-tenant-id') tenantId: string,
+    @Request() req: any,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
+          new FileTypeValidator({
+            fileType: /(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx)$/,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const userId = req?.user?.sub;
+    return this.workOrdersService.addAttachment(id, tenantId, file, userId);
+  }
+
+  @Get(':id/attachments')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all attachments for a work order' })
+  @ApiParam({ name: 'id', description: 'Work Order UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  @ApiResponse({ status: 200, description: 'Attachments retrieved' })
+  getAttachments(
+    @Param('id') id: string,
+    @Headers('x-tenant-id') tenantId: string,
+  ) {
+    return this.workOrdersService.getAttachments(id, tenantId);
+  }
+
+  @Delete(':id/attachments/:attachmentId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete an attachment from a work order' })
+  @ApiParam({ name: 'id', description: 'Work Order UUID' })
+  @ApiParam({ name: 'attachmentId', description: 'Attachment UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  @ApiResponse({ status: 200, description: 'Attachment deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Attachment not found' })
+  deleteAttachment(
+    @Param('id') id: string,
+    @Param('attachmentId') attachmentId: string,
+    @Headers('x-tenant-id') tenantId: string,
+  ) {
+    return this.workOrdersService.deleteAttachment(attachmentId, id, tenantId);
   }
 }
