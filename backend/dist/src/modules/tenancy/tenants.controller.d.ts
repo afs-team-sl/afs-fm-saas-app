@@ -1,7 +1,11 @@
 import { TenantsService } from './tenants.service';
-import { AnnouncementType } from '@prisma/client';
+import { AnnouncementType, SubscriptionPlan } from '@prisma/client';
 declare class UpdateTenantDto {
     name: string;
+}
+declare class UpdateTenantPlanDto {
+    plan: SubscriptionPlan;
+    maxAssets: number;
 }
 declare class BroadcastDto {
     message: string;
@@ -20,6 +24,8 @@ export declare class TenantsController {
         id: string;
         name: string;
         joinCode: string;
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
+        maxAssets: number;
         domain: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -34,6 +40,8 @@ export declare class TenantsController {
         id: string;
         name: string;
         joinCode: string;
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
+        maxAssets: number;
         domain: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -48,6 +56,8 @@ export declare class TenantsController {
         id: string;
         name: string;
         joinCode: string;
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
+        maxAssets: number;
         domain: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -65,6 +75,25 @@ export declare class TenantsController {
         tenant: {
             id: string;
             name: string;
+        };
+    }>;
+    updateTenantPlan(req: any, tenantId: string, updatePlanDto: UpdateTenantPlanDto): Promise<{
+        message: string;
+        tenant: {
+            _count: {
+                users: number;
+                assets: number;
+                workOrders: number;
+            };
+        } & {
+            id: string;
+            name: string;
+            joinCode: string;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            maxAssets: number;
+            domain: string | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
     }>;
     broadcastMessage(req: any, broadcastDto: BroadcastDto): Promise<{

@@ -11,6 +11,7 @@ import {
   Headers,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -83,8 +84,13 @@ export class AssetsController { // Ensure 'export' keyword is present
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an asset' })
   @ApiHeader({ name: 'x-tenant-id', required: true })
-  remove(@Param('id') id: string, @Headers('x-tenant-id') tenantId: string) {
-    return this.assetsService.remove(id, tenantId);
+  remove(
+    @Param('id') id: string, 
+    @Headers('x-tenant-id') tenantId: string,
+    @Req() req: any
+  ) {
+    const userEmail = req.user?.email || 'Unknown';
+    return this.assetsService.remove(id, tenantId, userEmail);
   }
 
   @Post('bulk')

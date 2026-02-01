@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const core_1 = require("@nestjs/core");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const prisma_module_1 = require("./common/prisma/prisma.module");
@@ -21,6 +22,8 @@ const parts_module_1 = require("./modules/parts/parts.module");
 const maintenance_plans_module_1 = require("./modules/maintenance-plans/maintenance-plans.module");
 const facilities_module_1 = require("./modules/facilities/facilities.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
+const system_module_1 = require("./modules/system/system.module");
+const maintenance_mode_guard_1 = require("./common/guards/maintenance-mode.guard");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -41,9 +44,16 @@ exports.AppModule = AppModule = __decorate([
             maintenance_plans_module_1.MaintenancePlansModule,
             facilities_module_1.FacilitiesModule,
             notifications_module_1.NotificationsModule,
+            system_module_1.SystemModule,
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        providers: [
+            app_service_1.AppService,
+            {
+                provide: core_1.APP_GUARD,
+                useClass: maintenance_mode_guard_1.MaintenanceModeGuard,
+            },
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

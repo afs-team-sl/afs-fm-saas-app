@@ -114,6 +114,35 @@ let TenantsService = class TenantsService {
             },
         };
     }
+    async updatePlan(id, plan, maxAssets) {
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { id },
+        });
+        if (!tenant) {
+            throw new common_1.NotFoundException(`Tenant with ID ${id} not found`);
+        }
+        const updated = await this.prisma.tenant.update({
+            where: { id },
+            data: {
+                plan,
+                maxAssets,
+            },
+            include: {
+                _count: {
+                    select: {
+                        users: true,
+                        assets: true,
+                        workOrders: true,
+                    },
+                },
+            },
+        });
+        console.log(`💳 Tenant "${tenant.name}" plan updated to ${plan} (${maxAssets} assets max)`);
+        return {
+            message: 'Subscription plan updated successfully',
+            tenant: updated,
+        };
+    }
     async createAnnouncement(message, type) {
         const announcement = await this.prisma.announcement.create({
             data: {

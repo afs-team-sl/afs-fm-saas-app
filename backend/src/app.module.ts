@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './common/prisma/prisma.module';
@@ -12,6 +13,8 @@ import { PartsModule } from './modules/parts/parts.module';
 import { MaintenancePlansModule } from './modules/maintenance-plans/maintenance-plans.module';
 import { FacilitiesModule } from './modules/facilities/facilities.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { SystemModule } from './modules/system/system.module';
+import { MaintenanceModeGuard } from './common/guards/maintenance-mode.guard';
 
 @Module({
   imports: [
@@ -30,8 +33,15 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     MaintenancePlansModule,
     FacilitiesModule,
     NotificationsModule,
+    SystemModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: MaintenanceModeGuard,
+    },
+  ],
 })
 export class AppModule {}

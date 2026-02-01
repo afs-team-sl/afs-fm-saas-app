@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
@@ -9,6 +9,23 @@ export class AssetsService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateAssetDto & { tenantId: string }) {
+    // 🔒 CHECK SUBSCRIPTION PLAN LIMITS
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: data.tenantId },
+      include: { _count: { select: { assets: true } } }
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
+    }
+
+    // Check if tenant has reached their asset limit
+    if (tenant._count.assets >= tenant.maxAssets) {
+      throw new ForbiddenException(
+        `Plan limit exceeded. Your ${tenant.plan} plan allows up to ${tenant.maxAssets} assets. Please upgrade your plan.`
+      );
+    }
+
     // Validate unique serial number if provided
     if (data.serialNo && data.serialNo.trim()) {
       const existing = await this.prisma.asset.findFirst({
@@ -105,8 +122,25 @@ export class AssetsService {
     });
   }
 
-  async remove(id: string, tenantId: string) {
-    await this.findOne(id, tenantId);
+  async remove(id: string, tenantId: string, userEmail?: string) {
+    const asset = await this.findOne(id, tenantId);
+    
+    // 📝 Create Audit Log Entry
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { name: true }
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        action: 'DELETED_ASSET',
+        target: `Asset: ${asset.name} (${asset.category})`,
+        performedBy: userEmail || 'Unknown',
+        tenantName: tenant?.name || 'Unknown',
+        metadata: JSON.stringify({ assetId: id, serialNo: asset.serialNo })
+      }
+    });
+
     return this.prisma.asset.delete({ where: { id } });
   }
 

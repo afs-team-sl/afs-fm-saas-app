@@ -43,8 +43,9 @@ let AssetsController = class AssetsController {
     update(id, tenantId, updateAssetDto) {
         return this.assetsService.update(id, tenantId, updateAssetDto);
     }
-    remove(id, tenantId) {
-        return this.assetsService.remove(id, tenantId);
+    remove(id, tenantId, req) {
+        const userEmail = req.user?.email || 'Unknown';
+        return this.assetsService.remove(id, tenantId, userEmail);
     }
     bulkCreate(assets, tenantId) {
         return this.assetsService.createBulk(tenantId, assets);
@@ -105,8 +106,9 @@ __decorate([
     (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", void 0)
 ], AssetsController.prototype, "remove", null);
 __decorate([

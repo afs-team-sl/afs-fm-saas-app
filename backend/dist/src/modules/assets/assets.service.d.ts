@@ -156,7 +156,7 @@ export declare class AssetsService {
         beltSize: string | null;
         notes: string | null;
     }>;
-    remove(id: string, tenantId: string): Promise<{
+    remove(id: string, tenantId: string, userEmail?: string): Promise<{
         id: string;
         name: string;
         createdAt: Date;

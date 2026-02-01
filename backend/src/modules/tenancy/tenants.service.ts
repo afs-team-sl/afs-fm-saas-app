@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { AnnouncementType } from '@prisma/client';
+import { AnnouncementType, SubscriptionPlan } from '@prisma/client';
 
 @Injectable()
 export class TenantsService {
@@ -133,6 +133,44 @@ export class TenantsService {
         id: tenant.id,
         name: tenant.name,
       },
+    };
+  }
+
+  /**
+   * Update tenant subscription plan
+   * SUPER_ADMIN only
+   */
+  async updatePlan(id: string, plan: SubscriptionPlan, maxAssets: number) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant with ID ${id} not found`);
+    }
+
+    const updated = await this.prisma.tenant.update({
+      where: { id },
+      data: {
+        plan,
+        maxAssets,
+      },
+      include: {
+        _count: {
+          select: {
+            users: true,
+            assets: true,
+            workOrders: true,
+          },
+        },
+      },
+    });
+
+    console.log(`💳 Tenant "${tenant.name}" plan updated to ${plan} (${maxAssets} assets max)`);
+
+    return {
+      message: 'Subscription plan updated successfully',
+      tenant: updated,
     };
   }
 

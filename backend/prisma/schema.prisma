@@ -17,6 +17,13 @@ enum UserRole {
   OCCUPANT
 }
 
+// 2.1 Subscription Plans (SaaS Tiers)
+enum SubscriptionPlan {
+  LITE       // 50 assets max
+  PRO        // 200 assets max
+  ENTERPRISE // Unlimited
+}
+
 // 3. Tenant (Company / Organization)
 model Tenant {
   id   String @id @default(uuid())
@@ -25,6 +32,10 @@ model Tenant {
   // මෙන්න අපේ අලුත් Join Code එක 🔑
   // මේකෙන් තමයි අලුත් Technician කෙනෙක්ට කොම්පැණිය හොයාගන්න ලේසි වෙන්නේ.
   joinCode String @unique @default(cuid())
+
+  // Subscription & Limits
+  plan      SubscriptionPlan @default(LITE)
+  maxAssets Int              @default(50)
 
   domain    String?  @unique // e.g., alpha.fms.com
   createdAt DateTime @default(now())
@@ -39,6 +50,7 @@ model Tenant {
   buildings        Building[]
 
   @@index([createdAt])
+  @@index([plan])
 }
 
 // 4. Users table
@@ -383,4 +395,27 @@ model Announcement {
   @@index([isActive])
   @@index([tenantId])
   @@index([createdAt])
+}
+
+// Global System Settings (for Maintenance Mode, etc.)
+model SystemSettings {
+  id                 String   @id @default("system")
+  isMaintenanceMode  Boolean  @default(false)
+  maintenanceMessage String?
+  updatedAt          DateTime @updatedAt
+}
+
+// Global Audit Log (for tracking critical actions across all tenants)
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String   // e.g., "DELETED_ASSET", "DELETED_WORK_ORDER", "UPDATED_TENANT_PLAN"
+  target      String   // e.g., "Asset: HVAC Unit #123"
+  performedBy String   // User email or name
+  tenantName  String?  // Tenant name (if applicable)
+  metadata    String?  // JSON string for additional data
+  createdAt   DateTime @default(now())
+
+  @@index([action])
+  @@index([createdAt])
+  @@index([tenantName])
 }

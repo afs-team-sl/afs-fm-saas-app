@@ -2,8 +2,8 @@ import { Controller, Get, Patch, Delete, Body, UseGuards, ForbiddenException, Re
 import { TenantsService } from './tenants.service';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiProperty } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
-import { AnnouncementType } from '@prisma/client';
+import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt, Min } from 'class-validator';
+import { AnnouncementType, SubscriptionPlan } from '@prisma/client';
 
 class UpdateTenantDto {
   @ApiProperty({
@@ -13,6 +13,24 @@ class UpdateTenantDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+}
+
+class UpdateTenantPlanDto {
+  @ApiProperty({
+    description: 'Subscription plan',
+    enum: SubscriptionPlan,
+    example: 'PRO',
+  })
+  @IsEnum(SubscriptionPlan)
+  plan: SubscriptionPlan;
+
+  @ApiProperty({
+    description: 'Maximum number of assets allowed',
+    example: 200,
+  })
+  @IsInt()
+  @Min(1)
+  maxAssets: number;
 }
 
 class BroadcastDto {
@@ -110,6 +128,32 @@ export class TenantsController {
 
     console.log('✅ IMPERSONATION ALLOWED');
     return this.tenantsService.generateImpersonationToken(tenantId);
+  }
+
+  @Patch(':id/plan')
+  @ApiOperation({ summary: 'Update tenant subscription plan (Super Admin Only)' })
+  @ApiResponse({ status: 200, description: 'Tenant plan updated successfully.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You are not a Super Admin.' })
+  async updateTenantPlan(
+    @Request() req,
+    @Param('id') tenantId: string,
+    @Body() updatePlanDto: UpdateTenantPlanDto
+  ) {
+    console.log('💳 UPDATE TENANT PLAN REQUEST');
+    console.log('User Role:', req.user.role);
+    console.log('Target Tenant ID:', tenantId);
+    console.log('New Plan:', updatePlanDto.plan);
+
+    // STRICT SECURITY: Only SUPER_ADMIN can update plans
+    if (req.user.role !== 'SUPER_ADMIN') {
+      console.log('❌ PLAN UPDATE DENIED: NOT SUPER_ADMIN ROLE');
+      throw new ForbiddenException(
+        'Access Denied: Only Super Admins can update tenant plans.'
+      );
+    }
+
+    console.log('✅ PLAN UPDATE AUTHORIZED');
+    return this.tenantsService.updatePlan(tenantId, updatePlanDto.plan, updatePlanDto.maxAssets);
   }
 
   @Post('broadcast')

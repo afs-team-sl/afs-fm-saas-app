@@ -1,6 +1,6 @@
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { AnnouncementType } from '@prisma/client';
+import { AnnouncementType, SubscriptionPlan } from '@prisma/client';
 export declare class TenantsService {
     private prisma;
     private jwtService;
@@ -15,6 +15,8 @@ export declare class TenantsService {
         id: string;
         name: string;
         joinCode: string;
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
+        maxAssets: number;
         domain: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -29,6 +31,8 @@ export declare class TenantsService {
         id: string;
         name: string;
         joinCode: string;
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
+        maxAssets: number;
         domain: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -45,6 +49,8 @@ export declare class TenantsService {
         id: string;
         name: string;
         joinCode: string;
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
+        maxAssets: number;
         domain: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -62,6 +68,25 @@ export declare class TenantsService {
         tenant: {
             id: string;
             name: string;
+        };
+    }>;
+    updatePlan(id: string, plan: SubscriptionPlan, maxAssets: number): Promise<{
+        message: string;
+        tenant: {
+            _count: {
+                users: number;
+                assets: number;
+                workOrders: number;
+            };
+        } & {
+            id: string;
+            name: string;
+            joinCode: string;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            maxAssets: number;
+            domain: string | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
     }>;
     createAnnouncement(message: string, type?: AnnouncementType): Promise<{

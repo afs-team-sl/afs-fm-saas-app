@@ -18,6 +18,16 @@ let AssetsService = class AssetsService {
         this.prisma = prisma;
     }
     async create(data) {
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { id: data.tenantId },
+            include: { _count: { select: { assets: true } } }
+        });
+        if (!tenant) {
+            throw new common_1.NotFoundException('Tenant not found');
+        }
+        if (tenant._count.assets >= tenant.maxAssets) {
+            throw new common_1.ForbiddenException(`Plan limit exceeded. Your ${tenant.plan} plan allows up to ${tenant.maxAssets} assets. Please upgrade your plan.`);
+        }
         if (data.serialNo && data.serialNo.trim()) {
             const existing = await this.prisma.asset.findFirst({
                 where: { tenantId: data.tenantId, serialNo: data.serialNo },
@@ -91,8 +101,21 @@ let AssetsService = class AssetsService {
             data: cleanedData,
         });
     }
-    async remove(id, tenantId) {
-        await this.findOne(id, tenantId);
+    async remove(id, tenantId, userEmail) {
+        const asset = await this.findOne(id, tenantId);
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { name: true }
+        });
+        await this.prisma.auditLog.create({
+            data: {
+                action: 'DELETED_ASSET',
+                target: `Asset: ${asset.name} (${asset.category})`,
+                performedBy: userEmail || 'Unknown',
+                tenantName: tenant?.name || 'Unknown',
+                metadata: JSON.stringify({ assetId: id, serialNo: asset.serialNo })
+            }
+        });
         return this.prisma.asset.delete({ where: { id } });
     }
     async createBulk(tenantId, assets) {

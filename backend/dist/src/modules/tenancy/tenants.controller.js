@@ -31,6 +31,28 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], UpdateTenantDto.prototype, "name", void 0);
+class UpdateTenantPlanDto {
+    plan;
+    maxAssets;
+}
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Subscription plan',
+        enum: client_1.SubscriptionPlan,
+        example: 'PRO',
+    }),
+    (0, class_validator_1.IsEnum)(client_1.SubscriptionPlan),
+    __metadata("design:type", String)
+], UpdateTenantPlanDto.prototype, "plan", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Maximum number of assets allowed',
+        example: 200,
+    }),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], UpdateTenantPlanDto.prototype, "maxAssets", void 0);
 class BroadcastDto {
     message;
     type;
@@ -94,6 +116,18 @@ let TenantsController = class TenantsController {
         }
         console.log('✅ IMPERSONATION ALLOWED');
         return this.tenantsService.generateImpersonationToken(tenantId);
+    }
+    async updateTenantPlan(req, tenantId, updatePlanDto) {
+        console.log('💳 UPDATE TENANT PLAN REQUEST');
+        console.log('User Role:', req.user.role);
+        console.log('Target Tenant ID:', tenantId);
+        console.log('New Plan:', updatePlanDto.plan);
+        if (req.user.role !== 'SUPER_ADMIN') {
+            console.log('❌ PLAN UPDATE DENIED: NOT SUPER_ADMIN ROLE');
+            throw new common_1.ForbiddenException('Access Denied: Only Super Admins can update tenant plans.');
+        }
+        console.log('✅ PLAN UPDATE AUTHORIZED');
+        return this.tenantsService.updatePlan(tenantId, updatePlanDto.plan, updatePlanDto.maxAssets);
     }
     async broadcastMessage(req, broadcastDto) {
         console.log('📢 BROADCAST REQUEST');
@@ -172,6 +206,18 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], TenantsController.prototype, "impersonateTenant", null);
+__decorate([
+    (0, common_1.Patch)(':id/plan'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update tenant subscription plan (Super Admin Only)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Tenant plan updated successfully.' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Forbidden. You are not a Super Admin.' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, UpdateTenantPlanDto]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "updateTenantPlan", null);
 __decorate([
     (0, common_1.Post)('broadcast'),
     (0, swagger_1.ApiOperation)({ summary: 'Create global announcement (Super Admin Only)' }),

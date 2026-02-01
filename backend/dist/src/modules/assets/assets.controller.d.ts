@@ -112,7 +112,7 @@ export declare class AssetsController {
         beltSize: string | null;
         notes: string | null;
     }>;
-    remove(id: string, tenantId: string): Promise<{
+    remove(id: string, tenantId: string, req: any): Promise<{
         id: string;
         name: string;
         createdAt: Date;
