@@ -28,16 +28,15 @@ jobs:
         with:
           node-version: '20'
 
-      # Install dependencies inside frontend
-      - name: Install dependencies
-        run: npm install --prefix frontend
+      # Install frontend dependencies
+      - name: Install Frontend Dependencies
+        run: npm ci
+        working-directory: ./frontend
 
-      # Build the frontend app
-      - name: Build frontend
-        run: npm run build --prefix frontend
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          VITE_ANOTHER_URL: ${{ secrets.VITE_ANOTHER_URL }}
+      # Build frontend
+      - name: Build Frontend
+        run: npm run build
+        working-directory: ./frontend
 
       # Deploy to Azure Static Web Apps
       - name: Build And Deploy
@@ -47,9 +46,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_TREE_021D4C00F }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
-          app_location: "./frontend"        # App source code path
-          api_location: ""                  # Api source code path - optional
-          output_location: "frontend/dist"  # Built app content directory
+          app_location: "./frontend" # App source code path
+          api_location: "" # Api source code path - optional
+          output_location: "dist" # Built app content directory
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
