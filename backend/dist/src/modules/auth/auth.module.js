@@ -26,12 +26,24 @@ exports.AuthModule = AuthModule = __decorate([
             jwt_1.JwtModule.registerAsync({
                 global: true,
                 imports: [config_1.ConfigModule],
-                useFactory: async (configService) => ({
-                    secret: configService.get('JWT_SECRET'),
-                    signOptions: {
-                        expiresIn: (configService.get('JWT_EXPIRES_IN') || '1d'),
-                    },
-                }),
+                useFactory: async (configService) => {
+                    const jwtSecret = configService.get('JWT_SECRET');
+                    if (!jwtSecret) {
+                        throw new Error('❌ FATAL ERROR: JWT_SECRET environment variable is not defined!\n' +
+                            'Please set JWT_SECRET in your .env file or Azure App Service configuration.\n' +
+                            'Generate a secure secret with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+                    }
+                    const expiresIn = configService.get('JWT_EXPIRES_IN') || '1d';
+                    console.log('✅ JWT Module initialized successfully');
+                    console.log(`   Secret: ${jwtSecret.substring(0, 10)}... (${jwtSecret.length} chars)`);
+                    console.log(`   Expires In: ${expiresIn}`);
+                    return {
+                        secret: jwtSecret,
+                        signOptions: {
+                            expiresIn: expiresIn,
+                        },
+                    };
+                },
                 inject: [config_1.ConfigService],
             }),
         ],

@@ -107,10 +107,24 @@ let AuthService = class AuthService {
         };
     }
     async login(email, pass) {
-        const user = await this.prisma.user.findUnique({
-            where: { email },
-        });
-        if (user && (await bcrypt.compare(pass, user.password))) {
+        try {
+            console.log('🔐 Login attempt for:', email);
+            if (!email || !pass) {
+                console.error('❌ Login failed: Missing email or password');
+                throw new common_1.UnauthorizedException('Email and password are required');
+            }
+            const user = await this.prisma.user.findUnique({
+                where: { email },
+            });
+            if (!user) {
+                console.log('❌ Login failed: User not found:', email);
+                throw new common_1.UnauthorizedException('Invalid email or password');
+            }
+            const isPasswordValid = await bcrypt.compare(pass, user.password);
+            if (!isPasswordValid) {
+                console.log('❌ Login failed: Invalid password for:', email);
+                throw new common_1.UnauthorizedException('Invalid email or password');
+            }
             const payload = {
                 sub: user.id,
                 email: user.email,
@@ -118,13 +132,21 @@ let AuthService = class AuthService {
                 role: user.role,
                 userId: user.id,
             };
-            console.log('🔐 LOGIN SUCCESS');
-            console.log('User ID:', user.id);
-            console.log('Email:', user.email);
-            console.log('Role:', user.role);
-            console.log('Tenant ID:', user.tenantId || 'null (SUPER_ADMIN)');
+            console.log('✅ LOGIN SUCCESS');
+            console.log('   User ID:', user.id);
+            console.log('   Email:', user.email);
+            console.log('   Role:', user.role);
+            console.log('   Tenant ID:', user.tenantId || 'null (SUPER_ADMIN)');
+            let accessToken;
+            try {
+                accessToken = await this.jwtService.signAsync(payload);
+            }
+            catch (jwtError) {
+                console.error('❌ JWT signing failed:', jwtError.message);
+                throw new Error('Failed to generate authentication token. Check JWT_SECRET configuration.');
+            }
             return {
-                access_token: await this.jwtService.signAsync(payload),
+                access_token: accessToken,
                 user: {
                     id: user.id,
                     firstName: user.firstName,
@@ -134,7 +156,14 @@ let AuthService = class AuthService {
                 }
             };
         }
-        throw new common_1.UnauthorizedException('Invalid email or password');
+        catch (error) {
+            console.error('❌ Login error:', error.message);
+            console.error('   Stack:', error.stack);
+            if (error instanceof common_1.UnauthorizedException) {
+                throw error;
+            }
+            throw new Error(`Login failed: ${error.message}`);
+        }
     }
     async joinOrganization(dto) {
         const { joinCode, email, password, firstName, lastName, role } = dto;

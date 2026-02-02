@@ -67,8 +67,8 @@ export declare class WorkOrdersService {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     }>;
     findAll(tenantId: string, userId?: string, role?: string): Promise<({
@@ -130,8 +130,8 @@ export declare class WorkOrdersService {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     })[]>;
     findByStatus(tenantId: string, status: string): Promise<({
@@ -193,8 +193,8 @@ export declare class WorkOrdersService {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     })[]>;
     findByPriority(tenantId: string, priority: string): Promise<({
@@ -256,8 +256,8 @@ export declare class WorkOrdersService {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     })[]>;
     findOne(id: string, tenantId: string): Promise<{
@@ -319,8 +319,8 @@ export declare class WorkOrdersService {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     }>;
     update(id: string, tenantId: string, dto: UpdateWorkOrderDto): Promise<{
@@ -382,8 +382,8 @@ export declare class WorkOrdersService {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     }>;
     remove(id: string, tenantId: string): Promise<{
@@ -448,8 +448,8 @@ export declare class WorkOrdersService {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     })[]>;
     addPart(workOrderId: string, tenantId: string, dto: AddWorkOrderPartDto): Promise<{

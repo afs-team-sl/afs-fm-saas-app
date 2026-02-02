@@ -8,6 +8,27 @@ const config_1 = require("@nestjs/config");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const configService = app.get(config_1.ConfigService);
+    const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
+    const missingVars = requiredEnvVars.filter(varName => !configService.get(varName));
+    if (missingVars.length > 0) {
+        console.error('');
+        console.error('╔═══════════════════════════════════════════════════════════════════╗');
+        console.error('║  ❌ FATAL ERROR: Missing Required Environment Variables          ║');
+        console.error('╚═══════════════════════════════════════════════════════════════════╝');
+        console.error('');
+        console.error('The following environment variables are not set:');
+        missingVars.forEach(varName => {
+            console.error(`  ❌ ${varName}`);
+        });
+        console.error('');
+        console.error('Please configure these in your .env file (local) or');
+        console.error('Azure App Service Configuration → Application Settings (production)');
+        console.error('');
+        console.error('To generate a secure JWT_SECRET, run:');
+        console.error('  node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+        console.error('');
+        throw new Error('Missing required environment variables. Server cannot start.');
+    }
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,

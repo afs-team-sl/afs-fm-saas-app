@@ -28,7 +28,13 @@ let AuthController = class AuthController {
         return this.authService.register(registerDto);
     }
     async signIn(loginDto) {
-        return this.authService.login(loginDto.email, loginDto.password);
+        try {
+            return await this.authService.login(loginDto.email, loginDto.password);
+        }
+        catch (error) {
+            console.error('🚨 Login endpoint error:', error.message);
+            throw error;
+        }
     }
     async joinOrganization(joinDto) {
         return this.authService.joinOrganization(joinDto);
@@ -62,6 +68,10 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 401,
         description: 'Unauthorized. Invalid email or password.'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 500,
+        description: 'Internal server error. Check server configuration.'
     }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),

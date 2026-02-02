@@ -64,8 +64,8 @@ export declare class WorkOrdersController {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     }>;
     findAll(tenantId: string, status?: string, priority?: string, req?: any): Promise<({
@@ -127,8 +127,8 @@ export declare class WorkOrdersController {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     })[]>;
     findOverdue(tenantId: string, req?: any): Promise<({
@@ -190,8 +190,8 @@ export declare class WorkOrdersController {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     })[]>;
     findOne(id: string, tenantId: string): Promise<{
@@ -253,8 +253,8 @@ export declare class WorkOrdersController {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     }>;
     update(id: string, tenantId: string, updateWorkOrderDto: UpdateWorkOrderDto): Promise<{
@@ -316,8 +316,8 @@ export declare class WorkOrdersController {
         assetId: string;
         assignedToId: string | null;
         completionNote: string | null;
-        dueDate: Date | null;
         startedAt: Date | null;
+        dueDate: Date | null;
         laborHours: number | null;
     }>;
     remove(id: string, tenantId: string): Promise<{

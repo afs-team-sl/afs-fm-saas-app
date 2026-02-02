@@ -98,8 +98,8 @@ export declare class MaintenancePlansController {
             assetId: string;
             assignedToId: string | null;
             completionNote: string | null;
-            dueDate: Date | null;
             startedAt: Date | null;
+            dueDate: Date | null;
             laborHours: number | null;
         };
         updatedPlan: {
