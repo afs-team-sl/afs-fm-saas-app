@@ -48,9 +48,19 @@ export class AuthController {
     status: 401, 
     description: 'Unauthorized. Invalid email or password.' 
   })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Internal server error. Check server configuration.' 
+  })
   async signIn(@Body() loginDto: LoginDto) {
-    // We pass email and password from the DTO to the auth service
-    return this.authService.login(loginDto.email, loginDto.password);
+    try {
+      // We pass email and password from the DTO to the auth service
+      return await this.authService.login(loginDto.email, loginDto.password);
+    } catch (error) {
+      // Log the error for debugging
+      console.error('🚨 Login endpoint error:', error.message);
+      throw error;
+    }
   }
 
   /**
