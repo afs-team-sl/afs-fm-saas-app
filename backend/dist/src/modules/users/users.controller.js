@@ -32,13 +32,14 @@ let UsersController = class UsersController {
         }
         return this.usersService.create(tenantId, createUserDto);
     }
-    findAll(req) {
+    findAll(req, roleFilter) {
         const tenantId = req.user.tenantId;
         const role = req.user.role;
         console.log('📋 GET /users - User Context:');
         console.log('   Role:', role);
         console.log('   Tenant ID:', tenantId || 'null (SUPER_ADMIN)');
-        return this.usersService.findAll(tenantId, role);
+        console.log('   Role Filter:', roleFilter || 'none');
+        return this.usersService.findAll(tenantId, role, roleFilter);
     }
     findOne(id, req) {
         const tenantId = req.user.tenantId;
@@ -82,8 +83,9 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Get all users (scoped by role)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'List of users retrieved successfully' }),
     __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('role')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findAll", null);
 __decorate([

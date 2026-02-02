@@ -77,10 +77,16 @@ let UsersService = class UsersService {
             },
         });
     }
-    async findAll(tenantId, role) {
+    async findAll(tenantId, role, roleFilter) {
         if (role === 'SUPER_ADMIN') {
             console.log('🔓 SUPER_ADMIN access: Fetching ALL users across all tenants');
+            const whereClause = {};
+            if (roleFilter) {
+                whereClause.role = roleFilter;
+                console.log(`   Filtering by role: ${roleFilter}`);
+            }
             return this.prisma.user.findMany({
+                where: whereClause,
                 select: {
                     id: true,
                     email: true,
@@ -105,8 +111,13 @@ let UsersService = class UsersService {
             throw new common_1.BadRequestException('Non-SUPER_ADMIN users must have a valid tenantId');
         }
         console.log(`🔒 Regular user access: Fetching users for tenant ${tenantId}`);
+        const whereClause = { tenantId };
+        if (roleFilter) {
+            whereClause.role = roleFilter;
+            console.log(`   Filtering by role: ${roleFilter}`);
+        }
         return this.prisma.user.findMany({
-            where: { tenantId },
+            where: whereClause,
             select: {
                 id: true,
                 email: true,

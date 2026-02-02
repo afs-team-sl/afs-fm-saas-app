@@ -49,13 +49,21 @@ export class UsersService {
    * Find all users.
    * - SUPER_ADMIN (role === 'SUPER_ADMIN'): Returns ALL users across all tenants
    * - Regular users: Returns only users in their organization (filtered by tenantId)
+   * @param roleFilter - Optional filter to return only users with a specific role (e.g., 'TECHNICIAN')
    */
-  async findAll(tenantId: string | null, role: string) {
+  async findAll(tenantId: string | null, role: string, roleFilter?: string) {
     // SUPER_ADMIN can see all users across all organizations
     if (role === 'SUPER_ADMIN') {
       console.log('🔓 SUPER_ADMIN access: Fetching ALL users across all tenants');
       
+      const whereClause: any = {};
+      if (roleFilter) {
+        whereClause.role = roleFilter;
+        console.log(`   Filtering by role: ${roleFilter}`);
+      }
+      
       return this.prisma.user.findMany({
+        where: whereClause,
         select: {
           id: true,
           email: true,
@@ -84,9 +92,16 @@ export class UsersService {
 
     console.log(`🔒 Regular user access: Fetching users for tenant ${tenantId}`);
 
+    // Build where clause with tenantId and optional role filter
+    const whereClause: any = { tenantId };
+    if (roleFilter) {
+      whereClause.role = roleFilter;
+      console.log(`   Filtering by role: ${roleFilter}`);
+    }
+
     // Return only users in the same organization
     return this.prisma.user.findMany({
-      where: { tenantId },
+      where: whereClause,
       select: {
         id: true,
         email: true,

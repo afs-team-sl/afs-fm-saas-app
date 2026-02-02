@@ -12,6 +12,7 @@ import {
   Request,
   BadRequestException,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
@@ -60,15 +61,16 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all users (scoped by role)' })
   @ApiResponse({ status: 200, description: 'List of users retrieved successfully' })
-  findAll(@Request() req) {
+  findAll(@Request() req, @Query('role') roleFilter?: string) {
     const tenantId = req.user.tenantId; // Can be null for SUPER_ADMIN
     const role = req.user.role;
 
     console.log('📋 GET /users - User Context:');
     console.log('   Role:', role);
     console.log('   Tenant ID:', tenantId || 'null (SUPER_ADMIN)');
+    console.log('   Role Filter:', roleFilter || 'none');
 
-    return this.usersService.findAll(tenantId, role);
+    return this.usersService.findAll(tenantId, role, roleFilter);
   }
 
   /**

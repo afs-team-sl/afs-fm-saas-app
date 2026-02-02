@@ -13,7 +13,7 @@ export declare class UsersService {
         role: import(".prisma/client").$Enums.UserRole;
         tenantId: string | null;
     }>;
-    findAll(tenantId: string | null, role: string): Promise<{
+    findAll(tenantId: string | null, role: string, roleFilter?: string): Promise<{
         id: string;
         email: string;
         firstName: string;

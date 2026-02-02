@@ -10,6 +10,30 @@ async function bootstrap() {
   // Get ConfigService to access environment variables
   const configService = app.get(ConfigService);
 
+  // ⚠️ CRITICAL: Validate required environment variables on startup
+  const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
+  const missingVars = requiredEnvVars.filter(varName => !configService.get(varName));
+  
+  if (missingVars.length > 0) {
+    console.error('');
+    console.error('╔═══════════════════════════════════════════════════════════════════╗');
+    console.error('║  ❌ FATAL ERROR: Missing Required Environment Variables          ║');
+    console.error('╚═══════════════════════════════════════════════════════════════════╝');
+    console.error('');
+    console.error('The following environment variables are not set:');
+    missingVars.forEach(varName => {
+      console.error(`  ❌ ${varName}`);
+    });
+    console.error('');
+    console.error('Please configure these in your .env file (local) or');
+    console.error('Azure App Service Configuration → Application Settings (production)');
+    console.error('');
+    console.error('To generate a secure JWT_SECRET, run:');
+    console.error('  node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+    console.error('');
+    throw new Error('Missing required environment variables. Server cannot start.');
+  }
+
   // Set global prefix for all routes (optional - currently disabled)
   // app.setGlobalPrefix('api');
 

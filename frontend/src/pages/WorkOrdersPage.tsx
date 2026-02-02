@@ -42,8 +42,13 @@ const WorkOrdersPage = () => {
 
   const fetchSelectionData = async () => {
     try {
-      const [assetRes, userRes] = await Promise.all([apiClient.get('/assets'), apiClient.get('/users')]);
-      setAssets(assetRes.data); setUsers(userRes.data);
+      // Fetch assets and only technicians for work order assignment
+      const [assetRes, userRes] = await Promise.all([
+        apiClient.get('/assets'), 
+        apiClient.get('/users?role=TECHNICIAN')
+      ]);
+      setAssets(assetRes.data); 
+      setUsers(userRes.data);
     } catch (e) { console.error("Selection error", e); }
   };
 
