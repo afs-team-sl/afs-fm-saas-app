@@ -6,10 +6,10 @@ export declare class PartsController {
     constructor(partsService: PartsService);
     create(req: any, createPartDto: CreatePartDto): Promise<{
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
@@ -17,10 +17,10 @@ export declare class PartsController {
     }>;
     findAll(req: any): Promise<{
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
@@ -28,10 +28,10 @@ export declare class PartsController {
     }[]>;
     findLowStock(req: any): Promise<{
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
@@ -54,10 +54,10 @@ export declare class PartsController {
         })[];
     } & {
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
@@ -65,10 +65,10 @@ export declare class PartsController {
     }>;
     update(id: string, req: any, updatePartDto: UpdatePartDto): Promise<{
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;
@@ -79,10 +79,10 @@ export declare class PartsController {
     }>;
     restock(id: string, req: any, quantity: number): Promise<{
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         partNumber: string;
         stockLevel: number;
         minStock: number;

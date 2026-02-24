@@ -178,7 +178,6 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
     { name: 'Work Orders', path: '/work-orders', icon: ClipboardList, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: true },
     { name: 'Inventory', path: '/inventory', icon: Package, roles: ['ADMIN', 'MANAGER', 'TECHNICIAN'], superAdminOnly: false, hideForSuperAdmin: true },
     { name: 'Maintenance Plans', path: '/maintenance', icon: Calendar, roles: ['ADMIN', 'MANAGER'], superAdminOnly: false, hideForSuperAdmin: true },
-    { name: 'Locations', path: '/locations', icon: MapPin, roles: ['ADMIN', 'MANAGER'], superAdminOnly: false, hideForSuperAdmin: true },
     { name: 'Users', path: '/users', icon: UserCog, roles: ['ADMIN'], superAdminOnly: false, hideForSuperAdmin: true },
     
     // Super Admin Exclusive

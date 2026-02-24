@@ -39,6 +39,17 @@ export class AssetsService {
   async findAll(tenantId: string) {
     return this.prisma.asset.findMany({
       where: { tenantId },
+      include: {
+        room: {
+          include: {
+            floor: {
+              include: {
+                building: true,
+              },
+            },
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -77,6 +88,15 @@ export class AssetsService {
     const asset = await this.prisma.asset.findFirst({
       where: { id, tenantId },
       include: { 
+        room: {
+          include: {
+            floor: {
+              include: {
+                building: true,
+              },
+            },
+          },
+        },
         workOrders: {
           include: {
             assignedTo: { // වැඩේ කරපු කෙනාගේ විස්තරත් මෙතනින් ගන්නවා

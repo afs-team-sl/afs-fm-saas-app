@@ -21,7 +21,19 @@ let WorkOrdersService = class WorkOrdersService {
         this.storageService = storageService;
     }
     includeRelations = {
-        asset: true,
+        asset: {
+            include: {
+                room: {
+                    include: {
+                        floor: {
+                            include: {
+                                building: true,
+                            },
+                        },
+                    },
+                },
+            },
+        },
         assignedTo: {
             select: {
                 id: true,

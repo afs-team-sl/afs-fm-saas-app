@@ -6,6 +6,20 @@ import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+interface Asset {
+  id: string;
+  name: string;
+  room?: {
+    name: string;
+    floor: {
+      number: string;
+      building: {
+        name: string;
+      };
+    };
+  };
+}
+
 interface WorkOrder {
   id: string; 
   title: string; 
@@ -24,7 +38,7 @@ const WorkOrdersPage = () => {
   const navigate = useNavigate();
   const { firstName, lastName, role } = useAuth();
   const [orders, setOrders] = useState<WorkOrder[]>([]);
-  const [assets, setAssets] = useState<{id: string, name: string}[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [users, setUsers] = useState<{id: string, firstName: string, lastName: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -50,6 +64,13 @@ const WorkOrdersPage = () => {
       setAssets(assetRes.data); 
       setUsers(userRes.data);
     } catch (e) { console.error("Selection error", e); }
+  };
+
+  const getAssetDisplayName = (asset: Asset) => {
+    if (asset.room) {
+      return `${asset.name} - ${asset.room.floor.building.name} / ${asset.room.floor.number} / ${asset.room.name}`;
+    }
+    return asset.name;
   };
 
   const handleOpenModal = (order?: WorkOrder) => {
@@ -431,7 +452,11 @@ const WorkOrdersPage = () => {
                     onChange={e => setFormData({...formData, assetId: e.target.value})}
                   >
                     <option value="">Select asset</option>
-                    {assets.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    {assets.map(a => (
+                      <option key={a.id} value={a.id}>
+                        {getAssetDisplayName(a)}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>

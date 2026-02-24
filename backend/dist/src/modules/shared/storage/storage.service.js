@@ -19,13 +19,20 @@ let StorageService = class StorageService {
     constructor(configService) {
         this.configService = configService;
         const connectionString = this.configService.get('AZURE_STORAGE_CONNECTION_STRING');
-        if (!connectionString) {
-            throw new Error('AZURE_STORAGE_CONNECTION_STRING is not defined in environment variables');
+        if (!connectionString || connectionString.startsWith('http')) {
+            console.warn('⚠️  AZURE_STORAGE_CONNECTION_STRING is not configured properly. File uploads will be disabled.');
+            console.warn('💡 To enable file uploads, get your connection string from Azure Portal:');
+            console.warn('   Azure Portal → Storage Account (blobfmsdev) → Access Keys → Connection string');
+            this.blobServiceClient = null;
+            return;
         }
         this.blobServiceClient =
             storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
     }
     async getContainerClient(containerName) {
+        if (!this.blobServiceClient) {
+            throw new common_1.InternalServerErrorException('Azure Storage is not configured. Please set AZURE_STORAGE_CONNECTION_STRING in .env');
+        }
         const containerClient = this.blobServiceClient.getContainerClient(containerName);
         const exists = await containerClient.exists();
         if (!exists) {
@@ -72,6 +79,9 @@ let StorageService = class StorageService {
         }
     }
     getBlobUrl(containerName, blobName) {
+        if (!this.blobServiceClient) {
+            throw new common_1.InternalServerErrorException('Azure Storage is not configured. Please set AZURE_STORAGE_CONNECTION_STRING in .env');
+        }
         const containerClient = this.blobServiceClient.getContainerClient(containerName);
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
         return blockBlobClient.url;

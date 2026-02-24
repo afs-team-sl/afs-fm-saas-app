@@ -12,9 +12,9 @@ export declare class MaintenancePlansController {
         };
     } & {
         id: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
         description: string | null;
         title: string;
         assetId: string;
@@ -31,9 +31,9 @@ export declare class MaintenancePlansController {
         };
     } & {
         id: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
         description: string | null;
         title: string;
         assetId: string;
@@ -50,9 +50,9 @@ export declare class MaintenancePlansController {
         };
     } & {
         id: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
         description: string | null;
         title: string;
         assetId: string;
@@ -68,9 +68,9 @@ export declare class MaintenancePlansController {
         };
     } & {
         id: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
         description: string | null;
         title: string;
         assetId: string;
@@ -88,9 +88,9 @@ export declare class MaintenancePlansController {
             };
         } & {
             id: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
             description: string | null;
             title: string;
             status: import(".prisma/client").$Enums.WorkOrderStatus;
@@ -98,8 +98,8 @@ export declare class MaintenancePlansController {
             assetId: string;
             assignedToId: string | null;
             completionNote: string | null;
-            startedAt: Date | null;
             dueDate: Date | null;
+            startedAt: Date | null;
             laborHours: number | null;
         };
         updatedPlan: {
@@ -110,9 +110,9 @@ export declare class MaintenancePlansController {
             };
         } & {
             id: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
             description: string | null;
             title: string;
             assetId: string;

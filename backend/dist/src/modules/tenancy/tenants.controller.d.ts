@@ -22,13 +22,13 @@ export declare class TenantsController {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         joinCode: string;
         plan: import(".prisma/client").$Enums.SubscriptionPlan;
         maxAssets: number;
         domain: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     updateCurrentTenant(req: any, updateTenantDto: UpdateTenantDto): Promise<{
         _count: {
@@ -38,13 +38,13 @@ export declare class TenantsController {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         joinCode: string;
         plan: import(".prisma/client").$Enums.SubscriptionPlan;
         maxAssets: number;
         domain: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     findAll(req: any): Promise<({
         _count: {
@@ -54,13 +54,13 @@ export declare class TenantsController {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         joinCode: string;
         plan: import(".prisma/client").$Enums.SubscriptionPlan;
         maxAssets: number;
         domain: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     impersonateTenant(req: any, tenantId: string): Promise<{
         access_token: string;
@@ -87,22 +87,22 @@ export declare class TenantsController {
             };
         } & {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             joinCode: string;
             plan: import(".prisma/client").$Enums.SubscriptionPlan;
             maxAssets: number;
             domain: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
     }>;
     broadcastMessage(req: any, broadcastDto: BroadcastDto): Promise<{
         message: string;
         announcement: {
             id: string;
+            tenantId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string | null;
             message: string;
             type: import(".prisma/client").$Enums.AnnouncementType;
             isActive: boolean;
@@ -110,9 +110,9 @@ export declare class TenantsController {
     }>;
     getActiveAnnouncements(req: any): Promise<{
         id: string;
+        tenantId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string | null;
         message: string;
         type: import(".prisma/client").$Enums.AnnouncementType;
         isActive: boolean;

@@ -8,8 +8,8 @@ export declare class NotificationsService {
     getUserNotifications(userId: string, tenantId: string): Promise<{
         notifications: {
             id: string;
-            createdAt: Date;
             tenantId: string | null;
+            createdAt: Date;
             message: string;
             type: import(".prisma/client").$Enums.UserNotificationType;
             isRead: boolean;
@@ -19,8 +19,8 @@ export declare class NotificationsService {
     }>;
     markAsRead(notificationId: string, userId: string): Promise<{
         id: string;
-        createdAt: Date;
         tenantId: string | null;
+        createdAt: Date;
         message: string;
         type: import(".prisma/client").$Enums.UserNotificationType;
         isRead: boolean;
@@ -32,8 +32,8 @@ export declare class NotificationsService {
     }>;
     createNotification(userId: string, message: string, type: 'INFO' | 'WARNING' | 'SUCCESS' | 'ERROR', tenantId?: string): Promise<{
         id: string;
-        createdAt: Date;
         tenantId: string | null;
+        createdAt: Date;
         message: string;
         type: import(".prisma/client").$Enums.UserNotificationType;
         isRead: boolean;

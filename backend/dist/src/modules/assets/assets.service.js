@@ -40,6 +40,17 @@ let AssetsService = class AssetsService {
     async findAll(tenantId) {
         return this.prisma.asset.findMany({
             where: { tenantId },
+            include: {
+                room: {
+                    include: {
+                        floor: {
+                            include: {
+                                building: true,
+                            },
+                        },
+                    },
+                },
+            },
             orderBy: { createdAt: 'desc' },
         });
     }
@@ -65,6 +76,15 @@ let AssetsService = class AssetsService {
         const asset = await this.prisma.asset.findFirst({
             where: { id, tenantId },
             include: {
+                room: {
+                    include: {
+                        floor: {
+                            include: {
+                                building: true,
+                            },
+                        },
+                    },
+                },
                 workOrders: {
                     include: {
                         assignedTo: {

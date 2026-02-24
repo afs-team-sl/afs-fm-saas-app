@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import { uploadAttachment, getAttachments, deleteAttachment } from '../api/workOrder.api';
-import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2, Timer, Zap, Upload, Camera, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2, Timer, Zap, Upload, Camera, Image as ImageIcon, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
@@ -49,6 +49,15 @@ interface WorkOrderDetails {
     category: string;
     serialNo?: string;
     status: string;
+    room?: {
+      name: string;
+      floor: {
+        number: string;
+        building: {
+          name: string;
+        };
+      };
+    };
   };
   assignedTo?: {
     id: string;
@@ -420,6 +429,17 @@ const WorkOrderDetailsPage = () => {
                 <span className="text-gray-500">Asset Status:</span>
                 <span className="ml-2 font-medium text-gray-900">{workOrder.asset.status}</span>
               </div>
+              {workOrder.asset.room && (
+                <div className="col-span-2">
+                  <span className="text-gray-500">Location:</span>
+                  <div className="ml-2 inline-flex items-center gap-1.5 mt-1">
+                    <MapPin className="w-4 h-4 text-primary-600 flex-shrink-0" />
+                    <span className="font-medium text-gray-900">
+                      {workOrder.asset.room.floor.building.name} / {workOrder.asset.room.floor.number} / {workOrder.asset.room.name}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

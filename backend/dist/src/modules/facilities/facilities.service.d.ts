@@ -12,9 +12,9 @@ export declare class FacilitiesService {
         floors: ({
             rooms: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }[];
         } & {
@@ -26,19 +26,19 @@ export declare class FacilitiesService {
         })[];
     } & {
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         address: string | null;
     }>;
     findAllBuildings(tenantId: string): Promise<({
         floors: ({
             rooms: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }[];
         } & {
@@ -50,19 +50,19 @@ export declare class FacilitiesService {
         })[];
     } & {
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         address: string | null;
     })[]>;
     findOneBuilding(id: string, tenantId: string): Promise<{
         floors: ({
             rooms: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }[];
         } & {
@@ -74,19 +74,19 @@ export declare class FacilitiesService {
         })[];
     } & {
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         address: string | null;
     }>;
     updateBuilding(id: string, tenantId: string, updateBuildingDto: UpdateBuildingDto): Promise<{
         floors: ({
             rooms: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }[];
         } & {
@@ -98,34 +98,34 @@ export declare class FacilitiesService {
         })[];
     } & {
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         address: string | null;
     }>;
     removeBuilding(id: string, tenantId: string): Promise<{
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         address: string | null;
     }>;
     createFloor(tenantId: string, createFloorDto: CreateFloorDto): Promise<{
         building: {
             id: string;
-            name: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
+            name: string;
             address: string | null;
         };
         rooms: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             floorId: string;
         }[];
     } & {
@@ -138,17 +138,17 @@ export declare class FacilitiesService {
     findAllFloors(tenantId: string, buildingId?: string): Promise<({
         building: {
             id: string;
-            name: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
+            name: string;
             address: string | null;
         };
         rooms: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             floorId: string;
         }[];
     } & {
@@ -161,17 +161,17 @@ export declare class FacilitiesService {
     findOneFloor(id: string, tenantId: string): Promise<{
         building: {
             id: string;
-            name: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
+            name: string;
             address: string | null;
         };
         rooms: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             floorId: string;
         }[];
     } & {
@@ -184,17 +184,17 @@ export declare class FacilitiesService {
     updateFloor(id: string, tenantId: string, updateFloorDto: UpdateFloorDto): Promise<{
         building: {
             id: string;
-            name: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
+            name: string;
             address: string | null;
         };
         rooms: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             floorId: string;
         }[];
     } & {
@@ -215,10 +215,10 @@ export declare class FacilitiesService {
         floor: {
             building: {
                 id: string;
-                name: string;
+                tenantId: string;
                 createdAt: Date;
                 updatedAt: Date;
-                tenantId: string;
+                name: string;
                 address: string | null;
             };
         } & {
@@ -230,19 +230,19 @@ export declare class FacilitiesService {
         };
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         floorId: string;
     }>;
     findAllRooms(tenantId: string, floorId?: string): Promise<({
         floor: {
             building: {
                 id: string;
-                name: string;
+                tenantId: string;
                 createdAt: Date;
                 updatedAt: Date;
-                tenantId: string;
+                name: string;
                 address: string | null;
             };
         } & {
@@ -254,19 +254,19 @@ export declare class FacilitiesService {
         };
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         floorId: string;
     })[]>;
     findOneRoom(id: string, tenantId: string): Promise<{
         floor: {
             building: {
                 id: string;
-                name: string;
+                tenantId: string;
                 createdAt: Date;
                 updatedAt: Date;
-                tenantId: string;
+                name: string;
                 address: string | null;
             };
         } & {
@@ -278,19 +278,19 @@ export declare class FacilitiesService {
         };
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         floorId: string;
     }>;
     updateRoom(id: string, tenantId: string, updateRoomDto: UpdateRoomDto): Promise<{
         floor: {
             building: {
                 id: string;
-                name: string;
+                tenantId: string;
                 createdAt: Date;
                 updatedAt: Date;
-                tenantId: string;
+                name: string;
                 address: string | null;
             };
         } & {
@@ -302,16 +302,16 @@ export declare class FacilitiesService {
         };
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         floorId: string;
     }>;
     removeRoom(id: string, tenantId: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         floorId: string;
     }>;
     getFacilityTree(tenantId: string): Promise<({
@@ -322,9 +322,9 @@ export declare class FacilitiesService {
                 };
             } & {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             })[];
         } & {
@@ -336,10 +336,10 @@ export declare class FacilitiesService {
         })[];
     } & {
         id: string;
-        name: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        name: string;
         address: string | null;
     })[]>;
 }

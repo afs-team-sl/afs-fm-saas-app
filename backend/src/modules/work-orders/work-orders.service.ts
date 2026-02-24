@@ -22,7 +22,19 @@ export class WorkOrdersService {
    * This ensures Asset and Technician info is always returned
    */
   private readonly includeRelations = {
-    asset: true,
+    asset: {
+      include: {
+        room: {
+          include: {
+            floor: {
+              include: {
+                building: true,
+              },
+            },
+          },
+        },
+      },
+    },
     assignedTo: {
       select: {
         id: true,

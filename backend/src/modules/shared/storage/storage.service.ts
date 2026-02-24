@@ -8,17 +8,25 @@ import { ConfigService } from '@nestjs/config';
  */
 @Injectable()
 export class StorageService {
-  private blobServiceClient: BlobServiceClient;
+  private blobServiceClient: BlobServiceClient | null;
 
   constructor(private configService: ConfigService) {
     const connectionString = this.configService.get<string>(
       'AZURE_STORAGE_CONNECTION_STRING',
     );
 
-    if (!connectionString) {
-      throw new Error(
-        'AZURE_STORAGE_CONNECTION_STRING is not defined in environment variables',
+    if (!connectionString || connectionString.startsWith('http')) {
+      console.warn(
+        '⚠️  AZURE_STORAGE_CONNECTION_STRING is not configured properly. File uploads will be disabled.',
       );
+      console.warn(
+        '💡 To enable file uploads, get your connection string from Azure Portal:',
+      );
+      console.warn(
+        '   Azure Portal → Storage Account (blobfmsdev) → Access Keys → Connection string',
+      );
+      this.blobServiceClient = null;
+      return;
     }
 
     this.blobServiceClient =
@@ -32,6 +40,12 @@ export class StorageService {
   private async getContainerClient(
     containerName: string,
   ): Promise<ContainerClient> {
+    if (!this.blobServiceClient) {
+      throw new InternalServerErrorException(
+        'Azure Storage is not configured. Please set AZURE_STORAGE_CONNECTION_STRING in .env',
+      );
+    }
+
     const containerClient =
       this.blobServiceClient.getContainerClient(containerName);
 
@@ -118,6 +132,12 @@ export class StorageService {
    * Get blob URL by name
    */
   getBlobUrl(containerName: string, blobName: string): string {
+    if (!this.blobServiceClient) {
+      throw new InternalServerErrorException(
+        'Azure Storage is not configured. Please set AZURE_STORAGE_CONNECTION_STRING in .env',
+      );
+    }
+
     const containerClient =
       this.blobServiceClient.getContainerClient(containerName);
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
