@@ -37,6 +37,16 @@ let PartsService = class PartsService {
     async findAll(tenantId) {
         return this.prisma.part.findMany({
             where: { tenantId },
+            include: {
+                supplier: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                    },
+                },
+            },
             orderBy: { createdAt: 'desc' },
         });
     }
@@ -51,6 +61,15 @@ let PartsService = class PartsService {
         const part = await this.prisma.part.findFirst({
             where: { id, tenantId },
             include: {
+                supplier: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                        contactPerson: true,
+                    },
+                },
                 workOrderParts: {
                     include: {
                         workOrder: {

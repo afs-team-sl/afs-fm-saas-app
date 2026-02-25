@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const assets_service_1 = require("./assets.service");
 const assets_controller_1 = require("./assets.controller");
 const subscription_module_1 = require("../shared/subscription/subscription.module");
+const storage_module_1 = require("../shared/storage/storage.module");
 let AssetsModule = class AssetsModule {
 };
 exports.AssetsModule = AssetsModule;
 exports.AssetsModule = AssetsModule = __decorate([
     (0, common_1.Module)({
-        imports: [subscription_module_1.SubscriptionModule],
+        imports: [subscription_module_1.SubscriptionModule, storage_module_1.StorageModule],
         controllers: [assets_controller_1.AssetsController],
         providers: [assets_service_1.AssetsService],
         exports: [assets_service_1.AssetsService],

@@ -12,7 +12,10 @@ import {
   Query,
   UseGuards,
   Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -21,11 +24,14 @@ import {
   ApiHeader,
   ApiQuery,
   ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { AssetsService } from './assets.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Express } from 'express';
 
 @ApiTags('Assets')
 @ApiBearerAuth()
@@ -110,5 +116,131 @@ export class AssetsController { // Ensure 'export' keyword is present
   @ApiHeader({ name: 'x-tenant-id', required: true })
   removeAll(@Headers('x-tenant-id') tenantId: string) {
     return this.assetsService.removeAll(tenantId);
+  }
+
+  // ============================================================
+  // PHASE 6 FINAL: ASSET IMAGE & DOCUMENT UPLOADS
+  // ============================================================
+
+  @Post(':id/image')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload asset profile image' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'Asset UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Image file (max 5MB, supported: jpg, jpeg, png)',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Image uploaded successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        imageUrl: { type: 'string', example: 'https://storage.azure.com/...' },
+      },
+    },
+  })
+  async uploadImage(
+    @Param('id') assetId: string,
+    @Headers('x-tenant-id') tenantId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    // Validate file type
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new Error('Only JPG and PNG images are allowed');
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('Image size must be less than 5MB');
+    }
+
+    const imageUrl = await this.assetsService.uploadImage(assetId, tenantId, file);
+    return { imageUrl };
+  }
+
+  @Post(':id/documents')
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload asset document (manual, datasheet, etc.)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'Asset UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Document file (max 10MB, supported: pdf, doc, docx, xls, xlsx)',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Document uploaded successfully',
+  })
+  async uploadDocument(
+    @Param('id') assetId: string,
+    @Headers('x-tenant-id') tenantId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    // Validate file type
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new Error('Only PDF, DOC, DOCX, XLS, and XLSX files are allowed');
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error('Document size must be less than 10MB');
+    }
+
+    return this.assetsService.uploadDocument(assetId, tenantId, file);
+  }
+
+  @Get(':id/documents')
+  @ApiOperation({ summary: 'Get all documents for an asset' })
+  @ApiParam({ name: 'id', description: 'Asset UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  getDocuments(
+    @Param('id') assetId: string,
+    @Headers('x-tenant-id') tenantId: string,
+  ) {
+    return this.assetsService.getDocuments(assetId, tenantId);
+  }
+
+  @Delete(':id/documents/:documentId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete an asset document' })
+  @ApiParam({ name: 'id', description: 'Asset UUID' })
+  @ApiParam({ name: 'documentId', description: 'Document UUID' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  deleteDocument(
+    @Param('id') assetId: string,
+    @Param('documentId') documentId: string,
+    @Headers('x-tenant-id') tenantId: string,
+  ) {
+    return this.assetsService.deleteDocument(assetId, documentId, tenantId);
   }
 }

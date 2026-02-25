@@ -5,4 +5,6 @@ export declare class CreateWorkOrderDto {
     priority: WorkOrderPriority;
     assetId: string;
     assignedToId?: string;
+    checklistData?: any;
+    legacyId?: string;
 }

@@ -5,4 +5,5 @@ export declare class CreateUserDto {
     firstName: string;
     lastName: string;
     role: UserRole;
+    jobTitle?: string;
 }

@@ -4,4 +4,7 @@ export declare class CreatePartDto {
     stockLevel?: number;
     minStock?: number;
     unitPrice?: number;
+    uom?: string;
+    location?: string;
+    supplierId?: string;
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle, FileDown, AlertTriangle } from 'lucide-react';
+import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle, FileDown, AlertTriangle, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -9,6 +9,7 @@ import autoTable from 'jspdf-autotable';
 interface Asset {
   id: string;
   name: string;
+  category: string;
   room?: {
     name: string;
     floor: {
@@ -29,7 +30,18 @@ interface WorkOrder {
   assetId: string; 
   assignedToId?: string; 
   dueDate?: string;
-  asset: { name: string };
+  asset: { 
+    name: string;
+    room?: {
+      name: string;
+      floor: {
+        number: string;
+        building: {
+          name: string;
+        };
+      };
+    };
+  };
   assignedTo?: { firstName: string, lastName: string }; 
   createdAt: string;
 }
@@ -362,9 +374,19 @@ const WorkOrdersPage = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-primary-50 text-primary-dark rounded-md text-xs font-medium border border-primary-200">
-                      <Box className="w-3 h-3" />
-                      {order.asset?.name}
+                    <div className="flex flex-col gap-1">
+                      <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-primary-50 text-primary-dark rounded-md text-xs font-medium border border-primary-200 w-fit">
+                        <Box className="w-3 h-3" />
+                        {order.asset?.name}
+                      </div>
+                      {order.asset?.room && (
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <MapPin className="w-3 h-3 text-blue-500" />
+                          <span>
+                            {order.asset.room.floor.building.name} / {order.asset.room.floor.number} / {order.asset.room.name}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4">

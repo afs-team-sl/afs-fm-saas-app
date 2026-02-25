@@ -55,6 +55,24 @@ export class CreateWorkOrderDto {
   @IsOptional()
   assignedToId?: string;
 
+  // PHASE 6: Enterprise Work Order Fields
+  @ApiPropertyOptional({
+    description: 'Dynamic checklist data (e.g., temperature, pressure readings)',
+    example: { temperature: 72, pressure: 15, notes: 'All readings normal' },
+  })
+  @IsOptional()
+  checklistData?: any; // JSON type
+
+  @ApiPropertyOptional({
+    description: 'Legacy ID from old system for migration purposes',
+    example: 'WO-2020-001',
+    maxLength: 100,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  legacyId?: string;
+
   // IMPORTANT: tenantId is removed from here because it must be passed 
   // via the 'x-tenant-id' header for security and data isolation.
 }

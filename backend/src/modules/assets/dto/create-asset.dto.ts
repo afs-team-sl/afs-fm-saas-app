@@ -156,6 +156,37 @@ export class CreateAssetDto {
   @MaxLength(1000)
   notes?: string;
 
+  // PHASE 6: Enterprise Asset Fields
+  @ApiPropertyOptional({
+    description: 'Department that owns the asset',
+    example: 'Facilities Management',
+    maxLength: 255,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  department?: string;
+
+  @ApiPropertyOptional({
+    description: 'Asset profile image URL',
+    example: 'https://storage.azure.com/assets/hvac-001.jpg',
+    maxLength: 500,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(500)
+  image?: string;
+
+  @ApiPropertyOptional({
+    description: 'Cost center code for financial tracking',
+    example: 'CC-1000',
+    maxLength: 100,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  costCenter?: string;
+
   // IMPORTANT: tenantId is removed from this DTO because it is 
   // provided via the 'x-tenant-id' header, not the request body.
 }

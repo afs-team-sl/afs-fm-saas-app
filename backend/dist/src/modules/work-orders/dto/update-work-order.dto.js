@@ -23,6 +23,7 @@ class UpdateWorkOrderDto {
     dueDate;
     startedAt;
     laborHours;
+    checklistData;
 }
 exports.UpdateWorkOrderDto = UpdateWorkOrderDto;
 __decorate([
@@ -110,4 +111,12 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], UpdateWorkOrderDto.prototype, "laborHours", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Dynamic checklist data for operational readings (JSON object)',
+        example: { waterPressure: 45, supplyTemp: 180, returnTemp: 160 },
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], UpdateWorkOrderDto.prototype, "checklistData", void 0);
 //# sourceMappingURL=update-work-order.dto.js.map

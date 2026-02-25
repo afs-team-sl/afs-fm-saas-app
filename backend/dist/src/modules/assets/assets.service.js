@@ -13,12 +13,15 @@ exports.AssetsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../common/prisma/prisma.service");
 const subscription_service_1 = require("../shared/subscription/subscription.service");
+const storage_service_1 = require("../shared/storage/storage.service");
 let AssetsService = class AssetsService {
     prisma;
     subscriptionService;
-    constructor(prisma, subscriptionService) {
+    storageService;
+    constructor(prisma, subscriptionService, storageService) {
         this.prisma = prisma;
         this.subscriptionService = subscriptionService;
+        this.storageService = storageService;
     }
     async create(data) {
         await this.subscriptionService.validateAssetLimit(data.tenantId);
@@ -92,12 +95,29 @@ let AssetsService = class AssetsService {
                         }
                     },
                     orderBy: { createdAt: 'desc' }
+                },
+                documents: {
+                    orderBy: { createdAt: 'desc' }
                 }
             },
         });
         if (!asset)
             throw new common_1.NotFoundException('Asset not found');
-        return asset;
+        const latestCompletedWorkOrder = await this.prisma.workOrder.findFirst({
+            where: {
+                assetId: id,
+                status: 'COMPLETED',
+                checklistData: { not: null }
+            },
+            orderBy: { updatedAt: 'desc' },
+            take: 1,
+            select: { checklistData: true }
+        });
+        const latestReadings = latestCompletedWorkOrder?.checklistData || null;
+        return {
+            ...asset,
+            latestReadings
+        };
     }
     async update(id, tenantId, dto) {
         await this.findOne(id, tenantId);
@@ -166,11 +186,69 @@ let AssetsService = class AssetsService {
             message: `Successfully deleted ${result.count} asset(s)`,
         };
     }
+    async uploadImage(assetId, tenantId, file) {
+        const asset = await this.findOne(assetId, tenantId);
+        if (asset.image) {
+            try {
+                await this.storageService.deleteFile(asset.image);
+            }
+            catch (error) {
+                console.warn('Failed to delete old asset image:', error);
+            }
+        }
+        const imageUrl = await this.storageService.uploadFile(file, 'asset-images');
+        await this.prisma.asset.update({
+            where: { id: assetId },
+            data: { image: imageUrl }
+        });
+        return imageUrl;
+    }
+    async uploadDocument(assetId, tenantId, file) {
+        await this.findOne(assetId, tenantId);
+        const fileUrl = await this.storageService.uploadFile(file, 'asset-documents');
+        const document = await this.prisma.assetDocument.create({
+            data: {
+                name: file.originalname,
+                fileUrl,
+                fileSize: file.size,
+                mimeType: file.mimetype,
+                assetId
+            }
+        });
+        return document;
+    }
+    async getDocuments(assetId, tenantId) {
+        await this.findOne(assetId, tenantId);
+        return this.prisma.assetDocument.findMany({
+            where: { assetId },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+    async deleteDocument(assetId, documentId, tenantId) {
+        await this.findOne(assetId, tenantId);
+        const document = await this.prisma.assetDocument.findUnique({
+            where: { id: documentId }
+        });
+        if (!document || document.assetId !== assetId) {
+            throw new common_1.NotFoundException('Document not found');
+        }
+        try {
+            await this.storageService.deleteFile(document.fileUrl);
+        }
+        catch (error) {
+            console.warn('Failed to delete document from storage:', error);
+        }
+        await this.prisma.assetDocument.delete({
+            where: { id: documentId }
+        });
+        return { message: 'Document deleted successfully' };
+    }
 };
 exports.AssetsService = AssetsService;
 exports.AssetsService = AssetsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        subscription_service_1.SubscriptionService])
+        subscription_service_1.SubscriptionService,
+        storage_service_1.StorageService])
 ], AssetsService);
 //# sourceMappingURL=assets.service.js.map

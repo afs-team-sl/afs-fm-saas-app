@@ -25,6 +25,7 @@ const notifications_module_1 = require("./modules/notifications/notifications.mo
 const system_module_1 = require("./modules/system/system.module");
 const subscription_module_1 = require("./modules/shared/subscription/subscription.module");
 const storage_module_1 = require("./modules/shared/storage/storage.module");
+const suppliers_module_1 = require("./modules/suppliers/suppliers.module");
 const maintenance_mode_guard_1 = require("./common/guards/maintenance-mode.guard");
 let AppModule = class AppModule {
 };
@@ -49,6 +50,7 @@ exports.AppModule = AppModule = __decorate([
             system_module_1.SystemModule,
             subscription_module_1.SubscriptionModule,
             storage_module_1.StorageModule,
+            suppliers_module_1.SuppliersModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [

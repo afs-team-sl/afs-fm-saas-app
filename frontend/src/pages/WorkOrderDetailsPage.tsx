@@ -2,9 +2,13 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import { uploadAttachment, getAttachments, deleteAttachment } from '../api/workOrder.api';
-import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2, Timer, Zap, Upload, Camera, Image as ImageIcon, MapPin } from 'lucide-react';
+import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2, Timer, Zap, Upload, Camera, Image as ImageIcon, MapPin, Settings } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+
+interface ChecklistData {
+  [key: string]: string | number;
+}
 
 interface Part {
   id: string;
@@ -91,6 +95,9 @@ const WorkOrderDetailsPage = () => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [uploadingFile, setUploadingFile] = useState(false);
 
+  // Checklist / Operational Readings
+  const [checklistData, setChecklistData] = useState<ChecklistData>({});
+
   // Labor Timer
   const [elapsedTime, setElapsedTime] = useState<string>('0h 0m');
 
@@ -122,6 +129,11 @@ const WorkOrderDetailsPage = () => {
       const response = await apiClient.get(`/work-orders/${id}`);
       setWorkOrder(response.data);
       setCompletionNote(response.data.completionNote || '');
+      
+      // Load existing checklist data if available
+      if (response.data.checklistData) {
+        setChecklistData(response.data.checklistData);
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to load work order');
       navigate('/work-orders');
@@ -291,6 +303,7 @@ const WorkOrderDetailsPage = () => {
       await apiClient.patch(`/work-orders/${id}`, {
         status: 'COMPLETED',
         completionNote: completionNote,
+        checklistData: Object.keys(checklistData).length > 0 ? checklistData : null,
       });
       toast.success('✅ Work order completed successfully!');
       fetchWorkOrderDetails();
@@ -320,6 +333,45 @@ const WorkOrderDetailsPage = () => {
       ON_HOLD: 'bg-gray-500 text-white',
     };
     return styles[status] || 'bg-gray-500 text-white';
+  };
+
+  const handleChecklistChange = (key: string, value: string | number) => {
+    setChecklistData(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const getChecklistFields = (category: string) => {
+    const normalizedCategory = category.toLowerCase();
+    
+    if (normalizedCategory.includes('boiler')) {
+      return [
+        { key: 'waterPressure', label: 'Water Pressure', unit: 'psi', type: 'number' },
+        { key: 'supplyTemp', label: 'Supply Temperature', unit: '°F', type: 'number' },
+        { key: 'returnTemp', label: 'Return Temperature', unit: '°F', type: 'number' }
+      ];
+    }
+    
+    if (normalizedCategory.includes('chiller')) {
+      return [
+        { key: 'suctionPressure', label: 'Suction Pressure', unit: 'psi', type: 'number' },
+        { key: 'dischargePressure', label: 'Discharge Pressure', unit: 'psi', type: 'number' },
+        { key: 'motorAmps', label: 'Motor Amps', unit: 'A', type: 'number' }
+      ];
+    }
+    
+    if (normalizedCategory.includes('ahu') || normalizedCategory.includes('air handler')) {
+      return [
+        { key: 'supplyAirTemp', label: 'Supply Air Temperature', unit: '°F', type: 'number' },
+        { key: 'returnAirTemp', label: 'Return Air Temperature', unit: '°F', type: 'number' }
+      ];
+    }
+    
+    // Default fallback
+    return [
+      { key: 'generalNotes', label: 'General Inspection Notes', unit: '', type: 'textarea' }
+    ];
   };
 
   if (loading) {
@@ -706,6 +758,60 @@ const WorkOrderDetailsPage = () => {
               )}
             </div>
           </div>
+
+          {/* Operational Readings / Checklist Section */}
+          {!isDisabled && workOrder && (
+            <div className="border-t border-gray-200 pt-6">
+              <div className="bg-gradient-to-r from-[#232249] to-[#2d2d5f] rounded-lg p-6 text-white">
+                <div className="flex items-center gap-3 mb-4">
+                  <Settings className="w-6 h-6" />
+                  <h3 className="text-lg font-semibold">Operational Readings</h3>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <p className="text-xs text-blue-200 mb-4">
+                    Record equipment readings and measurements for this {workOrder.asset.category}
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {getChecklistFields(workOrder.asset.category).map((field) => (
+                      <div key={field.key} className="space-y-2">
+                        <label className="block text-sm font-medium text-white">
+                          {field.label} {field.unit && `(${field.unit})`}
+                        </label>
+                        
+                        {field.type === 'textarea' ? (
+                          <textarea
+                            value={checklistData[field.key] || ''}
+                            onChange={(e) => handleChecklistChange(field.key, e.target.value)}
+                            rows={4}
+                            placeholder={`Enter ${field.label.toLowerCase()}...`}
+                            className="w-full px-4 py-3 bg-white/95 border-2 border-transparent rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-[#232249] focus:ring-2 focus:ring-[#232249]/20 transition-all text-base"
+                          />
+                        ) : (
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={checklistData[field.key] || ''}
+                            onChange={(e) => handleChecklistChange(field.key, parseFloat(e.target.value) || '')}
+                            placeholder={`Enter ${field.label.toLowerCase()}`}
+                            className="w-full px-4 py-3 bg-white/95 border-2 border-transparent rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-[#232249] focus:ring-2 focus:ring-[#232249]/20 transition-all text-base font-mono"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {Object.keys(checklistData).length > 0 && (
+                    <div className="mt-4 flex items-center gap-2 text-green-300 text-sm">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>{Object.keys(checklistData).length} reading(s) recorded</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Completion Note Section */}
           <div className="border-t border-gray-200 pt-6">

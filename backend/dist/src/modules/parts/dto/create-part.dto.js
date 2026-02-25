@@ -17,6 +17,9 @@ class CreatePartDto {
     stockLevel;
     minStock;
     unitPrice;
+    uom;
+    location;
+    supplierId;
 }
 exports.CreatePartDto = CreatePartDto;
 __decorate([
@@ -45,4 +48,19 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreatePartDto.prototype, "unitPrice", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePartDto.prototype, "uom", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePartDto.prototype, "location", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePartDto.prototype, "supplierId", void 0);
 //# sourceMappingURL=create-part.dto.js.map

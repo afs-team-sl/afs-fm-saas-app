@@ -4,12 +4,14 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetStatus } from '@prisma/client';
 import { SubscriptionService } from '../shared/subscription/subscription.service';
+import { StorageService } from '../shared/storage/storage.service';
 
 @Injectable()
 export class AssetsService {
   constructor(
     private prisma: PrismaService,
     private subscriptionService: SubscriptionService,
+    private storageService: StorageService,
   ) {}
 
   async create(data: CreateAssetDto & { tenantId: string }) {
@@ -81,7 +83,7 @@ export class AssetsService {
   }
 
   /**
-   * GET ASSET DETAILS WITH FULL HISTORY 🛡️
+   * GET ASSET DETAILS WITH FULL HISTORY & LATEST READINGS 🛡️
    * We include nested relations to show who did each work order.
    */
   async findOne(id: string, tenantId: string) {
@@ -104,12 +106,33 @@ export class AssetsService {
             }
           },
           orderBy: { createdAt: 'desc' } // අලුත්ම වැඩ උඩට එන්න
-        } 
+        },
+        documents: {
+          orderBy: { createdAt: 'desc' }
+        }
       },
     });
 
     if (!asset) throw new NotFoundException('Asset not found');
-    return asset;
+
+    // Extract latest readings from the most recent COMPLETED work order
+    const latestCompletedWorkOrder = await this.prisma.workOrder.findFirst({
+      where: {
+        assetId: id,
+        status: 'COMPLETED',
+        checklistData: { not: null }
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 1,
+      select: { checklistData: true }
+    });
+
+    const latestReadings = latestCompletedWorkOrder?.checklistData || null;
+
+    return {
+      ...asset,
+      latestReadings
+    };
   }
 
   async update(id: string, tenantId: string, dto: UpdateAssetDto) {
@@ -205,5 +228,114 @@ export class AssetsService {
       count: result.count,
       message: `Successfully deleted ${result.count} asset(s)`,
     };
+  }
+
+  /**
+   * UPLOAD ASSET PROFILE IMAGE 📷
+   * Uploads to Azure Blob Storage and updates asset record
+   */
+  async uploadImage(
+    assetId: string,
+    tenantId: string,
+    file: Express.Multer.File
+  ): Promise<string> {
+    // Verify asset exists and belongs to tenant
+    const asset = await this.findOne(assetId, tenantId);
+
+    // Delete old image if exists
+    if (asset.image) {
+      try {
+        await this.storageService.deleteFile(asset.image);
+      } catch (error) {
+        console.warn('Failed to delete old asset image:', error);
+      }
+    }
+
+    // Upload new image to Azure Blob Storage
+    const imageUrl = await this.storageService.uploadFile(file, 'asset-images');
+
+    // Update asset record
+    await this.prisma.asset.update({
+      where: { id: assetId },
+      data: { image: imageUrl }
+    });
+
+    return imageUrl;
+  }
+
+  /**
+   * UPLOAD ASSET DOCUMENT 📄
+   * Uploads manual, datasheet, or other documentation
+   */
+  async uploadDocument(
+    assetId: string,
+    tenantId: string,
+    file: Express.Multer.File
+  ) {
+    // Verify asset exists and belongs to tenant
+    await this.findOne(assetId, tenantId);
+
+    // Upload document to Azure Blob Storage
+    const fileUrl = await this.storageService.uploadFile(file, 'asset-documents');
+
+    // Create document record
+    const document = await this.prisma.assetDocument.create({
+      data: {
+        name: file.originalname,
+        fileUrl,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+        assetId
+      }
+    });
+
+    return document;
+  }
+
+  /**
+   * GET ALL DOCUMENTS FOR AN ASSET 📋
+   */
+  async getDocuments(assetId: string, tenantId: string) {
+    // Verify asset belongs to tenant
+    await this.findOne(assetId, tenantId);
+
+    return this.prisma.assetDocument.findMany({
+      where: { assetId },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  /**
+   * DELETE A DOCUMENT 🗑️
+   */
+  async deleteDocument(
+    assetId: string,
+    documentId: string,
+    tenantId: string
+  ) {
+    // Verify asset belongs to tenant
+    await this.findOne(assetId, tenantId);
+
+    const document = await this.prisma.assetDocument.findUnique({
+      where: { id: documentId }
+    });
+
+    if (!document || document.assetId !== assetId) {
+      throw new NotFoundException('Document not found');
+    }
+
+    // Delete from Azure Blob Storage
+    try {
+      await this.storageService.deleteFile(document.fileUrl);
+    } catch (error) {
+      console.warn('Failed to delete document from storage:', error);
+    }
+
+    // Delete database record
+    await this.prisma.assetDocument.delete({
+      where: { id: documentId }
+    });
+
+    return { message: 'Document deleted successfully' };
   }
 }

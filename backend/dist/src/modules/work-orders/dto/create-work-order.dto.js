@@ -19,6 +19,8 @@ class CreateWorkOrderDto {
     priority;
     assetId;
     assignedToId;
+    checklistData;
+    legacyId;
 }
 exports.CreateWorkOrderDto = CreateWorkOrderDto;
 __decorate([
@@ -70,4 +72,23 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateWorkOrderDto.prototype, "assignedToId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Dynamic checklist data (e.g., temperature, pressure readings)',
+        example: { temperature: 72, pressure: 15, notes: 'All readings normal' },
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateWorkOrderDto.prototype, "checklistData", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Legacy ID from old system for migration purposes',
+        example: 'WO-2020-001',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], CreateWorkOrderDto.prototype, "legacyId", void 0);
 //# sourceMappingURL=create-work-order.dto.js.map

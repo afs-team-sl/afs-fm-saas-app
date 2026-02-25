@@ -15,4 +15,7 @@ export declare class CreateAssetDto {
     filterSize?: string;
     beltSize?: string;
     notes?: string;
+    department?: string;
+    image?: string;
+    costCenter?: string;
 }

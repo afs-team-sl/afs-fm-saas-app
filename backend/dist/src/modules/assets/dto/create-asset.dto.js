@@ -29,6 +29,9 @@ class CreateAssetDto {
     filterSize;
     beltSize;
     notes;
+    department;
+    image;
+    costCenter;
 }
 exports.CreateAssetDto = CreateAssetDto;
 __decorate([
@@ -191,4 +194,37 @@ __decorate([
     (0, class_validator_1.MaxLength)(1000),
     __metadata("design:type", String)
 ], CreateAssetDto.prototype, "notes", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Department that owns the asset',
+        example: 'Facilities Management',
+        maxLength: 255,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "department", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Asset profile image URL',
+        example: 'https://storage.azure.com/assets/hvac-001.jpg',
+        maxLength: 500,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(500),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "image", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Cost center code for financial tracking',
+        example: 'CC-1000',
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], CreateAssetDto.prototype, "costCenter", void 0);
 //# sourceMappingURL=create-asset.dto.js.map

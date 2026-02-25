@@ -21,4 +21,17 @@ export class CreatePartDto {
   @Min(0)
   @IsOptional()
   unitPrice?: number;
+
+  // PHASE 6: Enterprise Inventory Fields
+  @IsString()
+  @IsOptional()
+  uom?: string; // Unit of Measurement
+
+  @IsString()
+  @IsOptional()
+  location?: string; // Shelf/Bin location
+
+  @IsString()
+  @IsOptional()
+  supplierId?: string; // Link to Supplier
 }

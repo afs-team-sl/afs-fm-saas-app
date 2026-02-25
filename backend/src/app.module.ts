@@ -16,6 +16,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { SystemModule } from './modules/system/system.module';
 import { SubscriptionModule } from './modules/shared/subscription/subscription.module';
 import { StorageModule } from './modules/shared/storage/storage.module';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { MaintenanceModeGuard } from './common/guards/maintenance-mode.guard';
 
 @Module({
@@ -38,6 +39,7 @@ import { MaintenanceModeGuard } from './common/guards/maintenance-mode.guard';
     SystemModule,
     SubscriptionModule,
     StorageModule,
+    SuppliersModule,
   ],
   controllers: [AppController],
   providers: [

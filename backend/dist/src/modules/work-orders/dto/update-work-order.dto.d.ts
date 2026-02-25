@@ -9,4 +9,5 @@ export declare class UpdateWorkOrderDto {
     dueDate?: string;
     startedAt?: string;
     laborHours?: number;
+    checklistData?: any;
 }

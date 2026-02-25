@@ -5,15 +5,12 @@ export declare class AssetsController {
     private readonly assetsService;
     constructor(assetsService: AssetsService);
     create(createAssetDto: CreateAssetDto, tenantId: string): Promise<{
-        id: string;
         tenantId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
-        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -24,17 +21,20 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
+        department: string | null;
+        image: string | null;
+        costCenter: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        roomId: string | null;
     }>;
     findAll(tenantId: string, status?: string, category?: string): Promise<{
-        id: string;
         tenantId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
-        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -45,39 +45,23 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
+        department: string | null;
+        image: string | null;
+        costCenter: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        roomId: string | null;
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
-        workOrders: ({
-            assignedTo: {
-                id: string;
-                email: string;
-                firstName: string;
-                lastName: string;
-            } | null;
-        } & {
-            id: string;
-            tenantId: string;
-            createdAt: Date;
-            updatedAt: Date;
-            description: string | null;
-            title: string;
-            status: import(".prisma/client").$Enums.WorkOrderStatus;
-            priority: import(".prisma/client").$Enums.WorkOrderPriority;
-            assetId: string;
-            assignedToId: string | null;
-            completionNote: string | null;
-            dueDate: Date | null;
-            startedAt: Date | null;
-            laborHours: number | null;
-        })[];
+        latestReadings: string | number | true | import("@prisma/client/runtime/library").JsonObject | import("@prisma/client/runtime/library").JsonArray | null;
         room: ({
             floor: {
                 building: {
-                    id: string;
                     tenantId: string;
+                    id: string;
+                    name: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string | null;
                 };
             } & {
@@ -89,21 +73,51 @@ export declare class AssetsController {
             };
         } & {
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             floorId: string;
         }) | null;
-    } & {
-        id: string;
+        workOrders: ({
+            assignedTo: {
+                id: string;
+                email: string;
+                firstName: string;
+                lastName: string;
+            } | null;
+        } & {
+            tenantId: string;
+            id: string;
+            status: import(".prisma/client").$Enums.WorkOrderStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            title: string;
+            description: string | null;
+            priority: import(".prisma/client").$Enums.WorkOrderPriority;
+            assetId: string;
+            assignedToId: string | null;
+            completionNote: string | null;
+            startedAt: Date | null;
+            dueDate: Date | null;
+            laborHours: number | null;
+            checklistData: import("@prisma/client/runtime/library").JsonValue | null;
+            legacyId: string | null;
+        })[];
+        documents: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            assetId: string;
+            fileUrl: string;
+            fileSize: number;
+            mimeType: string;
+        }[];
         tenantId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
-        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -114,17 +128,20 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
+        department: string | null;
+        image: string | null;
+        costCenter: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        roomId: string | null;
     }>;
     update(id: string, tenantId: string, updateAssetDto: UpdateAssetDto): Promise<{
-        id: string;
         tenantId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
-        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -135,17 +152,20 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
+        department: string | null;
+        image: string | null;
+        costCenter: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        roomId: string | null;
     }>;
     remove(id: string, tenantId: string, req: any): Promise<{
-        id: string;
         tenantId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
-        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -156,6 +176,12 @@ export declare class AssetsController {
         filterSize: string | null;
         beltSize: string | null;
         notes: string | null;
+        department: string | null;
+        image: string | null;
+        costCenter: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        roomId: string | null;
     }>;
     bulkCreate(assets: CreateAssetDto[], tenantId: string): Promise<{
         count: number;
@@ -163,6 +189,30 @@ export declare class AssetsController {
     }>;
     removeAll(tenantId: string): Promise<{
         count: number;
+        message: string;
+    }>;
+    uploadImage(assetId: string, tenantId: string, file: Express.Multer.File): Promise<{
+        imageUrl: string;
+    }>;
+    uploadDocument(assetId: string, tenantId: string, file: Express.Multer.File): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        assetId: string;
+        fileUrl: string;
+        fileSize: number;
+        mimeType: string;
+    }>;
+    getDocuments(assetId: string, tenantId: string): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        assetId: string;
+        fileUrl: string;
+        fileSize: number;
+        mimeType: string;
+    }[]>;
+    deleteDocument(assetId: string, documentId: string, tenantId: string): Promise<{
         message: string;
     }>;
 }

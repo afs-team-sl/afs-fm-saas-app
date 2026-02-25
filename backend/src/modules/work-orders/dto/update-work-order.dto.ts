@@ -87,4 +87,11 @@ export class UpdateWorkOrderDto {
   @IsNumber()
   @IsOptional()
   laborHours?: number;
+
+  @ApiPropertyOptional({
+    description: 'Dynamic checklist data for operational readings (JSON object)',
+    example: { waterPressure: 45, supplyTemp: 180, returnTemp: 160 },
+  })
+  @IsOptional()
+  checklistData?: any;
 }

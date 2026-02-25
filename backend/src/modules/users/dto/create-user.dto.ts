@@ -1,6 +1,6 @@
 // src/modules/users/dto/create-user.dto.ts
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsEnum } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsEnum, IsOptional, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 
 export class CreateUserDto {
@@ -46,6 +46,17 @@ export class CreateUserDto {
   })
   @IsEnum(UserRole)
   role: UserRole;
+
+  // PHASE 6: Enterprise User Fields
+  @ApiPropertyOptional({
+    description: 'Job title or position of the user',
+    example: 'Senior Facilities Manager',
+    maxLength: 255,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  jobTitle?: string;
 
   // IMPORTANT: tenantId is removed from here because it should be 
   // passed via 'x-tenant-id' header, not the request body.

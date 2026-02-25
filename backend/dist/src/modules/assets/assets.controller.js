@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssetsController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const swagger_1 = require("@nestjs/swagger");
 const assets_service_1 = require("./assets.service");
 const create_asset_dto_1 = require("./dto/create-asset.dto");
@@ -52,6 +53,39 @@ let AssetsController = class AssetsController {
     }
     removeAll(tenantId) {
         return this.assetsService.removeAll(tenantId);
+    }
+    async uploadImage(assetId, tenantId, file) {
+        const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+            throw new Error('Only JPG and PNG images are allowed');
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            throw new Error('Image size must be less than 5MB');
+        }
+        const imageUrl = await this.assetsService.uploadImage(assetId, tenantId, file);
+        return { imageUrl };
+    }
+    async uploadDocument(assetId, tenantId, file) {
+        const allowedMimeTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ];
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+            throw new Error('Only PDF, DOC, DOCX, XLS, and XLSX files are allowed');
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            throw new Error('Document size must be less than 10MB');
+        }
+        return this.assetsService.uploadDocument(assetId, tenantId, file);
+    }
+    getDocuments(assetId, tenantId) {
+        return this.assetsService.getDocuments(assetId, tenantId);
+    }
+    deleteDocument(assetId, documentId, tenantId) {
+        return this.assetsService.deleteDocument(assetId, documentId, tenantId);
     }
 };
 exports.AssetsController = AssetsController;
@@ -132,6 +166,99 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AssetsController.prototype, "removeAll", null);
+__decorate([
+    (0, common_1.Post)(':id/image'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, swagger_1.ApiOperation)({ summary: 'Upload asset profile image' }),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Asset UUID' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'Image file (max 5MB, supported: jpg, jpeg, png)',
+                },
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Image uploaded successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                imageUrl: { type: 'string', example: 'https://storage.azure.com/...' },
+            },
+        },
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __param(2, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], AssetsController.prototype, "uploadImage", null);
+__decorate([
+    (0, common_1.Post)(':id/documents'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, swagger_1.ApiOperation)({ summary: 'Upload asset document (manual, datasheet, etc.)' }),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Asset UUID' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'Document file (max 10MB, supported: pdf, doc, docx, xls, xlsx)',
+                },
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'Document uploaded successfully',
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __param(2, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], AssetsController.prototype, "uploadDocument", null);
+__decorate([
+    (0, common_1.Get)(':id/documents'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all documents for an asset' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Asset UUID' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Headers)('x-tenant-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], AssetsController.prototype, "getDocuments", null);
+__decorate([
+    (0, common_1.Delete)(':id/documents/:documentId'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete an asset document' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Asset UUID' }),
+    (0, swagger_1.ApiParam)({ name: 'documentId', description: 'Document UUID' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('documentId')),
+    __param(2, (0, common_1.Headers)('x-tenant-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], AssetsController.prototype, "deleteDocument", null);
 exports.AssetsController = AssetsController = __decorate([
     (0, swagger_1.ApiTags)('Assets'),
     (0, swagger_1.ApiBearerAuth)(),

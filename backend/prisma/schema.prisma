@@ -61,6 +61,9 @@ model User {
   firstName String
   lastName  String
   role      UserRole @default(OCCUPANT)
+  
+  // PHASE 6: Enterprise User Fields
+  jobTitle  String? // Job title/position
 
   // Link to Tenant - OPTIONAL for SUPER_ADMIN (tenantId: null)
   tenantId String?
@@ -108,6 +111,11 @@ model Asset {
   beltSize     String?
   notes        String?
 
+  // PHASE 6: Enterprise Asset Fields
+  department  String? // Department ownership
+  image       String? // Asset profile picture URL
+  costCenter  String? // Cost center code
+
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -120,12 +128,29 @@ model Asset {
 
   workOrders       WorkOrder[]
   maintenancePlans MaintenancePlan[]
+  documents        AssetDocument[]
 
   @@unique([tenantId, serialNo])
   @@index([tenantId])
   @@index([status])
   @@index([category])
   @@index([roomId])
+}
+
+// 6.1 Asset Documents (Manuals, Datasheets, etc.)
+model AssetDocument {
+  id       String   @id @default(uuid())
+  name     String   // Original filename
+  fileUrl  String   // Azure Blob URL
+  fileSize Int      // Size in bytes
+  mimeType String   // e.g., "application/pdf"
+  
+  assetId  String
+  asset    Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@index([assetId])
 }
 
 // 7. Maintenance Frequency
@@ -181,6 +206,10 @@ model WorkOrder {
   dueDate    DateTime? // SLA deadline
   laborHours Float? // Total hours spent (auto-calculated)
 
+  // PHASE 6: Enterprise Work Order Fields
+  checklistData Json?   // Dynamic readings (Temp, Pressure, etc.)
+  legacyId      String? @unique // Old system ID for migration
+
   // Parts used in this work order
   parts WorkOrderPart[]
 
@@ -199,7 +228,26 @@ model WorkOrder {
   @@index([dueDate])
 }
 
-// 10. Parts (Inventory & Spare Parts)
+// 10. Supplier Model (PHASE 6)
+// Supplier/Vendor management for parts procurement
+model Supplier {
+  id            String   @id @default(uuid())
+  name          String
+  address       String?
+  email         String?
+  phone         String?
+  contactPerson String?
+  
+  // Relations
+  parts Part[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+// 11. Parts (Inventory & Spare Parts)
 model Part {
   id         String @id @default(uuid())
   name       String
@@ -207,6 +255,14 @@ model Part {
   stockLevel Int    @default(0)
   minStock   Int    @default(10)
   unitPrice  Float  @default(0.0)
+
+  // PHASE 6: Enterprise Inventory Fields
+  uom        String  @default("Each") // Unit of Measurement
+  location   String? // Shelf/Bin location (e.g., "A-12-03")
+  
+  // Link to Supplier
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
 
   // Link to Tenant
   tenantId String
@@ -221,9 +277,10 @@ model Part {
   @@unique([tenantId, partNumber])
   @@index([tenantId])
   @@index([stockLevel])
+  @@index([supplierId])
 }
 
-// 11. Work Order Parts (Junction table for materials used)
+// 12. Work Order Parts (Junction table for materials used)
 model WorkOrderPart {
   id       String @id @default(uuid())
   quantity Int
@@ -242,7 +299,7 @@ model WorkOrderPart {
   @@index([partId])
 }
 
-// 11.1 Work Order Attachments (Evidence Photos & Documents)
+// 12.1 Work Order Attachments (Evidence Photos & Documents)
 model WorkOrderAttachment {
   id          String    @id @default(uuid())
   fileName    String
@@ -257,7 +314,7 @@ model WorkOrderAttachment {
   @@index([workOrderId])
 }
 
-// 12. Maintenance Plans (Preventive Maintenance Scheduler)
+// 13. Maintenance Plans (Preventive Maintenance Scheduler)
 model MaintenancePlan {
   id              String               @id @default(uuid())
   title           String
@@ -283,7 +340,7 @@ model MaintenancePlan {
   @@index([frequency])
 }
 
-// 13. Building (Space & Facility Hierarchy)
+// 14. Building (Space & Facility Hierarchy)
 model Building {
   id      String  @id @default(uuid())
   name    String
@@ -302,7 +359,7 @@ model Building {
   @@index([tenantId])
 }
 
-// 14. Floor (Space & Facility Hierarchy)
+// 15. Floor (Space & Facility Hierarchy)
 model Floor {
   id     String @id @default(uuid())
   number String // e.g., "Level 1", "Ground Floor", "Basement"
@@ -320,7 +377,7 @@ model Floor {
   @@index([buildingId])
 }
 
-// 15. Room (Space & Facility Hierarchy)
+// 16. Room (Space & Facility Hierarchy)
 model Room {
   id   String @id @default(uuid())
   name String // e.g., "Server Room", "Office 101", "Conference Room A"
@@ -338,7 +395,7 @@ model Room {
   @@index([floorId])
 }
 
-// 16. Global Notification Type
+// 17. Global Notification Type
 enum NotificationType {
   INFO
   WARNING
@@ -346,7 +403,7 @@ enum NotificationType {
   MAINTENANCE
 }
 
-// 17. Global Notifications (Super Admin Broadcasts)
+// 18. Global Notifications (Super Admin Broadcasts)
 model GlobalNotification {
   id       String           @id @default(uuid())
   message  String
@@ -360,7 +417,7 @@ model GlobalNotification {
   @@index([createdAt])
 }
 
-// 18. User Notification Type
+// 19. User Notification Type
 enum UserNotificationType {
   INFO
   WARNING
@@ -368,7 +425,7 @@ enum UserNotificationType {
   ERROR
 }
 
-// 19. User Notifications (Per-user or tenant-specific)
+// 20. User Notifications (Per-user or tenant-specific)
 model Notification {
   id      String               @id @default(uuid())
   message String
@@ -389,14 +446,14 @@ model Notification {
   @@index([createdAt])
 }
 
-// Announcement Type
+// 21. Announcement Type
 enum AnnouncementType {
   INFO
   WARNING
   DANGER
 }
 
-// System Announcements (Global or Tenant-specific)
+// 22. System Announcements (Global or Tenant-specific)
 model Announcement {
   id        String           @id @default(uuid())
   message   String
@@ -415,7 +472,7 @@ model Announcement {
   @@index([createdAt])
 }
 
-// Global System Settings (for Maintenance Mode, etc.)
+// 23. Global System Settings (for Maintenance Mode, etc.)
 model SystemSettings {
   id                 String   @id @default("system")
   isMaintenanceMode  Boolean  @default(false)
@@ -423,7 +480,7 @@ model SystemSettings {
   updatedAt          DateTime @updatedAt
 }
 
-// Global Audit Log (for tracking critical actions across all tenants)
+// 24. Global Audit Log (for tracking critical actions across all tenants)
 model AuditLog {
   id          String   @id @default(uuid())
   action      String   // e.g., "DELETED_ASSET", "DELETED_WORK_ORDER", "UPDATED_TENANT_PLAN"
