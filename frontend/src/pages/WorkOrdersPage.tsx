@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle, FileDown, AlertTriangle, MapPin, CheckSquare, Square } from 'lucide-react';
+import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle, FileDown, AlertTriangle, MapPin, CheckSquare, Square, Clock, CheckCircle2, XCircle, Timer } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -66,6 +66,9 @@ const WorkOrdersPage = () => {
   const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
   const [locationSearchTerm, setLocationSearchTerm] = useState('');
 
+  // Technician Tab State
+  const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
+
   const [formData, setFormData] = useState({ title: '', description: '', priority: 'MEDIUM', assetId: '', assignedToId: '' });
 
   useEffect(() => { fetchOrders(); fetchSelectionData(); }, []);
@@ -123,6 +126,42 @@ const WorkOrdersPage = () => {
       return `${asset.name} - ${asset.room.floor.building.name} / ${asset.room.floor.number} / ${asset.room.name}`;
     }
     return asset.name;
+  };
+
+  // Filter orders based on technician role and active tab
+  const getFilteredOrders = () => {
+    if (role === 'TECHNICIAN') {
+      if (activeTab === 'active') {
+        return orders.filter(o => o.status === 'OPEN' || o.status === 'IN_PROGRESS');
+      } else {
+        return orders.filter(o => o.status === 'COMPLETED' || o.status === 'CANCELLED');
+      }
+    }
+    return orders;
+  };
+
+  const filteredOrders = getFilteredOrders();
+
+  // Get due date countdown
+  const getDueDateInfo = (dueDate?: string) => {
+    if (!dueDate) return null;
+    
+    const now = new Date();
+    const due = new Date(dueDate);
+    const diffMs = due.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return { text: `${Math.abs(diffDays)} days overdue`, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
+    } else if (diffDays === 0) {
+      return { text: 'Due today', color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' };
+    } else if (diffDays === 1) {
+      return { text: 'Due tomorrow', color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200' };
+    } else if (diffDays <= 3) {
+      return { text: `Due in ${diffDays} days`, color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200' };
+    } else {
+      return { text: `Due in ${diffDays} days`, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' };
+    }
   };
 
   const handleOpenModal = (order?: WorkOrder) => {
@@ -334,8 +373,14 @@ const WorkOrdersPage = () => {
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Work Orders</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage maintenance tasks and assignments</p>
+          <h1 className="text-2xl font-semibold text-slate-900">
+            {role === 'TECHNICIAN' ? 'My Tasks' : 'Work Orders'}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {role === 'TECHNICIAN' 
+              ? 'Manage your assigned maintenance tasks' 
+              : 'Manage maintenance tasks and assignments'}
+          </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <button 
@@ -359,15 +404,69 @@ const WorkOrdersPage = () => {
         </div>
       </div>
 
+      {/* Technician Tabs */}
+      {role === 'TECHNICIAN' && (
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+          <div className="flex border-b border-slate-200">
+            <button
+              onClick={() => setActiveTab('active')}
+              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 text-sm font-semibold transition-all ${
+                activeTab === 'active'
+                  ? 'bg-[#232249] text-white border-b-2 border-[#232249]'
+                  : 'bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <Timer className="w-5 h-5" />
+              <span>Active Tasks</span>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                activeTab === 'active' 
+                  ? 'bg-white text-[#232249]' 
+                  : 'bg-orange-100 text-orange-700'
+              }`}>
+                {orders.filter(o => o.status === 'OPEN' || o.status === 'IN_PROGRESS').length}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 text-sm font-semibold transition-all ${
+                activeTab === 'history'
+                  ? 'bg-[#232249] text-white border-b-2 border-[#232249]'
+                  : 'bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <CheckCircle2 className="w-5 h-5" />
+              <span>History</span>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                activeTab === 'history' 
+                  ? 'bg-white text-[#232249]' 
+                  : 'bg-slate-100 text-slate-600'
+              }`}>
+                {orders.filter(o => o.status === 'COMPLETED' || o.status === 'CANCELLED').length}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-surface rounded-lg border border-secondary-200 shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-secondary-200 bg-secondary-50">
                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Order Details</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Priority</th>
+                {role !== 'TECHNICIAN' && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Priority</th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Asset</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Assigned To</th>
+                {role !== 'TECHNICIAN' && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Assigned To</th>
+                )}
+                {role === 'TECHNICIAN' && activeTab === 'active' && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Due Date</th>
+                )}
+                {role === 'TECHNICIAN' && activeTab === 'history' && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Completed On</th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500">Status</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-secondary-500">Actions</th>
               </tr>
@@ -375,30 +474,35 @@ const WorkOrdersPage = () => {
             <tbody className="divide-y divide-secondary-200">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center">
+                  <td colSpan={role === 'TECHNICIAN' ? 5 : 6} className="py-12 text-center">
                     <div className="flex items-center justify-center gap-2 text-secondary-400">
                       <div className="w-5 h-5 border-2 border-secondary-300 border-t-primary-600 rounded-full animate-spin"></div>
                       <span className="text-sm">Loading work orders...</span>
                     </div>
                   </td>
                 </tr>
-              ) : orders.length === 0 ? (
+              ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center">
+                  <td colSpan={role === 'TECHNICIAN' ? 5 : 6} className="py-12 text-center">
                     <AlertCircle className="w-12 h-12 text-secondary-300 mx-auto mb-3" />
-                    <p className="text-sm text-secondary-500">No work orders found</p>
+                    <p className="text-sm text-secondary-500">
+                      {role === 'TECHNICIAN' 
+                        ? (activeTab === 'active' ? 'No active tasks' : 'No completed tasks yet')
+                        : 'No work orders found'}
+                    </p>
                   </td>
                 </tr>
-              ) : orders.map((order) => {
+              ) : filteredOrders.map((order) => {
                 const overdue = isOverdue(order);
+                const dueDateInfo = activeTab === 'active' ? getDueDateInfo(order.dueDate) : null;
                 return (
                 <tr 
                   key={order.id} 
-                  className={`hover:bg-secondary-50 transition-colors ${overdue ? 'bg-red-50 border-l-4 border-l-red-600' : ''}`}
+                  className={`hover:bg-secondary-50 transition-colors ${overdue && activeTab === 'active' ? 'bg-red-50 border-l-4 border-l-red-600' : ''}`}
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      {overdue && (
+                      {overdue && activeTab === 'active' && (
                         <div className="relative flex h-3 w-3">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
@@ -411,7 +515,7 @@ const WorkOrdersPage = () => {
                         >
                           {order.title}
                         </button>
-                        {overdue && (
+                        {overdue && activeTab === 'active' && (
                           <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-600 text-white border border-red-700">
                             <AlertTriangle className="w-3 h-3" />
                             DELAYED
@@ -424,11 +528,13 @@ const WorkOrdersPage = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getPriorityBadge(order.priority)}`}>
-                      {order.priority}
-                    </span>
-                  </td>
+                  {role !== 'TECHNICIAN' && (
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getPriorityBadge(order.priority)}`}>
+                        {order.priority}
+                      </span>
+                    </td>
+                  )}
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
                       <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-primary-50 text-primary-dark rounded-md text-xs font-medium border border-primary-200 w-fit">
@@ -445,42 +551,91 @@ const WorkOrdersPage = () => {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-secondary-100 rounded-lg flex items-center justify-center text-secondary-600 font-medium text-xs border border-secondary-200">
-                        {order.assignedTo ? `${order.assignedTo.firstName[0]}${order.assignedTo.lastName[0]}` : '?'}
+                  {role !== 'TECHNICIAN' && (
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-secondary-100 rounded-lg flex items-center justify-center text-secondary-600 font-medium text-xs border border-secondary-200">
+                          {order.assignedTo ? `${order.assignedTo.firstName[0]}${order.assignedTo.lastName[0]}` : '?'}
+                        </div>
+                        <span className="text-sm text-slate-600">
+                          {order.assignedTo ? `${order.assignedTo.firstName} ${order.assignedTo.lastName}` : 'Unassigned'}
+                        </span>
                       </div>
-                      <span className="text-sm text-slate-600">
-                        {order.assignedTo ? `${order.assignedTo.firstName} ${order.assignedTo.lastName}` : 'Unassigned'}
-                      </span>
-                    </div>
-                  </td>
+                    </td>
+                  )}
+                  {role === 'TECHNICIAN' && activeTab === 'active' && (
+                    <td className="px-6 py-4">
+                      {dueDateInfo ? (
+                        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold border ${dueDateInfo.bg} ${dueDateInfo.color} ${dueDateInfo.border}`}>
+                          <Clock className="w-3 h-3" />
+                          {dueDateInfo.text}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400">No due date</span>
+                      )}
+                    </td>
+                  )}
+                  {role === 'TECHNICIAN' && activeTab === 'history' && (
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-xs text-slate-600">
+                        {order.status === 'COMPLETED' ? (
+                          <>
+                            <CheckCircle2 className="w-4 h-4 text-green-600" />
+                            <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-4 h-4 text-red-600" />
+                            <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  )}
                   <td className="px-6 py-4">
-                    <select 
-                      value={order.status} 
-                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                      className={`text-xs font-medium rounded-md px-3 py-1.5 outline-none border-0 cursor-pointer transition-colors ${getStatusBadge(order.status)}`}
-                    >
-                      <option value="OPEN">Open</option>
-                      <option value="IN_PROGRESS">In Progress</option>
-                      <option value="COMPLETED">Completed</option>
-                      <option value="CANCELLED">Cancelled</option>
-                    </select>
+                    {role === 'TECHNICIAN' ? (
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusBadge(order.status)}`}>
+                        {order.status.replace('_', ' ')}
+                      </span>
+                    ) : (
+                      <select 
+                        value={order.status} 
+                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                        className={`text-xs font-medium rounded-md px-3 py-1.5 outline-none border-0 cursor-pointer transition-colors ${getStatusBadge(order.status)}`}
+                      >
+                        <option value="OPEN">Open</option>
+                        <option value="IN_PROGRESS">In Progress</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="CANCELLED">Cancelled</option>
+                      </select>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex justify-end gap-2">
-                      <button 
-                        onClick={() => handleOpenModal(order)} 
-                        className="p-2 text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(order.id, order.title)} 
-                        className="p-2 text-status-danger hover:bg-status-danger-light rounded-md transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {role !== 'TECHNICIAN' && (
+                        <>
+                          <button 
+                            onClick={() => handleOpenModal(order)} 
+                            className="p-2 text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(order.id, order.title)} 
+                            className="p-2 text-status-danger hover:bg-status-danger-light rounded-md transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                      {role === 'TECHNICIAN' && (
+                        <button 
+                          onClick={() => navigate(`/work-orders/${order.id}`)} 
+                          className="px-4 py-2 bg-[#232249] text-white text-xs font-semibold rounded-md hover:bg-[#1a1a38] transition-colors"
+                        >
+                          View Details
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

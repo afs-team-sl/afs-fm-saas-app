@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import { uploadAttachment, getAttachments, deleteAttachment } from '../api/workOrder.api';
-import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2, Timer, Zap, Upload, Camera, Image as ImageIcon, MapPin, Settings } from 'lucide-react';
+import { ArrowLeft, Box, AlertCircle, User, Calendar, Clock, Loader2, CheckCircle, Play, Package, Plus, X, Trash2, Timer, Zap, Upload, Camera, Image as ImageIcon, MapPin, Settings, Navigation, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
@@ -100,6 +100,21 @@ const WorkOrderDetailsPage = () => {
 
   // Labor Timer
   const [elapsedTime, setElapsedTime] = useState<string>('0h 0m');
+
+  // Get Google Maps navigation link
+  const getNavigationLink = () => {
+    if (!workOrder) return null;
+    
+    // Try multiple location sources
+    const location = workOrder.asset?.room 
+      ? `${workOrder.asset.room.floor.building.name}, ${workOrder.asset.room.floor.number}, ${workOrder.asset.room.name}`
+      : workOrder.asset?.['site'] || workOrder.asset?.['location'];
+    
+    if (!location) return null;
+    
+    // Google Maps search URL
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+  };
 
   useEffect(() => {
     fetchWorkOrderDetails();
@@ -418,6 +433,20 @@ const WorkOrderDetailsPage = () => {
           <ArrowLeft className="w-4 h-4" />
           Back to Work Orders
         </button>
+        
+        {/* Navigation Button - Show only for Technicians */}
+        {role === 'TECHNICIAN' && getNavigationLink() && (
+          <a
+            href={getNavigationLink()!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors shadow-md"
+          >
+            <Navigation className="w-4 h-4" />
+            📍 Open in Navigation
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
       </div>
 
       {/* Main Card */}
@@ -493,6 +522,40 @@ const WorkOrderDetailsPage = () => {
                 </div>
               )}
             </div>
+
+            {/* Google Maps Embed Section - Show for Technicians */}
+            {role === 'TECHNICIAN' && getNavigationLink() && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="bg-gradient-to-r from-[#232249] to-[#2d2d5f] rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 text-white">
+                      <MapPin className="w-5 h-5" />
+                      <h4 className="text-sm font-semibold">Asset Location</h4>
+                    </div>
+                    <a
+                      href={getNavigationLink()!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-white text-[#232249] text-xs font-semibold rounded-md hover:bg-blue-50 transition-colors"
+                    >
+                      <Navigation className="w-3 h-3" />
+                      Navigate
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded border border-white/20 p-3">
+                    <p className="text-white text-xs mb-2 opacity-90">
+                      {workOrder.asset.room 
+                        ? `${workOrder.asset.room.floor.building.name}, ${workOrder.asset.room.floor.number}, ${workOrder.asset.room.name}`
+                        : workOrder.asset['site'] || workOrder.asset['location'] || 'Location not specified'}
+                    </p>
+                    <p className="text-blue-200 text-xs">
+                      Click "Navigate" to open in Google Maps for turn-by-turn directions
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Assigned Technician */}
