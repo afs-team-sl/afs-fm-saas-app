@@ -18,6 +18,7 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -203,7 +204,13 @@ export class WorkOrdersController {
 
   @Post(':id/upload')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+      },
+    })
+  )
   @ApiOperation({ summary: 'Upload an attachment to a work order' })
   @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', description: 'Work Order UUID' })
@@ -244,11 +251,22 @@ export class WorkOrdersController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
+          new MaxFileSizeValidator({ 
+            maxSize: 10 * 1024 * 1024, // 10MB
+            message: 'File size must not exceed 10MB'
+          }),
           new FileTypeValidator({
-            fileType: /(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx)$/,
+            // Updated regex to match MIME types correctly
+            fileType: /(image\/jpeg|image\/jpg|image\/png|image\/gif|application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/vnd\.ms-excel|application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet)/,
           }),
         ],
+        fileIsRequired: true,
+        exceptionFactory: (errors) => {
+          console.error('File validation failed:', errors);
+          return new BadRequestException(
+            `File validation failed: ${errors}. Allowed types: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX (Max 10MB)`
+          );
+        },
       }),
     )
     file: Express.Multer.File,

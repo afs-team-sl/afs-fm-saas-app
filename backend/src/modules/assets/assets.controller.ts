@@ -14,6 +14,10 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -137,7 +141,13 @@ export class AssetsController { // Ensure 'export' keyword is present
 
   @Post(':id/image')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit for images
+      },
+    })
+  )
   @ApiOperation({ summary: 'Upload asset profile image' })
   @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', description: 'Asset UUID' })
@@ -167,26 +177,42 @@ export class AssetsController { // Ensure 'export' keyword is present
   async uploadImage(
     @Param('id') assetId: string,
     @Headers('x-tenant-id') tenantId: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ 
+            maxSize: 5 * 1024 * 1024, // 5MB for images
+            message: 'Image size must not exceed 5MB'
+          }),
+          new FileTypeValidator({
+            // Updated regex to match image MIME types
+            fileType: /(image\/jpeg|image\/jpg|image\/png)/,
+          }),
+        ],
+        fileIsRequired: true,
+        exceptionFactory: (errors) => {
+          console.error('Image validation failed:', errors);
+          return new BadRequestException(
+            `Image validation failed: ${errors}. Allowed types: JPG, PNG (Max 5MB)`
+          );
+        },
+      })
+    )
+    file: Express.Multer.File,
   ) {
-    // Validate file type
-    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new Error('Only JPG and PNG images are allowed');
-    }
-
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error('Image size must be less than 5MB');
-    }
-
     const imageUrl = await this.assetsService.uploadImage(assetId, tenantId, file);
     return { imageUrl };
   }
 
   @Post(':id/documents')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit for documents
+      },
+    })
+  )
   @ApiOperation({ summary: 'Upload asset document (manual, datasheet, etc.)' })
   @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', description: 'Asset UUID' })
@@ -210,25 +236,29 @@ export class AssetsController { // Ensure 'export' keyword is present
   async uploadDocument(
     @Param('id') assetId: string,
     @Headers('x-tenant-id') tenantId: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ 
+            maxSize: 10 * 1024 * 1024, // 10MB
+            message: 'Document size must not exceed 10MB'
+          }),
+          new FileTypeValidator({
+            // Updated regex to match document MIME types
+            fileType: /(application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/vnd\.ms-excel|application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet)/,
+          }),
+        ],
+        fileIsRequired: true,
+        exceptionFactory: (errors) => {
+          console.error('Document validation failed:', errors);
+          return new BadRequestException(
+            `Document validation failed: ${errors}. Allowed types: PDF, DOC, DOCX, XLS, XLSX (Max 10MB)`
+          );
+        },
+      })
+    )
+    file: Express.Multer.File,
   ) {
-    // Validate file type
-    const allowedMimeTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new Error('Only PDF, DOC, DOCX, XLS, and XLSX files are allowed');
-    }
-
-    // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      throw new Error('Document size must be less than 10MB');
-    }
-
     return this.assetsService.uploadDocument(assetId, tenantId, file);
   }
 

@@ -225,7 +225,11 @@ __decorate([
 __decorate([
     (0, common_1.Post)(':id/upload'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
+        limits: {
+            fileSize: 10 * 1024 * 1024,
+        },
+    })),
     (0, swagger_1.ApiOperation)({ summary: 'Upload an attachment to a work order' }),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiParam)({ name: 'id', description: 'Work Order UUID' }),
@@ -264,11 +268,19 @@ __decorate([
     __param(2, (0, common_1.Request)()),
     __param(3, (0, common_1.UploadedFile)(new common_1.ParseFilePipe({
         validators: [
-            new common_1.MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+            new common_1.MaxFileSizeValidator({
+                maxSize: 10 * 1024 * 1024,
+                message: 'File size must not exceed 10MB'
+            }),
             new common_1.FileTypeValidator({
-                fileType: /(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx)$/,
+                fileType: /(image\/jpeg|image\/jpg|image\/png|image\/gif|application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/vnd\.ms-excel|application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet)/,
             }),
         ],
+        fileIsRequired: true,
+        exceptionFactory: (errors) => {
+            console.error('File validation failed:', errors);
+            return new common_1.BadRequestException(`File validation failed: ${errors}. Allowed types: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX (Max 10MB)`);
+        },
     }))),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, Object, Object]),

@@ -62,30 +62,10 @@ let AssetsController = class AssetsController {
         return this.assetsService.removeAll(tenantId);
     }
     async uploadImage(assetId, tenantId, file) {
-        const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-        if (!allowedMimeTypes.includes(file.mimetype)) {
-            throw new Error('Only JPG and PNG images are allowed');
-        }
-        if (file.size > 5 * 1024 * 1024) {
-            throw new Error('Image size must be less than 5MB');
-        }
         const imageUrl = await this.assetsService.uploadImage(assetId, tenantId, file);
         return { imageUrl };
     }
     async uploadDocument(assetId, tenantId, file) {
-        const allowedMimeTypes = [
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ];
-        if (!allowedMimeTypes.includes(file.mimetype)) {
-            throw new Error('Only PDF, DOC, DOCX, XLS, and XLSX files are allowed');
-        }
-        if (file.size > 10 * 1024 * 1024) {
-            throw new Error('Document size must be less than 10MB');
-        }
         return this.assetsService.uploadDocument(assetId, tenantId, file);
     }
     getDocuments(assetId, tenantId) {
@@ -189,7 +169,11 @@ __decorate([
 __decorate([
     (0, common_1.Post)(':id/image'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
+        limits: {
+            fileSize: 5 * 1024 * 1024,
+        },
+    })),
     (0, swagger_1.ApiOperation)({ summary: 'Upload asset profile image' }),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiParam)({ name: 'id', description: 'Asset UUID' }),
@@ -218,7 +202,22 @@ __decorate([
     }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Headers)('x-tenant-id')),
-    __param(2, (0, common_1.UploadedFile)()),
+    __param(2, (0, common_1.UploadedFile)(new common_1.ParseFilePipe({
+        validators: [
+            new common_1.MaxFileSizeValidator({
+                maxSize: 5 * 1024 * 1024,
+                message: 'Image size must not exceed 5MB'
+            }),
+            new common_1.FileTypeValidator({
+                fileType: /(image\/jpeg|image\/jpg|image\/png)/,
+            }),
+        ],
+        fileIsRequired: true,
+        exceptionFactory: (errors) => {
+            console.error('Image validation failed:', errors);
+            return new common_1.BadRequestException(`Image validation failed: ${errors}. Allowed types: JPG, PNG (Max 5MB)`);
+        },
+    }))),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
@@ -226,7 +225,11 @@ __decorate([
 __decorate([
     (0, common_1.Post)(':id/documents'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
+        limits: {
+            fileSize: 10 * 1024 * 1024,
+        },
+    })),
     (0, swagger_1.ApiOperation)({ summary: 'Upload asset document (manual, datasheet, etc.)' }),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiParam)({ name: 'id', description: 'Asset UUID' }),
@@ -249,7 +252,22 @@ __decorate([
     }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Headers)('x-tenant-id')),
-    __param(2, (0, common_1.UploadedFile)()),
+    __param(2, (0, common_1.UploadedFile)(new common_1.ParseFilePipe({
+        validators: [
+            new common_1.MaxFileSizeValidator({
+                maxSize: 10 * 1024 * 1024,
+                message: 'Document size must not exceed 10MB'
+            }),
+            new common_1.FileTypeValidator({
+                fileType: /(application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/vnd\.ms-excel|application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet)/,
+            }),
+        ],
+        fileIsRequired: true,
+        exceptionFactory: (errors) => {
+            console.error('Document validation failed:', errors);
+            return new common_1.BadRequestException(`Document validation failed: ${errors}. Allowed types: PDF, DOC, DOCX, XLS, XLSX (Max 10MB)`);
+        },
+    }))),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
