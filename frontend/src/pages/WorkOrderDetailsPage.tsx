@@ -154,11 +154,14 @@ const WorkOrderDetailsPage = () => {
   const fetchWorkOrderDetails = async () => {
     try {
       const response = await apiClient.get(`/work-orders/${id}`);
+      console.log('Work Order Fetched:', response.data);
+      console.log('Asset Category:', response.data?.asset?.category);
       setWorkOrder(response.data);
       setCompletionNote(response.data.completionNote || '');
       
       // Load existing checklist data if available
       if (response.data.checklistData) {
+        console.log('Loaded Checklist Data:', response.data.checklistData);
         setChecklistData(response.data.checklistData);
       }
     } catch (error: any) {
@@ -383,395 +386,341 @@ const WorkOrderDetailsPage = () => {
     }));
   };
 
-  // Enhanced Operational Readings Field Generator
+  // Enhanced Operational Readings Field Generator - Strictly Category-Based
   const getReadingFieldsByCategory = (category: string): ReadingField[] => {
-    const normalizedCategory = category.toLowerCase();
+    // Normalize category for case-insensitive comparison
+    const normalizedCategory = category?.toLowerCase().trim() || '';
     
-    // BOILER SYSTEMS
-    if (normalizedCategory.includes('boiler')) {
-      return [
-        { 
-          key: 'waterPressure', 
-          label: 'Water Pressure', 
-          unit: 'psi', 
-          type: 'number',
-          min: 0,
-          max: 200,
-          step: 0.1,
-          icon: Gauge,
-          placeholder: 'e.g., 45.5'
-        },
-        { 
-          key: 'supplyTemp', 
-          label: 'Supply Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 250,
-          step: 0.1,
-          icon: Thermometer,
-          placeholder: 'e.g., 180.0'
-        },
-        { 
-          key: 'returnTemp', 
-          label: 'Return Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 250,
-          step: 0.1,
-          icon: Thermometer,
-          placeholder: 'e.g., 160.0'
-        },
-        { 
-          key: 'fuelPressure', 
-          label: 'Fuel Pressure', 
-          unit: 'psi', 
-          type: 'number',
-          min: 0,
-          max: 100,
-          step: 0.1,
-          icon: Droplets,
-          placeholder: 'e.g., 15.0'
-        },
-        { 
-          key: 'stackTemp', 
-          label: 'Stack Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 500,
-          step: 1,
-          icon: Thermometer,
-          placeholder: 'e.g., 350'
-        },
-        { 
-          key: 'o2Level', 
-          label: 'Oxygen Level', 
-          unit: '%', 
-          type: 'number',
-          min: 0,
-          max: 25,
-          step: 0.1,
-          icon: Wind,
-          placeholder: 'e.g., 3.5'
-        }
-      ];
+    console.log('Getting fields for category:', category, '(normalized:', normalizedCategory + ')');
+    
+    // Use switch statement for exact category matching
+    switch (normalizedCategory) {
+      case 'boiler':
+        return [
+          { 
+            key: 'waterPressure', 
+            label: 'Water Pressure', 
+            unit: 'psi', 
+            type: 'number',
+            min: 0,
+            max: 200,
+            step: 0.1,
+            icon: Gauge,
+            placeholder: 'e.g., 45.5'
+          },
+          { 
+            key: 'supplyTemp', 
+            label: 'Supply Temp', 
+            unit: '°F', 
+            type: 'number',
+            min: 0,
+            max: 300,
+            step: 0.1,
+            icon: Thermometer,
+            placeholder: 'e.g., 180.0'
+          },
+          { 
+            key: 'returnTemp', 
+            label: 'Return Temp', 
+            unit: '°F', 
+            type: 'number',
+            min: 0,
+            max: 300,
+            step: 0.1,
+            icon: Thermometer,
+            placeholder: 'e.g., 160.0'
+          },
+          { 
+            key: 'combustionEfficiency', 
+            label: 'Combustion Efficiency', 
+            unit: '%', 
+            type: 'number',
+            min: 0,
+            max: 100,
+            step: 0.1,
+            icon: Activity,
+            placeholder: 'e.g., 85.5'
+          }
+        ];
+      
+      case 'chiller':
+        return [
+          { 
+            key: 'suctionPressure', 
+            label: 'Suction Pressure', 
+            unit: 'psi', 
+            type: 'number',
+            min: 0,
+            max: 150,
+            step: 0.1,
+            icon: Gauge,
+            placeholder: 'e.g., 40.0'
+          },
+          { 
+            key: 'dischargePressure', 
+            label: 'Discharge Pressure', 
+            unit: 'psi', 
+            type: 'number',
+            min: 0,
+            max: 300,
+            step: 0.1,
+            icon: Gauge,
+            placeholder: 'e.g., 180.0'
+          },
+          { 
+            key: 'motorAmps', 
+            label: 'Motor Amps', 
+            unit: 'A', 
+            type: 'number',
+            min: 0,
+            max: 500,
+            step: 0.1,
+            icon: Zap,
+            placeholder: 'e.g., 125.5'
+          },
+          { 
+            key: 'loadPercentage', 
+            label: 'Load Percentage', 
+            unit: '%', 
+            type: 'number',
+            min: 0,
+            max: 100,
+            step: 1,
+            icon: Gauge,
+            placeholder: 'e.g., 75'
+          }
+        ];
+      
+      case 'ahu':
+      case 'air handler':
+        return [
+          { 
+            key: 'supplyAirTemp', 
+            label: 'Supply Air Temp', 
+            unit: '°F', 
+            type: 'number',
+            min: 0,
+            max: 150,
+            step: 0.1,
+            icon: Thermometer,
+            placeholder: 'e.g., 55.0'
+          },
+          { 
+            key: 'returnAirTemp', 
+            label: 'Return Air Temp', 
+            unit: '°F', 
+            type: 'number',
+            min: 0,
+            max: 150,
+            step: 0.1,
+            icon: Thermometer,
+            placeholder: 'e.g., 72.0'
+          },
+          { 
+            key: 'staticPressure', 
+            label: 'Static Pressure', 
+            unit: 'in wc', 
+            type: 'number',
+            min: 0,
+            max: 5,
+            step: 0.01,
+            icon: Gauge,
+            placeholder: 'e.g., 0.5'
+          }
+        ];
+      
+      case 'pump':
+        return [
+          { 
+            key: 'suctionPressure', 
+            label: 'Suction Pressure', 
+            unit: 'psi', 
+            type: 'number',
+            min: 0,
+            max: 100,
+            step: 0.1,
+            icon: Gauge,
+            placeholder: 'e.g., 20.0'
+          },
+          { 
+            key: 'dischargePressure', 
+            label: 'Discharge Pressure', 
+            unit: 'psi', 
+            type: 'number',
+            min: 0,
+            max: 200,
+            step: 0.1,
+            icon: Gauge,
+            placeholder: 'e.g., 65.0'
+          },
+          { 
+            key: 'vibrationLevel', 
+            label: 'Vibration Level', 
+            unit: '', 
+            type: 'text',
+            icon: Activity,
+            placeholder: 'Low/Med/High'
+          }
+        ];
+      
+      case 'cooling tower':
+        return [
+          { 
+            key: 'fanAmps', 
+            label: 'Fan Amps', 
+            unit: 'A', 
+            type: 'number',
+            min: 0,
+            max: 100,
+            step: 0.1,
+            icon: Zap,
+            placeholder: 'e.g., 15.0'
+          },
+          { 
+            key: 'phLevel', 
+            label: 'PH Level', 
+            unit: '', 
+            type: 'number',
+            min: 0,
+            max: 14,
+            step: 0.1,
+            icon: Droplets,
+            placeholder: 'e.g., 7.5'
+          },
+          { 
+            key: 'conductivity', 
+            label: 'Conductivity', 
+            unit: 'µS/cm', 
+            type: 'number',
+            min: 0,
+            max: 5000,
+            step: 1,
+            icon: Activity,
+            placeholder: 'e.g., 1200'
+          }
+        ];
+      
+      case 'domestic water heater':
+      case 'water heater':
+        return [
+          { 
+            key: 'inletWaterTemp', 
+            label: 'Inlet Water Temp', 
+            unit: '°F', 
+            type: 'number',
+            min: 0,
+            max: 200,
+            step: 0.1,
+            icon: Thermometer,
+            placeholder: 'e.g., 60.0'
+          },
+          { 
+            key: 'outletWaterTemp', 
+            label: 'Outlet Water Temp', 
+            unit: '°F', 
+            type: 'number',
+            min: 0,
+            max: 200,
+            step: 0.1,
+            icon: Thermometer,
+            placeholder: 'e.g., 140.0'
+          },
+          { 
+            key: 'gasPressure', 
+            label: 'Gas Pressure', 
+            unit: 'psi', 
+            type: 'number',
+            min: 0,
+            max: 100,
+            step: 0.1,
+            icon: Gauge,
+            placeholder: 'e.g., 7.0'
+          }
+        ];
+      
+      case 'split type':
+      case 'split type ac':
+      case 'split ac':
+        return [
+          { 
+            key: 'ambientTemp', 
+            label: 'Ambient Temperature', 
+            unit: '°F', 
+            type: 'number',
+            min: -20,
+            max: 150,
+            step: 0.1,
+            icon: Thermometer,
+            placeholder: 'e.g., 72.0'
+          },
+          { 
+            key: 'supplyAirTemp', 
+            label: 'Supply Air Temperature', 
+            unit: '°F', 
+            type: 'number',
+            min: 0,
+            max: 150,
+            step: 0.1,
+            icon: Thermometer,
+            placeholder: 'e.g., 55.0'
+          },
+          { 
+            key: 'suctionPressure', 
+            label: 'Suction Pressure', 
+            unit: 'psi', 
+            type: 'number',
+            min: 0,
+            max: 150,
+            step: 0.1,
+            icon: Gauge,
+            placeholder: 'e.g., 65.0'
+          },
+          { 
+            key: 'operatingCurrent', 
+            label: 'Operating Current', 
+            unit: 'A', 
+            type: 'number',
+            min: 0,
+            max: 100,
+            step: 0.1,
+            icon: Zap,
+            placeholder: 'e.g., 12.5'
+          }
+        ];
+      
+      default:
+        // General inspection fields for categories without specific readings
+        console.warn('Unknown category:', category, '- using default general inspection fields');
+        return [
+          { 
+            key: 'operatingStatus', 
+            label: 'Operating Status', 
+            unit: '', 
+            type: 'text',
+            icon: Activity,
+            placeholder: 'Good / Fair / Bad'
+          },
+          { 
+            key: 'temperatureReading', 
+            label: 'Temperature Reading (If applicable)', 
+            unit: '°F', 
+            type: 'number',
+            min: -50,
+            max: 300,
+            step: 0.1,
+            icon: Thermometer,
+            placeholder: 'e.g., 72.0'
+          },
+          { 
+            key: 'visualInspectionNotes', 
+            label: 'Visual Inspection Notes', 
+            unit: '', 
+            type: 'textarea',
+            icon: FileText,
+            placeholder: 'Describe visual observations...'
+          }
+        ];
     }
-    
-    // CHILLER SYSTEMS
-    if (normalizedCategory.includes('chiller')) {
-      return [
-        { 
-          key: 'suctionPressure', 
-          label: 'Suction Pressure', 
-          unit: 'psi', 
-          type: 'number',
-          min: 0,
-          max: 150,
-          step: 0.1,
-          icon: Gauge,
-          placeholder: 'e.g., 40.0'
-        },
-        { 
-          key: 'dischargePressure', 
-          label: 'Discharge Pressure', 
-          unit: 'psi', 
-          type: 'number',
-          min: 0,
-          max: 300,
-          step: 0.1,
-          icon: Gauge,
-          placeholder: 'e.g., 180.0'
-        },
-        { 
-          key: 'motorAmps', 
-          label: 'Motor Amps', 
-          unit: 'A', 
-          type: 'number',
-          min: 0,
-          max: 500,
-          step: 0.1,
-          icon: Zap,
-          placeholder: 'e.g., 125.5'
-        },
-        { 
-          key: 'evaporatorTemp', 
-          label: 'Evaporator Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 100,
-          step: 0.1,
-          icon: Thermometer,
-          placeholder: 'e.g., 42.0'
-        },
-        { 
-          key: 'condenserTemp', 
-          label: 'Condenser Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 150,
-          step: 0.1,
-          icon: Thermometer,
-          placeholder: 'e.g., 95.0'
-        },
-        { 
-          key: 'refrigerantLevel', 
-          label: 'Refrigerant Level', 
-          unit: '%', 
-          type: 'number',
-          min: 0,
-          max: 100,
-          step: 1,
-          icon: Droplets,
-          placeholder: 'e.g., 85'
-        }
-      ];
-    }
-    
-    // AIR HANDLER / AHU SYSTEMS
-    if (normalizedCategory.includes('ahu') || normalizedCategory.includes('air handler') || normalizedCategory.includes('hvac')) {
-      return [
-        { 
-          key: 'supplyAirTemp', 
-          label: 'Supply Air Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 150,
-          step: 0.1,
-          icon: Thermometer,
-          placeholder: 'e.g., 55.0'
-        },
-        { 
-          key: 'returnAirTemp', 
-          label: 'Return Air Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 150,
-          step: 0.1,
-          icon: Thermometer,
-          placeholder: 'e.g., 72.0'
-        },
-        { 
-          key: 'supplyAirflow', 
-          label: 'Supply Airflow', 
-          unit: 'CFM', 
-          type: 'number',
-          min: 0,
-          max: 10000,
-          step: 10,
-          icon: Wind,
-          placeholder: 'e.g., 2500'
-        },
-        { 
-          key: 'filterPressureDrop', 
-          label: 'Filter Pressure Drop', 
-          unit: 'in. W.C.', 
-          type: 'number',
-          min: 0,
-          max: 5,
-          step: 0.01,
-          icon: Gauge,
-          placeholder: 'e.g., 0.5'
-        },
-        { 
-          key: 'relativeHumidity', 
-          label: 'Relative Humidity', 
-          unit: '%', 
-          type: 'number',
-          min: 0,
-          max: 100,
-          step: 1,
-          icon: Droplets,
-          placeholder: 'e.g., 45'
-        },
-        { 
-          key: 'fanMotorAmps', 
-          label: 'Fan Motor Amps', 
-          unit: 'A', 
-          type: 'number',
-          min: 0,
-          max: 100,
-          step: 0.1,
-          icon: Zap,
-          placeholder: 'e.g., 12.5'
-        }
-      ];
-    }
-    
-    // PUMP SYSTEMS
-    if (normalizedCategory.includes('pump')) {
-      return [
-        { 
-          key: 'dischargePressure', 
-          label: 'Discharge Pressure', 
-          unit: 'psi', 
-          type: 'number',
-          min: 0,
-          max: 200,
-          step: 0.1,
-          icon: Gauge,
-          placeholder: 'e.g., 65.0'
-        },
-        { 
-          key: 'suctionPressure', 
-          label: 'Suction Pressure', 
-          unit: 'psi', 
-          type: 'number',
-          min: 0,
-          max: 100,
-          step: 0.1,
-          icon: Gauge,
-          placeholder: 'e.g., 20.0'
-        },
-        { 
-          key: 'flowRate', 
-          label: 'Flow Rate', 
-          unit: 'GPM', 
-          type: 'number',
-          min: 0,
-          max: 1000,
-          step: 1,
-          icon: Droplets,
-          placeholder: 'e.g., 350'
-        },
-        { 
-          key: 'motorAmps', 
-          label: 'Motor Current', 
-          unit: 'A', 
-          type: 'number',
-          min: 0,
-          max: 200,
-          step: 0.1,
-          icon: Zap,
-          placeholder: 'e.g., 25.5'
-        },
-        { 
-          key: 'bearingTemp', 
-          label: 'Bearing Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 200,
-          step: 1,
-          icon: Thermometer,
-          placeholder: 'e.g., 120'
-        },
-        { 
-          key: 'vibration', 
-          label: 'Vibration Level', 
-          unit: 'mils', 
-          type: 'number',
-          min: 0,
-          max: 10,
-          step: 0.01,
-          icon: Activity,
-          placeholder: 'e.g., 0.25'
-        }
-      ];
-    }
-    
-    // COOLING TOWER
-    if (normalizedCategory.includes('cooling tower') || normalizedCategory.includes('tower')) {
-      return [
-        { 
-          key: 'waterTemp', 
-          label: 'Water Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 150,
-          step: 0.1,
-          icon: Thermometer,
-          placeholder: 'e.g., 85.0'
-        },
-        { 
-          key: 'wetBulbTemp', 
-          label: 'Wet Bulb Temperature', 
-          unit: '°F', 
-          type: 'number',
-          min: 0,
-          max: 100,
-          step: 0.1,
-          icon: Thermometer,
-          placeholder: 'e.g., 72.0'
-        },
-        { 
-          key: 'fanMotorAmps', 
-          label: 'Fan Motor Amps', 
-          unit: 'A', 
-          type: 'number',
-          min: 0,
-          max: 100,
-          step: 0.1,
-          icon: Zap,
-          placeholder: 'e.g., 15.0'
-        },
-        { 
-          key: 'waterFlowRate', 
-          label: 'Water Flow Rate', 
-          unit: 'GPM', 
-          type: 'number',
-          min: 0,
-          max: 5000,
-          step: 10,
-          icon: Droplets,
-          placeholder: 'e.g., 1200'
-        }
-      ];
-    }
-    
-    // DEFAULT / GENERAL EQUIPMENT
-    return [
-      { 
-        key: 'voltage', 
-        label: 'Voltage', 
-        unit: 'V', 
-        type: 'number',
-        min: 0,
-        max: 600,
-        step: 0.1,
-        icon: Zap,
-        placeholder: 'e.g., 480.0'
-      },
-      { 
-        key: 'current', 
-        label: 'Current', 
-        unit: 'A', 
-        type: 'number',
-        min: 0,
-        max: 500,
-        step: 0.1,
-        icon: Zap,
-        placeholder: 'e.g., 25.5'
-      },
-      { 
-        key: 'temperature', 
-        label: 'Operating Temperature', 
-        unit: '°F', 
-        type: 'number',
-        min: 0,
-        max: 300,
-        step: 0.1,
-        icon: Thermometer,
-        placeholder: 'e.g., 72.0'
-      },
-      { 
-        key: 'pressure', 
-        label: 'Operating Pressure', 
-        unit: 'psi', 
-        type: 'number',
-        min: 0,
-        max: 200,
-        step: 0.1,
-        icon: Gauge,
-        placeholder: 'e.g., 45.0'
-      }
-    ];
   };
 
   if (loading) {
@@ -973,35 +922,67 @@ const WorkOrderDetailsPage = () => {
                 
                 {/* Card Body */}
                 <div className="p-6">
-                  {/* Modern Input Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    {getReadingFieldsByCategory(workOrder.asset.category).map((field) => {
-                      const IconComponent = field.icon;
-                      return (
-                        <div key={field.key} className="space-y-1.5">
-                          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                            {IconComponent && <IconComponent className="w-3.5 h-3.5 text-gray-400" />}
-                            {field.label}
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={field.type}
-                              step={field.step}
-                              min={field.min}
-                              max={field.max}
-                              value={checklistData[field.key] || ''}
-                              onChange={(e) => handleChecklistChange(field.key, field.type === 'number' ? parseFloat(e.target.value) || '' : e.target.value)}
-                              placeholder={field.placeholder}
-                              className="w-full pl-4 pr-16 py-3 bg-gray-50 border border-gray-200 rounded-lg text-base font-mono text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#232249] focus:ring-2 focus:ring-[#232249]/20 transition-all hover:border-gray-300"
-                            />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">
-                              {field.unit}
+                  {/* Show readings or default message */}
+                  {getReadingFieldsByCategory(workOrder.asset.category).length > 0 ? (
+                    <>
+                      {/* Modern Input Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {getReadingFieldsByCategory(workOrder.asset.category).map((field) => {
+                          const IconComponent = field.icon;
+                          return (
+                            <div key={field.key} className="space-y-1.5">
+                              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                {IconComponent && <IconComponent className="w-3.5 h-3.5 text-gray-400" />}
+                                {field.label}
+                              </label>
+                              <div className="relative">
+                                {isCompleted ? (
+                                  // Read-only display for completed work orders
+                                  <div className={`w-full pl-4 pr-16 py-3 bg-gray-100 border border-gray-200 rounded-lg text-base font-mono text-gray-700 ${field.type === 'textarea' ? 'min-h-[100px] whitespace-pre-wrap' : ''}`}>
+                                    {checklistData[field.key] || 'N/A'}
+                                  </div>
+                                ) : (
+                                  // Editable input/textarea for active work orders
+                                  field.type === 'textarea' ? (
+                                    <textarea
+                                      value={checklistData[field.key] || ''}
+                                      onChange={(e) => handleChecklistChange(field.key, e.target.value)}
+                                      placeholder={field.placeholder}
+                                      rows={4}
+                                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#232249] focus:ring-2 focus:ring-[#232249]/20 transition-all resize-none hover:border-gray-300"
+                                    />
+                                  ) : (
+                                    <input
+                                      type={field.type}
+                                      step={field.step}
+                                      min={field.min}
+                                      max={field.max}
+                                      value={checklistData[field.key] || ''}
+                                      onChange={(e) => handleChecklistChange(field.key, field.type === 'number' ? parseFloat(e.target.value) || '' : e.target.value)}
+                                      placeholder={field.placeholder}
+                                      className="w-full pl-4 pr-16 py-3 bg-gray-50 border border-gray-200 rounded-lg text-base font-mono text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#232249] focus:ring-2 focus:ring-[#232249]/20 transition-all hover:border-gray-300"
+                                    />
+                                  )
+                                )}
+                                {field.unit && field.type !== 'textarea' && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">
+                                    {field.unit}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    // Default message for categories without specific readings
+                    <div className="text-center py-8">
+                      <Settings className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500 text-sm">No specific readings defined for {workOrder.asset.category}</p>
+                      <p className="text-gray-400 text-xs mt-1">Use inspection notes below to document observations</p>
+                    </div>
+                  )}
 
                   {/* General Notes */}
                   <div className="space-y-1.5 pt-4 border-t border-gray-100">
@@ -1009,17 +990,25 @@ const WorkOrderDetailsPage = () => {
                       <FileText className="w-3.5 h-3.5 text-gray-400" />
                       Inspection Notes
                     </label>
-                    <textarea
-                      value={checklistData.generalNotes || ''}
-                      onChange={(e) => handleChecklistChange('generalNotes', e.target.value)}
-                      rows={4}
-                      placeholder="Document observations, abnormalities, or recommendations..."
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#232249] focus:ring-2 focus:ring-[#232249]/20 transition-all resize-none hover:border-gray-300"
-                    />
+                    {isCompleted ? (
+                      // Read-only display for completed work orders
+                      <div className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-700 min-h-[100px] whitespace-pre-wrap">
+                        {checklistData.generalNotes || 'No inspection notes provided.'}
+                      </div>
+                    ) : (
+                      // Editable textarea for active work orders
+                      <textarea
+                        value={checklistData.generalNotes || ''}
+                        onChange={(e) => handleChecklistChange('generalNotes', e.target.value)}
+                        rows={4}
+                        placeholder="Document observations, abnormalities, or recommendations..."
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#232249] focus:ring-2 focus:ring-[#232249]/20 transition-all resize-none hover:border-gray-300"
+                      />
+                    )}
                   </div>
                   
                   {/* Reading Summary */}
-                  {Object.keys(checklistData).length > 0 && (
+                  {!isCompleted && Object.keys(checklistData).length > 0 && (
                     <div className="mt-4 flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                       <div className="flex items-center gap-2 text-green-700 text-sm font-semibold">
                         <CheckCircle className="w-4 h-4" />
