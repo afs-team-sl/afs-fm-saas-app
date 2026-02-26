@@ -5,7 +5,6 @@ export declare class AssetsController {
     private readonly assetsService;
     constructor(assetsService: AssetsService);
     create(createAssetDto: CreateAssetDto, tenantId: string): Promise<{
-        tenantId: string;
         id: string;
         name: string;
         category: string;
@@ -26,10 +25,11 @@ export declare class AssetsController {
         costCenter: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         roomId: string | null;
     }>;
-    findAll(tenantId: string, status?: string, category?: string): Promise<{
-        tenantId: string;
+    findUniqueLocations(tenantId: string): Promise<(string | null)[]>;
+    findAll(tenantId: string, status?: string, category?: string, roomId?: string, location?: string): Promise<{
         id: string;
         name: string;
         category: string;
@@ -50,6 +50,7 @@ export declare class AssetsController {
         costCenter: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         roomId: string | null;
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
@@ -57,11 +58,11 @@ export declare class AssetsController {
         room: ({
             floor: {
                 building: {
-                    tenantId: string;
                     id: string;
                     name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    tenantId: string;
                     address: string | null;
                 };
             } & {
@@ -86,11 +87,11 @@ export declare class AssetsController {
                 lastName: string;
             } | null;
         } & {
-            tenantId: string;
             id: string;
             status: import(".prisma/client").$Enums.WorkOrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            tenantId: string;
             title: string;
             description: string | null;
             priority: import(".prisma/client").$Enums.WorkOrderPriority;
@@ -112,7 +113,6 @@ export declare class AssetsController {
             fileSize: number;
             mimeType: string;
         }[];
-        tenantId: string;
         id: string;
         name: string;
         category: string;
@@ -133,10 +133,10 @@ export declare class AssetsController {
         costCenter: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         roomId: string | null;
     }>;
     update(id: string, tenantId: string, updateAssetDto: UpdateAssetDto): Promise<{
-        tenantId: string;
         id: string;
         name: string;
         category: string;
@@ -157,10 +157,10 @@ export declare class AssetsController {
         costCenter: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         roomId: string | null;
     }>;
     remove(id: string, tenantId: string, req: any): Promise<{
-        tenantId: string;
         id: string;
         name: string;
         category: string;
@@ -181,6 +181,7 @@ export declare class AssetsController {
         costCenter: string | null;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
         roomId: string | null;
     }>;
     bulkCreate(assets: CreateAssetDto[], tenantId: string): Promise<{

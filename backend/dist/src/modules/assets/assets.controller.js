@@ -31,11 +31,18 @@ let AssetsController = class AssetsController {
             tenantId,
         });
     }
-    findAll(tenantId, status, category) {
+    findUniqueLocations(tenantId) {
+        return this.assetsService.getUniqueLocations(tenantId);
+    }
+    findAll(tenantId, status, category, roomId, location) {
         if (status)
             return this.assetsService.findByStatus(tenantId, status);
         if (category)
             return this.assetsService.findByCategory(tenantId, category);
+        if (roomId)
+            return this.assetsService.findByRoom(tenantId, roomId);
+        if (location)
+            return this.assetsService.findByLocation(tenantId, location);
         return this.assetsService.findAll(tenantId);
     }
     findOne(id, tenantId) {
@@ -101,16 +108,29 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AssetsController.prototype, "create", null);
 __decorate([
+    (0, common_1.Get)('locations'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get unique location strings from assets' }),
+    (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
+    __param(0, (0, common_1.Headers)('x-tenant-id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AssetsController.prototype, "findUniqueLocations", null);
+__decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: 'Retrieve all assets for a tenant' }),
     (0, swagger_1.ApiHeader)({ name: 'x-tenant-id', required: true }),
     (0, swagger_1.ApiQuery)({ name: 'status', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'category', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'roomId', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'location', required: false }),
     __param(0, (0, common_1.Headers)('x-tenant-id')),
     __param(1, (0, common_1.Query)('status')),
     __param(2, (0, common_1.Query)('category')),
+    __param(3, (0, common_1.Query)('roomId')),
+    __param(4, (0, common_1.Query)('location')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], AssetsController.prototype, "findAll", null);
 __decorate([

@@ -51,36 +51,44 @@ export class WorkOrdersService {
   };
 
   /**
-   * Create a new work order
-   * Validates that the asset belongs to the same tenant.
+   * Create bulk work orders (one per asset)
+   * Validates that all assets belong to the same tenant.
    */
   async create(tenantId: string, dto: CreateWorkOrderDto) {
-    // 1. Verify that the asset exists and belongs to the same tenant
-    const asset = await this.prisma.asset.findFirst({
+    // 1. Verify that all assets exist and belong to the same tenant
+    const assets = await this.prisma.asset.findMany({
       where: {
-        id: dto.assetId,
+        id: { in: dto.assetIds },
         tenantId: tenantId,
       },
     });
 
-    if (!asset) {
+    if (assets.length !== dto.assetIds.length) {
+      const foundIds = assets.map((a) => a.id);
+      const missingIds = dto.assetIds.filter((id) => !foundIds.includes(id));
       throw new BadRequestException(
-        `Asset with ID ${dto.assetId} not found in your organization`,
+        `The following asset IDs were not found in your organization: ${missingIds.join(', ')}`,
       );
     }
 
-    // 2. Create the work order
-    return this.prisma.workOrder.create({
-      data: {
-        title: dto.title,
-        description: dto.description,
-        priority: dto.priority,
-        assetId: dto.assetId,
-        tenantId: tenantId,
-        assignedToId: dto.assignedToId, // Mapping the technician ID
-      },
-      include: this.includeRelations, // Now including both Asset and Technician
-    });
+    // 2. Create one work order per asset using a transaction
+    return this.prisma.$transaction(
+      dto.assetIds.map((assetId) =>
+        this.prisma.workOrder.create({
+          data: {
+            title: dto.title,
+            description: dto.description,
+            priority: dto.priority,
+            assetId: assetId,
+            tenantId: tenantId,
+            assignedToId: dto.assignedToId,
+            checklistData: dto.checklistData,
+            legacyId: dto.legacyId,
+          },
+          include: this.includeRelations,
+        }),
+      ),
+    );
   }
 
   /**

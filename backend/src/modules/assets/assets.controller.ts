@@ -31,7 +31,7 @@ import { AssetsService } from './assets.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { Express } from 'express';
+import type { Express } from 'express';
 
 @ApiTags('Assets')
 @ApiBearerAuth()
@@ -54,18 +54,31 @@ export class AssetsController { // Ensure 'export' keyword is present
     });
   }
 
+  @Get('locations')
+  @ApiOperation({ summary: 'Get unique location strings from assets' })
+  @ApiHeader({ name: 'x-tenant-id', required: true })
+  findUniqueLocations(@Headers('x-tenant-id') tenantId: string) {
+    return this.assetsService.getUniqueLocations(tenantId);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Retrieve all assets for a tenant' })
   @ApiHeader({ name: 'x-tenant-id', required: true })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'roomId', required: false })
+  @ApiQuery({ name: 'location', required: false })
   findAll(
     @Headers('x-tenant-id') tenantId: string,
     @Query('status') status?: string,
     @Query('category') category?: string,
+    @Query('roomId') roomId?: string,
+    @Query('location') location?: string,
   ) {
     if (status) return this.assetsService.findByStatus(tenantId, status);
     if (category) return this.assetsService.findByCategory(tenantId, category);
+    if (roomId) return this.assetsService.findByRoom(tenantId, roomId);
+    if (location) return this.assetsService.findByLocation(tenantId, location);
     return this.assetsService.findAll(tenantId);
   }
 

@@ -97,12 +97,12 @@ export declare class MaintenancePlansController {
             priority: import(".prisma/client").$Enums.WorkOrderPriority;
             assetId: string;
             assignedToId: string | null;
+            completionNote: string | null;
+            startedAt: Date | null;
+            dueDate: Date | null;
+            laborHours: number | null;
             checklistData: import("@prisma/client/runtime/library").JsonValue | null;
             legacyId: string | null;
-            completionNote: string | null;
-            dueDate: Date | null;
-            startedAt: Date | null;
-            laborHours: number | null;
         };
         updatedPlan: {
             asset: {

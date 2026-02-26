@@ -1,6 +1,7 @@
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { Prisma } from '@prisma/client';
 import { SubscriptionService } from '../shared/subscription/subscription.service';
 import { StorageService } from '../shared/storage/storage.service';
 export declare class AssetsService {
@@ -131,8 +132,107 @@ export declare class AssetsService {
         tenantId: string;
         roomId: string | null;
     }[]>;
+    findByRoom(tenantId: string, roomId: string): Promise<({
+        room: ({
+            floor: {
+                building: {
+                    id: string;
+                    name: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    tenantId: string;
+                    address: string | null;
+                };
+            } & {
+                number: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                buildingId: string;
+            };
+        } & {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            floorId: string;
+        }) | null;
+    } & {
+        id: string;
+        name: string;
+        category: string;
+        serialNo: string | null;
+        status: import(".prisma/client").$Enums.AssetStatus;
+        site: string | null;
+        location: string | null;
+        customId: string | null;
+        assetNumber: string | null;
+        manufacturer: string | null;
+        modelNumber: string | null;
+        installYear: number | null;
+        filterSize: string | null;
+        beltSize: string | null;
+        notes: string | null;
+        department: string | null;
+        image: string | null;
+        costCenter: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        roomId: string | null;
+    })[]>;
+    findByLocation(tenantId: string, location: string): Promise<({
+        room: ({
+            floor: {
+                building: {
+                    id: string;
+                    name: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    tenantId: string;
+                    address: string | null;
+                };
+            } & {
+                number: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                buildingId: string;
+            };
+        } & {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            floorId: string;
+        }) | null;
+    } & {
+        id: string;
+        name: string;
+        category: string;
+        serialNo: string | null;
+        status: import(".prisma/client").$Enums.AssetStatus;
+        site: string | null;
+        location: string | null;
+        customId: string | null;
+        assetNumber: string | null;
+        manufacturer: string | null;
+        modelNumber: string | null;
+        installYear: number | null;
+        filterSize: string | null;
+        beltSize: string | null;
+        notes: string | null;
+        department: string | null;
+        image: string | null;
+        costCenter: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        roomId: string | null;
+    })[]>;
+    getUniqueLocations(tenantId: string): Promise<(string | null)[]>;
     findOne(id: string, tenantId: string): Promise<{
-        latestReadings: string | number | true | import("@prisma/client/runtime/library").JsonObject | import("@prisma/client/runtime/library").JsonArray | null;
+        latestReadings: string | number | true | Prisma.JsonObject | Prisma.JsonArray | null;
         room: ({
             floor: {
                 building: {
@@ -179,7 +279,7 @@ export declare class AssetsService {
             startedAt: Date | null;
             dueDate: Date | null;
             laborHours: number | null;
-            checklistData: import("@prisma/client/runtime/library").JsonValue | null;
+            checklistData: Prisma.JsonValue | null;
             legacyId: string | null;
         })[];
         documents: {

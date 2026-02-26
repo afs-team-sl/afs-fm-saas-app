@@ -49,26 +49,30 @@ let WorkOrdersService = class WorkOrdersService {
         },
     };
     async create(tenantId, dto) {
-        const asset = await this.prisma.asset.findFirst({
+        const assets = await this.prisma.asset.findMany({
             where: {
-                id: dto.assetId,
+                id: { in: dto.assetIds },
                 tenantId: tenantId,
             },
         });
-        if (!asset) {
-            throw new common_1.BadRequestException(`Asset with ID ${dto.assetId} not found in your organization`);
+        if (assets.length !== dto.assetIds.length) {
+            const foundIds = assets.map((a) => a.id);
+            const missingIds = dto.assetIds.filter((id) => !foundIds.includes(id));
+            throw new common_1.BadRequestException(`The following asset IDs were not found in your organization: ${missingIds.join(', ')}`);
         }
-        return this.prisma.workOrder.create({
+        return this.prisma.$transaction(dto.assetIds.map((assetId) => this.prisma.workOrder.create({
             data: {
                 title: dto.title,
                 description: dto.description,
                 priority: dto.priority,
-                assetId: dto.assetId,
+                assetId: assetId,
                 tenantId: tenantId,
                 assignedToId: dto.assignedToId,
+                checklistData: dto.checklistData,
+                legacyId: dto.legacyId,
             },
             include: this.includeRelations,
-        });
+        })));
     }
     async findAll(tenantId, userId, role) {
         const whereClause = { tenantId };

@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssetsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../common/prisma/prisma.service");
+const client_1 = require("@prisma/client");
 const subscription_service_1 = require("../shared/subscription/subscription.service");
 const storage_service_1 = require("../shared/storage/storage.service");
 let AssetsService = class AssetsService {
@@ -75,6 +76,60 @@ let AssetsService = class AssetsService {
             orderBy: { createdAt: 'desc' },
         });
     }
+    async findByRoom(tenantId, roomId) {
+        return this.prisma.asset.findMany({
+            where: {
+                tenantId,
+                roomId
+            },
+            include: {
+                room: {
+                    include: {
+                        floor: {
+                            include: {
+                                building: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+    async findByLocation(tenantId, location) {
+        return this.prisma.asset.findMany({
+            where: {
+                tenantId,
+                location: location
+            },
+            include: {
+                room: {
+                    include: {
+                        floor: {
+                            include: {
+                                building: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: { name: 'asc' },
+        });
+    }
+    async getUniqueLocations(tenantId) {
+        const locations = await this.prisma.asset.findMany({
+            where: {
+                tenantId,
+                location: { not: null }
+            },
+            distinct: ['location'],
+            select: { location: true },
+            orderBy: { location: 'asc' }
+        });
+        return locations
+            .filter(l => l.location && l.location.trim() !== '')
+            .map(l => l.location);
+    }
     async findOne(id, tenantId) {
         const asset = await this.prisma.asset.findFirst({
             where: { id, tenantId },
@@ -107,7 +162,7 @@ let AssetsService = class AssetsService {
             where: {
                 assetId: id,
                 status: 'COMPLETED',
-                checklistData: { not: null }
+                checklistData: { not: client_1.Prisma.JsonNull }
             },
             orderBy: { updatedAt: 'desc' },
             take: 1,
@@ -190,7 +245,7 @@ let AssetsService = class AssetsService {
         const asset = await this.findOne(assetId, tenantId);
         if (asset.image) {
             try {
-                await this.storageService.deleteFile(asset.image);
+                await this.storageService.deleteFile(asset.image, 'asset-images');
             }
             catch (error) {
                 console.warn('Failed to delete old asset image:', error);
@@ -233,7 +288,7 @@ let AssetsService = class AssetsService {
             throw new common_1.NotFoundException('Document not found');
         }
         try {
-            await this.storageService.deleteFile(document.fileUrl);
+            await this.storageService.deleteFile(document.fileUrl, 'asset-documents');
         }
         catch (error) {
             console.warn('Failed to delete document from storage:', error);

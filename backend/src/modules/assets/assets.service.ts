@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, ForbiddenException } 
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
-import { AssetStatus } from '@prisma/client';
+import { AssetStatus, Prisma } from '@prisma/client';
 import { SubscriptionService } from '../shared/subscription/subscription.service';
 import { StorageService } from '../shared/storage/storage.service';
 
@@ -83,6 +83,74 @@ export class AssetsService {
   }
 
   /**
+   * Find assets by room
+   */
+  async findByRoom(tenantId: string, roomId: string) {
+    return this.prisma.asset.findMany({
+      where: { 
+        tenantId, 
+        roomId 
+      },
+      include: {
+        room: {
+          include: {
+            floor: {
+              include: {
+                building: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Find assets by location string (from Excel import)
+   */
+  async findByLocation(tenantId: string, location: string) {
+    return this.prisma.asset.findMany({
+      where: { 
+        tenantId, 
+        location: location
+      },
+      include: {
+        room: {
+          include: {
+            floor: {
+              include: {
+                building: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  /**
+   * Get unique location strings from assets
+   * Used for location-based filtering in Work Order creation
+   */
+  async getUniqueLocations(tenantId: string) {
+    const locations = await this.prisma.asset.findMany({
+      where: { 
+        tenantId,
+        location: { not: null }
+      },
+      distinct: ['location'],
+      select: { location: true },
+      orderBy: { location: 'asc' }
+    });
+
+    return locations
+      .filter(l => l.location && l.location.trim() !== '')
+      .map(l => l.location);
+  }
+
+  /**
    * GET ASSET DETAILS WITH FULL HISTORY & LATEST READINGS 🛡️
    * We include nested relations to show who did each work order.
    */
@@ -120,7 +188,7 @@ export class AssetsService {
       where: {
         assetId: id,
         status: 'COMPLETED',
-        checklistData: { not: null }
+        checklistData: { not: Prisma.JsonNull }
       },
       orderBy: { updatedAt: 'desc' },
       take: 1,
@@ -245,7 +313,7 @@ export class AssetsService {
     // Delete old image if exists
     if (asset.image) {
       try {
-        await this.storageService.deleteFile(asset.image);
+        await this.storageService.deleteFile(asset.image, 'asset-images');
       } catch (error) {
         console.warn('Failed to delete old asset image:', error);
       }
@@ -326,7 +394,7 @@ export class AssetsService {
 
     // Delete from Azure Blob Storage
     try {
-      await this.storageService.deleteFile(document.fileUrl);
+      await this.storageService.deleteFile(document.fileUrl, 'asset-documents');
     } catch (error) {
       console.warn('Failed to delete document from storage:', error);
     }

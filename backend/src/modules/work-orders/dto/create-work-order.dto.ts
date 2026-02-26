@@ -7,6 +7,7 @@ import {
   IsUUID,
   IsOptional,
   MaxLength,
+  IsArray,
 } from 'class-validator';
 import { WorkOrderPriority } from '@prisma/client';
 
@@ -40,12 +41,14 @@ export class CreateWorkOrderDto {
   priority: WorkOrderPriority;
 
   @ApiProperty({
-    description: 'UUID of the asset this work order is related to',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'Array of asset UUIDs to create work orders for',
+    example: ['123e4567-e89b-12d3-a456-426614174000', '123e4567-e89b-12d3-a456-426614174001'],
+    type: [String],
   })
-  @IsUUID()
+  @IsArray()
+  @IsUUID('4', { each: true })
   @IsNotEmpty()
-  assetId: string;
+  assetIds: string[];
 
   @ApiPropertyOptional({
     description: 'UUID of the technician (User) assigned to this work order',

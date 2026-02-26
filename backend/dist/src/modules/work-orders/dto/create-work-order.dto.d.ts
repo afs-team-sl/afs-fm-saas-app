@@ -3,7 +3,7 @@ export declare class CreateWorkOrderDto {
     title: string;
     description?: string;
     priority: WorkOrderPriority;
-    assetId: string;
+    assetIds: string[];
     assignedToId?: string;
     checklistData?: any;
     legacyId?: string;

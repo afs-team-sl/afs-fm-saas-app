@@ -17,7 +17,7 @@ class CreateWorkOrderDto {
     title;
     description;
     priority;
-    assetId;
+    assetIds;
     assignedToId;
     checklistData;
     legacyId;
@@ -56,13 +56,15 @@ __decorate([
 ], CreateWorkOrderDto.prototype, "priority", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'UUID of the asset this work order is related to',
-        example: '123e4567-e89b-12d3-a456-426614174000',
+        description: 'Array of asset UUIDs to create work orders for',
+        example: ['123e4567-e89b-12d3-a456-426614174000', '123e4567-e89b-12d3-a456-426614174001'],
+        type: [String],
     }),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsUUID)('4', { each: true }),
     (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateWorkOrderDto.prototype, "assetId", void 0);
+    __metadata("design:type", Array)
+], CreateWorkOrderDto.prototype, "assetIds", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: 'UUID of the technician (User) assigned to this work order',

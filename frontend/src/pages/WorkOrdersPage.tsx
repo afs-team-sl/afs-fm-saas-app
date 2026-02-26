@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle, FileDown, AlertTriangle, MapPin } from 'lucide-react';
+import { Plus, Box, Loader2, X, Trash2, Edit3, Calendar, AlertCircle, FileDown, AlertTriangle, MapPin, CheckSquare, Square } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -10,6 +10,8 @@ interface Asset {
   id: string;
   name: string;
   category: string;
+  serialNo?: string;
+  location?: string;
   room?: {
     name: string;
     floor: {
@@ -57,6 +59,13 @@ const WorkOrdersPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  // Location-based selection states
+  const [locations, setLocations] = useState<string[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [locationAssets, setLocationAssets] = useState<Asset[]>([]);
+  const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
+  const [locationSearchTerm, setLocationSearchTerm] = useState('');
+
   const [formData, setFormData] = useState({ title: '', description: '', priority: 'MEDIUM', assetId: '', assignedToId: '' });
 
   useEffect(() => { fetchOrders(); fetchSelectionData(); }, []);
@@ -68,14 +77,45 @@ const WorkOrdersPage = () => {
 
   const fetchSelectionData = async () => {
     try {
-      // Fetch assets and only technicians for work order assignment
-      const [assetRes, userRes] = await Promise.all([
-        apiClient.get('/assets'), 
+      // Fetch unique locations and technicians for work order assignment
+      const [locationRes, userRes] = await Promise.all([
+        apiClient.get('/assets/locations'), 
         apiClient.get('/users?role=TECHNICIAN')
       ]);
-      setAssets(assetRes.data); 
+      setLocations(locationRes.data); 
       setUsers(userRes.data);
     } catch (e) { console.error("Selection error", e); }
+  };
+
+  const handleLocationChange = async (location: string) => {
+    setSelectedLocation(location);
+    setLocationAssets([]);
+    setSelectedAssetIds([]);
+
+    if (location) {
+      try {
+        const res = await apiClient.get(`/assets?location=${encodeURIComponent(location)}`);
+        setLocationAssets(res.data);
+      } catch (e) {
+        console.error("Failed to fetch assets", e);
+      }
+    }
+  };
+
+  const toggleAssetSelection = (assetId: string) => {
+    setSelectedAssetIds(prev => 
+      prev.includes(assetId) 
+        ? prev.filter(id => id !== assetId)
+        : [...prev, assetId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedAssetIds.length === locationAssets.length) {
+      setSelectedAssetIds([]);
+    } else {
+      setSelectedAssetIds(locationAssets.map(a => a.id));
+    }
   };
 
   const getAssetDisplayName = (asset: Asset) => {
@@ -87,6 +127,7 @@ const WorkOrdersPage = () => {
 
   const handleOpenModal = (order?: WorkOrder) => {
     if (order) {
+      // Edit mode - keep single asset selection for editing
       setEditingId(order.id);
       setFormData({ 
         title: order.title, 
@@ -96,14 +137,26 @@ const WorkOrdersPage = () => {
         assignedToId: order.assignedToId || '' 
       });
     } else {
+      // Create mode - reset for bulk selection
       setEditingId(null);
       setFormData({ title: '', description: '', priority: 'MEDIUM', assetId: '', assignedToId: '' });
+      setSelectedLocation('');
+      setLocationAssets([]);
+      setSelectedAssetIds([]);
+      setLocationSearchTerm('');
     }
     setModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation for bulk creation
+    if (!editingId && selectedAssetIds.length === 0) {
+      alert('Please select at least one asset to create work orders.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Logic fix for 400 Bad Request: Empty strings are converted to null
@@ -115,11 +168,14 @@ const WorkOrdersPage = () => {
       
       payload.assignedToId = (formData.assignedToId && formData.assignedToId !== "") ? formData.assignedToId : null;
       
-      // We only send assetId on Creation (POST), not on Update (PATCH)
-      if (!editingId) payload.assetId = formData.assetId;
-
-      if (editingId) await apiClient.patch(`/work-orders/${editingId}`, payload);
-      else await apiClient.post('/work-orders', payload);
+      if (editingId) {
+        // Edit mode - single work order update
+        await apiClient.patch(`/work-orders/${editingId}`, payload);
+      } else {
+        // Create mode - bulk work orders (one per asset)
+        payload.assetIds = selectedAssetIds;
+        await apiClient.post('/work-orders', payload);
+      }
 
       setModalOpen(false);
       fetchOrders();
@@ -438,10 +494,10 @@ const WorkOrdersPage = () => {
       {/* Create/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-surface w-full max-w-2xl rounded-lg shadow-xl">
-            <div className="flex items-center justify-between p-6 border-b border-secondary-200">
+          <div className="bg-surface w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg shadow-xl">
+            <div className="flex items-center justify-between p-6 border-b border-secondary-200 sticky top-0 bg-surface z-10">
               <h2 className="text-lg font-semibold text-slate-900">
-                {editingId ? 'Edit Work Order' : 'Create Work Order'}
+                {editingId ? 'Edit Work Order' : 'Create Bulk Work Orders'}
               </h2>
               <button 
                 onClick={() => setModalOpen(false)} 
@@ -463,24 +519,144 @@ const WorkOrdersPage = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Asset</label>
-                  <select 
-                    required 
-                    disabled={!!editingId} 
-                    className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-secondary-50 disabled:text-secondary-500" 
-                    value={formData.assetId} 
-                    onChange={e => setFormData({...formData, assetId: e.target.value})}
-                  >
-                    <option value="">Select asset</option>
-                    {assets.map(a => (
-                      <option key={a.id} value={a.id}>
-                        {getAssetDisplayName(a)}
-                      </option>
-                    ))}
-                  </select>
+              {/* Location-based Selection (Only for Create Mode) */}
+              {!editingId && (
+                <div className="space-y-4 p-4 bg-gradient-to-br from-[#232249]/5 to-blue-50 border-2 border-[#232249]/20 rounded-lg">
+                  <h3 className="text-sm font-semibold text-[#232249] flex items-center gap-2">
+                    <MapPin className="w-5 h-5" />
+                    Select Assets by Location (Excel Import Data)
+                  </h3>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-2">
+                      Search & Select Location
+                    </label>
+                    
+                    {/* Searchable Location Dropdown */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={locationSearchTerm}
+                        onChange={(e) => setLocationSearchTerm(e.target.value)}
+                        placeholder="Type to search locations..."
+                        className="w-full px-3 py-2 border-2 border-[#232249]/30 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#232249] focus:border-[#232249] transition-all"
+                      />
+                      
+                      {locationSearchTerm && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border-2 border-[#232249]/20 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                          {locations
+                            .filter(loc => loc.toLowerCase().includes(locationSearchTerm.toLowerCase()))
+                            .map((loc) => (
+                              <button
+                                key={loc}
+                                type="button"
+                                onClick={() => {
+                                  setLocationSearchTerm(loc);
+                                  handleLocationChange(loc);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-[#232249]/10 transition-colors border-b border-slate-100 last:border-0"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="w-4 h-4 text-[#232249]" />
+                                  <span className="text-slate-900">{loc}</span>
+                                </div>
+                              </button>
+                            ))}
+                          {locations.filter(loc => loc.toLowerCase().includes(locationSearchTerm.toLowerCase())).length === 0 && (
+                            <div className="px-4 py-3 text-sm text-slate-500 text-center">
+                              No locations found matching "{locationSearchTerm}"
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Manual Select as fallback */}
+                    <select 
+                      className="w-full mt-2 px-3 py-2 border-2 border-[#232249]/30 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#232249] focus:border-[#232249] bg-white transition-all" 
+                      value={selectedLocation} 
+                      onChange={e => {
+                        const loc = e.target.value;
+                        setLocationSearchTerm(loc);
+                        handleLocationChange(loc);
+                      }}
+                    >
+                      <option value="">-- Or select from all locations --</option>
+                      {locations.map(loc => (
+                        <option key={loc} value={loc}>{loc}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Asset Checkboxes */}
+                  {locationAssets.length > 0 && (
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="block text-sm font-semibold text-[#232249]">
+                          Select Assets ({selectedAssetIds.length} of {locationAssets.length} selected)
+                        </label>
+                        <button
+                          type="button"
+                          onClick={toggleSelectAll}
+                          className="flex items-center gap-2 px-4 py-1.5 text-xs font-semibold text-white bg-[#232249] hover:bg-[#1a1a38] rounded-md transition-all shadow-md"
+                        >
+                          {selectedAssetIds.length === locationAssets.length ? (
+                            <>
+                              <Square className="w-4 h-4" />
+                              Deselect All
+                            </>
+                          ) : (
+                            <>
+                              <CheckSquare className="w-4 h-4" />
+                              Select All
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <div className="max-h-80 overflow-y-auto border-2 border-[#232249]/20 rounded-lg bg-white shadow-inner">
+                        <div className="divide-y divide-slate-100">
+                          {locationAssets.map(asset => (
+                            <label 
+                              key={asset.id}
+                              className="flex items-center gap-3 p-4 hover:bg-[#232249]/5 cursor-pointer transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedAssetIds.includes(asset.id)}
+                                onChange={() => toggleAssetSelection(asset.id)}
+                                className="w-5 h-5 text-[#232249] border-2 border-[#232249]/30 rounded focus:ring-[#232249] focus:ring-2"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-slate-900 truncate">{asset.name}</p>
+                                <p className="text-xs text-slate-600 mt-0.5">
+                                  {asset.category}
+                                  {asset.serialNo && ` • SN: ${asset.serialNo}`}
+                                </p>
+                                <p className="text-xs text-[#232249] font-medium mt-1 flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  {asset.location}
+                                </p>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedLocation && locationAssets.length === 0 && (
+                    <div className="text-sm text-amber-700 bg-amber-50 border-2 border-amber-200 rounded-md p-4 flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold">No assets found at this location.</p>
+                        <p className="text-xs mt-1">Try selecting a different location from the dropdown.</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Assign To</label>
                   <select 
@@ -492,26 +668,30 @@ const WorkOrdersPage = () => {
                     {users.map(u => <option key={u.id} value={u.id}>{u.firstName} {u.lastName}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Priority</label>
+                  <select 
+                    className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    value={formData.priority}
+                    onChange={e => setFormData({...formData, priority: e.target.value})}
+                  >
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="URGENT">Urgent</option>
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Priority</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map(p => (
-                    <button 
-                      key={p} 
-                      type="button" 
-                      onClick={() => setFormData({...formData, priority: p})} 
-                      className={`py-2 text-sm font-medium rounded-md border transition-colors ${
-                        formData.priority === p 
-                          ? 'bg-primary text-white border-primary' 
-                          : 'bg-surface text-secondary-700 border-secondary-300 hover:border-primary'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                <textarea 
+                  rows={3}
+                  className="w-full px-3 py-2 border border-secondary-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+                  value={formData.description} 
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  placeholder="Detailed description of the issue or work required"
+                />
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -524,16 +704,16 @@ const WorkOrdersPage = () => {
                 </button>
                 <button 
                   type="submit" 
-                  disabled={isSubmitting} 
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  disabled={isSubmitting || (!editingId && selectedAssetIds.length === 0)} 
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#232249] text-white font-medium rounded-md hover:bg-[#1a1a38] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Saving...
+                      {editingId ? 'Updating...' : `Creating ${selectedAssetIds.length} Work Order${selectedAssetIds.length !== 1 ? 's' : ''}...`}
                     </>
                   ) : (
-                    editingId ? 'Update Work Order' : 'Create Work Order'
+                    editingId ? 'Update Work Order' : `Create ${selectedAssetIds.length} Work Order${selectedAssetIds.length !== 1 ? 's' : ''}`
                   )}
                 </button>
               </div>
