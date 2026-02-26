@@ -253,24 +253,35 @@ export class WorkOrdersController {
         validators: [
           new MaxFileSizeValidator({ 
             maxSize: 10 * 1024 * 1024, // 10MB
-            message: 'File size must not exceed 10MB'
           }),
           new FileTypeValidator({
-            // Updated regex to match MIME types correctly
-            fileType: /(image\/jpeg|image\/jpg|image\/png|image\/gif|application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/vnd\.ms-excel|application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet)/,
+            fileType: '.(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx)$',
           }),
         ],
         fileIsRequired: true,
-        exceptionFactory: (errors) => {
-          console.error('File validation failed:', errors);
-          return new BadRequestException(
-            `File validation failed: ${errors}. Allowed types: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX (Max 10MB)`
-          );
-        },
       }),
     )
     file: Express.Multer.File,
   ) {
+    // Additional MIME type validation
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/jpg', 
+      'image/png',
+      'image/gif',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `Invalid file type: ${file.mimetype}. Allowed types: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX`
+      );
+    }
+
     const userId = req?.user?.sub;
     return this.workOrdersService.addAttachment(id, tenantId, file, userId);
   }

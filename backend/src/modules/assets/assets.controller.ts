@@ -182,24 +182,24 @@ export class AssetsController { // Ensure 'export' keyword is present
         validators: [
           new MaxFileSizeValidator({ 
             maxSize: 5 * 1024 * 1024, // 5MB for images
-            message: 'Image size must not exceed 5MB'
           }),
           new FileTypeValidator({
-            // Updated regex to match image MIME types
-            fileType: /(image\/jpeg|image\/jpg|image\/png)/,
+            fileType: '.(jpg|jpeg|png)$',
           }),
         ],
         fileIsRequired: true,
-        exceptionFactory: (errors) => {
-          console.error('Image validation failed:', errors);
-          return new BadRequestException(
-            `Image validation failed: ${errors}. Allowed types: JPG, PNG (Max 5MB)`
-          );
-        },
       })
     )
     file: Express.Multer.File,
   ) {
+    // Additional MIME type validation
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `Invalid image type: ${file.mimetype}. Allowed types: JPG, PNG`
+      );
+    }
+
     const imageUrl = await this.assetsService.uploadImage(assetId, tenantId, file);
     return { imageUrl };
   }
@@ -241,24 +241,31 @@ export class AssetsController { // Ensure 'export' keyword is present
         validators: [
           new MaxFileSizeValidator({ 
             maxSize: 10 * 1024 * 1024, // 10MB
-            message: 'Document size must not exceed 10MB'
           }),
           new FileTypeValidator({
-            // Updated regex to match document MIME types
-            fileType: /(application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/vnd\.ms-excel|application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet)/,
+            fileType: '.(pdf|doc|docx|xls|xlsx)$',
           }),
         ],
         fileIsRequired: true,
-        exceptionFactory: (errors) => {
-          console.error('Document validation failed:', errors);
-          return new BadRequestException(
-            `Document validation failed: ${errors}. Allowed types: PDF, DOC, DOCX, XLS, XLSX (Max 10MB)`
-          );
-        },
       })
     )
     file: Express.Multer.File,
   ) {
+    // Additional MIME type validation
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `Invalid document type: ${file.mimetype}. Allowed types: PDF, DOC, DOCX, XLS, XLSX`
+      );
+    }
+
     return this.assetsService.uploadDocument(assetId, tenantId, file);
   }
 

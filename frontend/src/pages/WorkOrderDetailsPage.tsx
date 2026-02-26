@@ -1061,10 +1061,10 @@ const WorkOrderDetailsPage = () => {
           {/* End Main Column */}
 
           {/* ========== ACTION SIDEBAR (Span 1) ========== */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-6 sticky top-24 self-start">
             
-            {/* === LABOR TRACKING CARD (Sticky) === */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+            {/* === LABOR TRACKING CARD === */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               {/* Card Header */}
               <div className="bg-[#232249] px-4 py-3 flex items-center gap-2">
                 <Timer className="w-4 h-4 text-white" />
@@ -1284,6 +1284,53 @@ const WorkOrderDetailsPage = () => {
                 )}
               </div>
             </div>
+
+            {/* === PARTS USED CARD === */}
+            {!isDisabled && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-[#232249] px-4 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="w-4 h-4 text-white" />
+                    <h3 className="text-base font-bold text-white">Parts Used</h3>
+                  </div>
+                  <button
+                    onClick={() => setShowPartsModal(true)}
+                    className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+
+                <div className="p-4">
+                  {workOrderParts.length > 0 ? (
+                    <div className="space-y-2">
+                      {workOrderParts.map((wp) => (
+                        <div key={wp.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-900">{wp.part.name}</p>
+                            <p className="text-xs text-gray-600 mt-0.5">Qty: {wp.quantity} × ${wp.part.unitPrice.toFixed(2)}</p>
+                          </div>
+                          <button
+                            onClick={() => handleRemovePart(wp.id)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <div className="pt-2 mt-2 border-t border-gray-200">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">Total</p>
+                        <p className="text-lg font-bold text-[#232249]">
+                          ${workOrderParts.reduce((sum, wp) => sum + wp.quantity * wp.part.unitPrice, 0).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">No parts added yet</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           {/* End Action Sidebar */}
 

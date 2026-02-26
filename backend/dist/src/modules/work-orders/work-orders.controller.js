@@ -62,6 +62,20 @@ let WorkOrdersController = class WorkOrdersController {
         return this.workOrdersService.removePart(id, partId, tenantId);
     }
     uploadAttachment(id, tenantId, req, file) {
+        const allowedMimeTypes = [
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ];
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+            throw new common_1.BadRequestException(`Invalid file type: ${file.mimetype}. Allowed types: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX`);
+        }
         const userId = req?.user?.sub;
         return this.workOrdersService.addAttachment(id, tenantId, file, userId);
     }
@@ -270,17 +284,12 @@ __decorate([
         validators: [
             new common_1.MaxFileSizeValidator({
                 maxSize: 10 * 1024 * 1024,
-                message: 'File size must not exceed 10MB'
             }),
             new common_1.FileTypeValidator({
-                fileType: /(image\/jpeg|image\/jpg|image\/png|image\/gif|application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/vnd\.ms-excel|application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet)/,
+                fileType: '.(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx)$',
             }),
         ],
         fileIsRequired: true,
-        exceptionFactory: (errors) => {
-            console.error('File validation failed:', errors);
-            return new common_1.BadRequestException(`File validation failed: ${errors}. Allowed types: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX (Max 10MB)`);
-        },
     }))),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, Object, Object]),
