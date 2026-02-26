@@ -10,9 +10,9 @@ export declare class WorkOrdersController {
             room: ({
                 floor: {
                     building: {
-                        tenantId: string;
                         id: string;
                         name: string;
+                        tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
                         address: string | null;
@@ -32,7 +32,6 @@ export declare class WorkOrdersController {
                 floorId: string;
             }) | null;
         } & {
-            tenantId: string;
             id: string;
             name: string;
             category: string;
@@ -51,9 +50,10 @@ export declare class WorkOrdersController {
             department: string | null;
             image: string | null;
             costCenter: string | null;
+            tenantId: string;
+            roomId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            roomId: string | null;
         };
         assignedTo: {
             id: string;
@@ -63,10 +63,10 @@ export declare class WorkOrdersController {
         } | null;
         parts: ({
             part: {
-                tenantId: string;
                 id: string;
                 name: string;
                 location: string | null;
+                tenantId: string;
                 createdAt: Date;
                 updatedAt: Date;
                 partNumber: string;
@@ -84,9 +84,9 @@ export declare class WorkOrdersController {
             partId: string;
         })[];
     } & {
-        tenantId: string;
         id: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -106,9 +106,9 @@ export declare class WorkOrdersController {
             room: ({
                 floor: {
                     building: {
-                        tenantId: string;
                         id: string;
                         name: string;
+                        tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
                         address: string | null;
@@ -128,7 +128,6 @@ export declare class WorkOrdersController {
                 floorId: string;
             }) | null;
         } & {
-            tenantId: string;
             id: string;
             name: string;
             category: string;
@@ -147,9 +146,10 @@ export declare class WorkOrdersController {
             department: string | null;
             image: string | null;
             costCenter: string | null;
+            tenantId: string;
+            roomId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            roomId: string | null;
         };
         assignedTo: {
             id: string;
@@ -159,10 +159,10 @@ export declare class WorkOrdersController {
         } | null;
         parts: ({
             part: {
-                tenantId: string;
                 id: string;
                 name: string;
                 location: string | null;
+                tenantId: string;
                 createdAt: Date;
                 updatedAt: Date;
                 partNumber: string;
@@ -180,9 +180,9 @@ export declare class WorkOrdersController {
             partId: string;
         })[];
     } & {
-        tenantId: string;
         id: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -202,9 +202,9 @@ export declare class WorkOrdersController {
             room: ({
                 floor: {
                     building: {
-                        tenantId: string;
                         id: string;
                         name: string;
+                        tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
                         address: string | null;
@@ -224,7 +224,6 @@ export declare class WorkOrdersController {
                 floorId: string;
             }) | null;
         } & {
-            tenantId: string;
             id: string;
             name: string;
             category: string;
@@ -243,9 +242,10 @@ export declare class WorkOrdersController {
             department: string | null;
             image: string | null;
             costCenter: string | null;
+            tenantId: string;
+            roomId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            roomId: string | null;
         };
         assignedTo: {
             id: string;
@@ -255,10 +255,10 @@ export declare class WorkOrdersController {
         } | null;
         parts: ({
             part: {
-                tenantId: string;
                 id: string;
                 name: string;
                 location: string | null;
+                tenantId: string;
                 createdAt: Date;
                 updatedAt: Date;
                 partNumber: string;
@@ -276,9 +276,9 @@ export declare class WorkOrdersController {
             partId: string;
         })[];
     } & {
-        tenantId: string;
         id: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -298,9 +298,9 @@ export declare class WorkOrdersController {
             room: ({
                 floor: {
                     building: {
-                        tenantId: string;
                         id: string;
                         name: string;
+                        tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
                         address: string | null;
@@ -320,7 +320,6 @@ export declare class WorkOrdersController {
                 floorId: string;
             }) | null;
         } & {
-            tenantId: string;
             id: string;
             name: string;
             category: string;
@@ -339,9 +338,10 @@ export declare class WorkOrdersController {
             department: string | null;
             image: string | null;
             costCenter: string | null;
+            tenantId: string;
+            roomId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            roomId: string | null;
         };
         assignedTo: {
             id: string;
@@ -351,10 +351,10 @@ export declare class WorkOrdersController {
         } | null;
         parts: ({
             part: {
-                tenantId: string;
                 id: string;
                 name: string;
                 location: string | null;
+                tenantId: string;
                 createdAt: Date;
                 updatedAt: Date;
                 partNumber: string;
@@ -372,9 +372,9 @@ export declare class WorkOrdersController {
             partId: string;
         })[];
     } & {
-        tenantId: string;
         id: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -394,9 +394,9 @@ export declare class WorkOrdersController {
             room: ({
                 floor: {
                     building: {
-                        tenantId: string;
                         id: string;
                         name: string;
+                        tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
                         address: string | null;
@@ -416,7 +416,6 @@ export declare class WorkOrdersController {
                 floorId: string;
             }) | null;
         } & {
-            tenantId: string;
             id: string;
             name: string;
             category: string;
@@ -435,9 +434,10 @@ export declare class WorkOrdersController {
             department: string | null;
             image: string | null;
             costCenter: string | null;
+            tenantId: string;
+            roomId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            roomId: string | null;
         };
         assignedTo: {
             id: string;
@@ -447,10 +447,10 @@ export declare class WorkOrdersController {
         } | null;
         parts: ({
             part: {
-                tenantId: string;
                 id: string;
                 name: string;
                 location: string | null;
+                tenantId: string;
                 createdAt: Date;
                 updatedAt: Date;
                 partNumber: string;
@@ -468,9 +468,9 @@ export declare class WorkOrdersController {
             partId: string;
         })[];
     } & {
-        tenantId: string;
         id: string;
         status: import(".prisma/client").$Enums.WorkOrderStatus;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
         title: string;
@@ -490,10 +490,10 @@ export declare class WorkOrdersController {
     }>;
     addPart(id: string, tenantId: string, addPartDto: AddWorkOrderPartDto): Promise<{
         part: {
-            tenantId: string;
             id: string;
             name: string;
             location: string | null;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
             partNumber: string;
@@ -512,10 +512,10 @@ export declare class WorkOrdersController {
     }>;
     getWorkOrderParts(id: string, tenantId: string): Promise<({
         part: {
-            tenantId: string;
             id: string;
             name: string;
             location: string | null;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
             partNumber: string;

@@ -222,7 +222,7 @@ export class WorkOrdersController {
         file: {
           type: 'string',
           format: 'binary',
-          description: 'File to upload (max 10MB, supported: jpg, jpeg, png, gif, pdf, doc, docx, xls, xlsx)',
+          description: 'File to upload (max 10MB, images supported)',
         },
       },
     },
@@ -251,34 +251,25 @@ export class WorkOrdersController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ 
-            maxSize: 10 * 1024 * 1024, // 10MB
-          }),
-          new FileTypeValidator({
-            fileType: '.(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx)$',
-          }),
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
         ],
         fileIsRequired: true,
       }),
     )
     file: Express.Multer.File,
   ) {
-    // Additional MIME type validation
-    const allowedMimeTypes = [
-      'image/jpeg',
-      'image/jpg', 
-      'image/png',
-      'image/gif',
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ];
+    // Log file details for debugging
+    console.log('File upload received:', {
+      fileName: file.originalname,
+      mimeType: file.mimetype,
+      size: file.size,
+      workOrderId: id,
+    });
 
-    if (!allowedMimeTypes.includes(file.mimetype)) {
+    // Validate MIME type - accept all image types
+    if (!file.mimetype.startsWith('image/')) {
       throw new BadRequestException(
-        `Invalid file type: ${file.mimetype}. Allowed types: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX`
+        `Invalid file type: ${file.mimetype}. Only image files are allowed.`
       );
     }
 

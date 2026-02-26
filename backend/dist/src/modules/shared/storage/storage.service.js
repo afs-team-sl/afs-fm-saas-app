@@ -34,12 +34,15 @@ let StorageService = class StorageService {
             throw new common_1.InternalServerErrorException('Azure Storage is not configured. Please set AZURE_STORAGE_CONNECTION_STRING in .env');
         }
         const containerClient = this.blobServiceClient.getContainerClient(containerName);
-        const exists = await containerClient.exists();
-        if (!exists) {
-            await containerClient.create({
+        try {
+            await containerClient.createIfNotExists({
                 access: 'blob',
             });
-            console.log(`✅ Container "${containerName}" created successfully`);
+            console.log(`✅ Container "${containerName}" is ready`);
+        }
+        catch (error) {
+            console.error(`❌ Failed to create/access container "${containerName}":`, error);
+            throw error;
         }
         return containerClient;
     }
@@ -58,8 +61,20 @@ let StorageService = class StorageService {
             return blockBlobClient.url;
         }
         catch (error) {
-            console.error('Azure Blob Upload Error:', error);
-            throw new common_1.InternalServerErrorException('Failed to upload file to Azure Blob Storage');
+            console.error('╔═══════════════════════════════════════════════════════════════════╗');
+            console.error('║  ❌ AZURE BLOB STORAGE UPLOAD ERROR                              ║');
+            console.error('╚═══════════════════════════════════════════════════════════════════╝');
+            console.error('Error Details:', error);
+            console.error('Error Message:', error?.message || 'Unknown error');
+            console.error('Error Stack:', error?.stack || 'No stack trace');
+            console.error('File Details:', {
+                filename: file.originalname,
+                mimetype: file.mimetype,
+                size: file.size,
+                containerName,
+            });
+            console.error('Connection String Exists:', !!this.configService.get('AZURE_STORAGE_CONNECTION_STRING'));
+            throw new common_1.InternalServerErrorException(`Failed to upload file to Azure Blob Storage: ${error?.message || 'Unknown error'}`);
         }
     }
     async deleteFile(blobUrl, containerName) {

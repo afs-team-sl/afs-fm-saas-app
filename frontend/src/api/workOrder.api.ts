@@ -1,4 +1,5 @@
 import apiClient from './client';
+import axios from 'axios';
 
 /**
  * Upload an attachment (photo evidence) to a work order
@@ -9,13 +10,35 @@ export const uploadAttachment = async (workOrderId: string, file: File) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await apiClient.post(
-    `/work-orders/${workOrderId}/upload`,
+  // Log for debugging
+  console.log('Uploading file to work order:', workOrderId);
+  console.log('File details:', { name: file.name, type: file.type, size: file.size });
+  console.log('FormData entries:');
+  for (const pair of formData.entries()) {
+    console.log(pair[0], pair[1]);
+  }
+
+  // Get auth headers from apiClient but DON'T set Content-Type
+  const token = localStorage.getItem('access_token');
+  const tenantId = localStorage.getItem('tenant_id');
+  
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  if (tenantId) {
+    headers['x-tenant-id'] = tenantId;
+  }
+  
+  // Use a raw axios call without the default Content-Type header
+  const baseURL = import.meta.env.VITE_API_URL || 'https://be-fms-dev-h6fed7awcqd7cxb5.centralus-01.azurewebsites.net';
+  
+  const response = await axios.post(
+    `${baseURL}/work-orders/${workOrderId}/upload`,
     formData,
     {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers,
+      withCredentials: true,
     }
   );
 

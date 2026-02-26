@@ -30,10 +30,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string;
         roomId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     findAll(tenantId: string): Promise<({
         room: ({
@@ -41,9 +41,9 @@ export declare class AssetsService {
                 building: {
                     id: string;
                     name: string;
+                    tenantId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    tenantId: string;
                     address: string | null;
                 };
             } & {
@@ -79,10 +79,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string;
         roomId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
     findByStatus(tenantId: string, status: string): Promise<{
         id: string;
@@ -103,10 +103,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string;
         roomId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     }[]>;
     findByCategory(tenantId: string, category: string): Promise<{
         id: string;
@@ -127,10 +127,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string;
         roomId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     }[]>;
     findByRoom(tenantId: string, roomId: string): Promise<({
         room: ({
@@ -138,9 +138,9 @@ export declare class AssetsService {
                 building: {
                     id: string;
                     name: string;
+                    tenantId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    tenantId: string;
                     address: string | null;
                 };
             } & {
@@ -176,10 +176,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string;
         roomId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
     findByLocation(tenantId: string, location: string): Promise<({
         room: ({
@@ -187,9 +187,9 @@ export declare class AssetsService {
                 building: {
                     id: string;
                     name: string;
+                    tenantId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    tenantId: string;
                     address: string | null;
                 };
             } & {
@@ -225,10 +225,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string;
         roomId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
     getUniqueLocations(tenantId: string): Promise<(string | null)[]>;
     findOne(id: string, tenantId: string): Promise<{
@@ -238,9 +238,9 @@ export declare class AssetsService {
                 building: {
                     id: string;
                     name: string;
+                    tenantId: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    tenantId: string;
                     address: string | null;
                 };
             } & {
@@ -267,9 +267,9 @@ export declare class AssetsService {
         } & {
             id: string;
             status: import(".prisma/client").$Enums.WorkOrderStatus;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
             title: string;
             description: string | null;
             priority: import(".prisma/client").$Enums.WorkOrderPriority;
@@ -309,10 +309,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string;
         roomId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     update(id: string, tenantId: string, dto: UpdateAssetDto): Promise<{
         id: string;
@@ -333,10 +333,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string;
         roomId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     remove(id: string, tenantId: string, userEmail?: string): Promise<{
         id: string;
@@ -357,10 +357,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string;
         roomId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     createBulk(tenantId: string, assets: CreateAssetDto[]): Promise<{
         count: number;

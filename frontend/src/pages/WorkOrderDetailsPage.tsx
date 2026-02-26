@@ -199,39 +199,58 @@ const WorkOrderDetailsPage = () => {
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Validate file size (10MB max)
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('File size must be less than 10MB');
-        return;
-      }
-
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
-      if (!allowedTypes.includes(file.type)) {
-        toast.error('Only JPG, PNG, GIF, and PDF files are allowed');
-        return;
-      }
-
-      handleUpload(file);
+    if (!file) {
+      console.warn('No file selected');
+      return;
     }
+
+    console.log('File selected:', { name: file.name, type: file.type, size: file.size });
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
+    // Validate file type - accept all images for camera support
+    if (!file.type.startsWith('image/')) {
+      toast.error('Only image files are allowed');
+      return;
+    }
+
+    // Immediately upload the file
+    handleUpload(file);
   };
 
   const handleUpload = async (file: File) => {
-    if (!id) return;
+    if (!id) {
+      toast.error('Work order ID is missing');
+      return;
+    }
 
+    console.log('Starting upload for work order:', id);
+    console.log('Tenant ID:', localStorage.getItem('tenant_id'));
+    console.log('Token exists:', !!localStorage.getItem('access_token'));
     setUploadingFile(true);
+    
     try {
-      await uploadAttachment(id, file);
+      const result = await uploadAttachment(id, file);
+      console.log('Upload successful:', result);
       toast.success(`${file.name} uploaded successfully`);
-      fetchAttachments();
+      await fetchAttachments();
       
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to upload file');
+      console.error('Upload failed:', error);
+      console.error('Error response:', error.response);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to upload file';
+      toast.error(`Upload failed: ${errorMessage}`);
     } finally {
       setUploadingFile(false);
     }
@@ -314,12 +333,7 @@ const WorkOrderDetailsPage = () => {
   };
 
   const handleCompleteWorkOrder = async () => {
-    // Safety Protocol: Require at least one photo evidence
-    if (attachments.length === 0) {
-      toast.error('⚠️ Safety Protocol: Please upload at least one photo evidence before completing the work order');
-      return;
-    }
-
+    // Photo evidence is now optional - removed safety requirement
     if (!completionNote.trim()) {
       toast.error('Please provide a completion note before finalizing');
       return;
@@ -791,7 +805,6 @@ const WorkOrderDetailsPage = () => {
   const isCompleted = workOrder.status === 'COMPLETED';
   const isCancelled = workOrder.status === 'CANCELLED';
   const isDisabled = isCompleted || isCancelled;
-  const canComplete = attachments.length > 0; // Safety check
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -841,7 +854,7 @@ const WorkOrderDetailsPage = () => {
                 </a>
               )}
               
-              {!isDisabled && canComplete && (
+              {!isDisabled && (
                 <button
                   onClick={handleCompleteWorkOrder}
                   disabled={isSubmitting}
@@ -1181,13 +1194,13 @@ const WorkOrderDetailsPage = () => {
               </div>
 
               <div className="p-4">
-                {/* Safety Protocol Notice */}
+                {/* Optional Photo Upload Info */}
                 {!isDisabled && attachments.length === 0 && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-yellow-800 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      <span className="font-semibold">Required:</span>
-                      At least one photo evidence is required.
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-blue-800 flex items-center gap-2">
+                      <Camera className="w-4 h-4" />
+                      <span className="font-semibold">Optional:</span>
+                      Upload photos for documentation (recommended but not required).
                     </p>
                   </div>
                 )}
@@ -1259,7 +1272,8 @@ const WorkOrderDetailsPage = () => {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
+                      accept="image/*"
+                      capture="environment"
                       onChange={handleFileSelect}
                       className="hidden"
                     />
@@ -1275,7 +1289,7 @@ const WorkOrderDetailsPage = () => {
                         </>
                       ) : (
                         <>
-                          <Upload className="w-4 h-4" />
+                          <Camera className="w-4 h-4" />
                           UPLOAD PHOTO
                         </>
                       )}

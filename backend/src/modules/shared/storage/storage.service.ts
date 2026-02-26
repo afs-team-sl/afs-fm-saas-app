@@ -49,13 +49,15 @@ export class StorageService {
     const containerClient =
       this.blobServiceClient.getContainerClient(containerName);
 
-    // Create container if it doesn't exist
-    const exists = await containerClient.exists();
-    if (!exists) {
-      await containerClient.create({
+    try {
+      // Create container if it doesn't exist
+      await containerClient.createIfNotExists({
         access: 'blob', // Public read access for blobs
       });
-      console.log(`✅ Container "${containerName}" created successfully`);
+      console.log(`✅ Container "${containerName}" is ready`);
+    } catch (error) {
+      console.error(`❌ Failed to create/access container "${containerName}":`, error);
+      throw error;
     }
 
     return containerClient;
@@ -95,9 +97,22 @@ export class StorageService {
       // Return public URL
       return blockBlobClient.url;
     } catch (error) {
-      console.error('Azure Blob Upload Error:', error);
+      console.error('╔═══════════════════════════════════════════════════════════════════╗');
+      console.error('║  ❌ AZURE BLOB STORAGE UPLOAD ERROR                              ║');
+      console.error('╚═══════════════════════════════════════════════════════════════════╝');
+      console.error('Error Details:', error);
+      console.error('Error Message:', error?.message || 'Unknown error');
+      console.error('Error Stack:', error?.stack || 'No stack trace');
+      console.error('File Details:', {
+        filename: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        containerName,
+      });
+      console.error('Connection String Exists:', !!this.configService.get('AZURE_STORAGE_CONNECTION_STRING'));
+      
       throw new InternalServerErrorException(
-        'Failed to upload file to Azure Blob Storage',
+        `Failed to upload file to Azure Blob Storage: ${error?.message || 'Unknown error'}`,
       );
     }
   }

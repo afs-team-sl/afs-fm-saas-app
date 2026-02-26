@@ -5,7 +5,6 @@ export declare class AssetsController {
     private readonly assetsService;
     constructor(assetsService: AssetsService);
     create(createAssetDto: CreateAssetDto, tenantId: string): Promise<{
-        tenantId: string;
         id: string;
         name: string;
         category: string;
@@ -24,13 +23,13 @@ export declare class AssetsController {
         department: string | null;
         image: string | null;
         costCenter: string | null;
+        tenantId: string;
+        roomId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        roomId: string | null;
     }>;
     findUniqueLocations(tenantId: string): Promise<(string | null)[]>;
     findAll(tenantId: string, status?: string, category?: string, roomId?: string, location?: string): Promise<{
-        tenantId: string;
         id: string;
         name: string;
         category: string;
@@ -49,18 +48,19 @@ export declare class AssetsController {
         department: string | null;
         image: string | null;
         costCenter: string | null;
+        tenantId: string;
+        roomId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        roomId: string | null;
     }[]>;
     findOne(id: string, tenantId: string): Promise<{
         latestReadings: string | number | true | import("@prisma/client/runtime/library").JsonObject | import("@prisma/client/runtime/library").JsonArray | null;
         room: ({
             floor: {
                 building: {
-                    tenantId: string;
                     id: string;
                     name: string;
+                    tenantId: string;
                     createdAt: Date;
                     updatedAt: Date;
                     address: string | null;
@@ -87,9 +87,9 @@ export declare class AssetsController {
                 lastName: string;
             } | null;
         } & {
-            tenantId: string;
             id: string;
             status: import(".prisma/client").$Enums.WorkOrderStatus;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
             title: string;
@@ -113,7 +113,6 @@ export declare class AssetsController {
             fileSize: number;
             mimeType: string;
         }[];
-        tenantId: string;
         id: string;
         name: string;
         category: string;
@@ -132,12 +131,12 @@ export declare class AssetsController {
         department: string | null;
         image: string | null;
         costCenter: string | null;
+        tenantId: string;
+        roomId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        roomId: string | null;
     }>;
     update(id: string, tenantId: string, updateAssetDto: UpdateAssetDto): Promise<{
-        tenantId: string;
         id: string;
         name: string;
         category: string;
@@ -156,12 +155,12 @@ export declare class AssetsController {
         department: string | null;
         image: string | null;
         costCenter: string | null;
+        tenantId: string;
+        roomId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        roomId: string | null;
     }>;
     remove(id: string, tenantId: string, req: any): Promise<{
-        tenantId: string;
         id: string;
         name: string;
         category: string;
@@ -180,9 +179,10 @@ export declare class AssetsController {
         department: string | null;
         image: string | null;
         costCenter: string | null;
+        tenantId: string;
+        roomId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        roomId: string | null;
     }>;
     bulkCreate(assets: CreateAssetDto[], tenantId: string): Promise<{
         count: number;

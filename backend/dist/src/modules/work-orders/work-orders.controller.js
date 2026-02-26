@@ -62,19 +62,14 @@ let WorkOrdersController = class WorkOrdersController {
         return this.workOrdersService.removePart(id, partId, tenantId);
     }
     uploadAttachment(id, tenantId, req, file) {
-        const allowedMimeTypes = [
-            'image/jpeg',
-            'image/jpg',
-            'image/png',
-            'image/gif',
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ];
-        if (!allowedMimeTypes.includes(file.mimetype)) {
-            throw new common_1.BadRequestException(`Invalid file type: ${file.mimetype}. Allowed types: JPG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX`);
+        console.log('File upload received:', {
+            fileName: file.originalname,
+            mimeType: file.mimetype,
+            size: file.size,
+            workOrderId: id,
+        });
+        if (!file.mimetype.startsWith('image/')) {
+            throw new common_1.BadRequestException(`Invalid file type: ${file.mimetype}. Only image files are allowed.`);
         }
         const userId = req?.user?.sub;
         return this.workOrdersService.addAttachment(id, tenantId, file, userId);
@@ -255,7 +250,7 @@ __decorate([
                 file: {
                     type: 'string',
                     format: 'binary',
-                    description: 'File to upload (max 10MB, supported: jpg, jpeg, png, gif, pdf, doc, docx, xls, xlsx)',
+                    description: 'File to upload (max 10MB, images supported)',
                 },
             },
         },
@@ -282,12 +277,7 @@ __decorate([
     __param(2, (0, common_1.Request)()),
     __param(3, (0, common_1.UploadedFile)(new common_1.ParseFilePipe({
         validators: [
-            new common_1.MaxFileSizeValidator({
-                maxSize: 10 * 1024 * 1024,
-            }),
-            new common_1.FileTypeValidator({
-                fileType: '.(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx)$',
-            }),
+            new common_1.MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
         ],
         fileIsRequired: true,
     }))),
