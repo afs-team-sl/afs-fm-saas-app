@@ -44,27 +44,15 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // 2. Enable CORS - Production-ready configuration
+  // 2. Enable CORS - TEMPORARY: Allow ALL origins for debugging
   app.enableCors({
-    origin: [
-      'https://afsnexsus.agilefacilities.com',  // Production domain
-      'http://localhost:5173',                    // Vite dev server
-    ],
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-      'Accept',
-      'x-tenant-id',
-      'X-Tenant-ID',
-    ],
+    allowedHeaders: '*',
     credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
   });
   
-  console.log('🔒 CORS: Enabled for production + localhost:5173');
+  console.log('🔒 CORS: ⚠️ TEMPORARY - All origins allowed for debugging');
 
   // 3. Swagger Setup - Configures the API Documentation page
   const config = new DocumentBuilder()
