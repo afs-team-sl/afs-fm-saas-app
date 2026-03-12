@@ -33,10 +33,14 @@ jobs:
         run: npm ci
         working-directory: ./frontend
 
-      # Build frontend
+      # Build frontend with environment variables
       - name: Build Frontend
         run: npm run build
         working-directory: ./frontend
+        env:
+          VITE_API_URL: https://be-fms-dev-h6fed7awcqd7cxb5.centralus-01.azurewebsites.net
+          VITE_SUPER_TENANT_ID: 05642b69-8f04-44d0-b74c-27c9db4b4969
+          VITE_SYSTEM_SUPER_USER_ID: 2930b04c-4b14-4540-a6fc-002093679b8b
 
       # Deploy to Azure Static Web Apps
       - name: Build And Deploy

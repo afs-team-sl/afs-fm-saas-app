@@ -118,9 +118,10 @@ const WorkOrderDetailsPage = () => {
     if (!workOrder) return null;
     
     // Try multiple location sources
+    const asset = workOrder.asset as Record<string, unknown> | null;
     const location = workOrder.asset?.room 
       ? `${workOrder.asset.room.floor.building.name}, ${workOrder.asset.room.floor.number}, ${workOrder.asset.room.name}`
-      : workOrder.asset?.['site'] || workOrder.asset?.['location'];
+      : (asset?.['site'] as string) || (asset?.['location'] as string);
     
     if (!location) return null;
     
