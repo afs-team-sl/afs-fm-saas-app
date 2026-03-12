@@ -52,9 +52,10 @@ async function bootstrap() {
   const allowedOrigins = corsOrigin 
     ? corsOrigin.split(',').map(origin => origin.trim())
     : [
+        'https://afsnexsus.agilefacilities.com',  // Production domain
         'http://localhost',           // Docker frontend on port 80
         'http://localhost:80',        // Explicit port 80
-        'http://localhost:5173',      // Vite dev server
+        'http://localhost:5173',      // Vite dev server (Keep local development working)
         'http://localhost:5174',      // Vite alternative port
         'http://localhost:3000',      // Backend itself (for testing)
         'http://127.0.0.1',           // Localhost alternative
