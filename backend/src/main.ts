@@ -44,60 +44,27 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // 2. Enable CORS - Production-ready configuration for Docker and Azure deployment
-  // CRITICAL: When credentials: true is used, origin cannot be a wildcard (*)
-  const corsOrigin = configService.get<string>('CORS_ORIGIN');
-  
-  // Define all allowed origins for local Docker development and production
-  const allowedOrigins = corsOrigin 
-    ? corsOrigin.split(',').map(origin => origin.trim())
-    : [
-        'https://afsnexsus.agilefacilities.com',  // Production domain
-        'http://localhost',           // Docker frontend on port 80
-        'http://localhost:80',        // Explicit port 80
-        'http://localhost:5173',      // Vite dev server (Keep local development working)
-        'http://localhost:5174',      // Vite alternative port
-        'http://localhost:3000',      // Backend itself (for testing)
-        'http://127.0.0.1',           // Localhost alternative
-        'http://127.0.0.1:5173',      // Localhost alternative with port
-        'http://127.0.0.1:3000',      // Localhost alternative backend
-      ];
-  
+  // 2. Enable CORS - Production-ready configuration
   app.enableCors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
-      if (!origin) {
-        console.log('✅ CORS: Allowing request with no origin (Postman/Mobile/Server)');
-        return callback(null, true);
-      }
-      
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        console.log(`✅ CORS: Allowing request from: ${origin}`);
-        callback(null, true);
-      } else {
-        console.error(`❌ CORS: Blocked request from origin: ${origin}`);
-        console.log(`   Allowed origins: ${allowedOrigins.join(', ')}`);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true, // CRITICAL: Allows cookies and Authorization headers
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+    origin: [
+      'https://afsnexsus.agilefacilities.com',  // Production domain
+      'http://localhost:5173',                    // Vite dev server
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: [
       'Content-Type',
-      'Accept', 
       'Authorization',
-      'x-tenant-id',     // Custom header for multi-tenancy (lowercase)
-      'X-Tenant-ID',     // Case variation support
-      'Origin',
       'X-Requested-With',
+      'Accept',
+      'x-tenant-id',
+      'X-Tenant-ID',
     ],
-    exposedHeaders: ['Content-Length', 'Content-Type'],
+    credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204,
-    maxAge: 86400, // Cache preflight requests for 24 hours
   });
   
-  console.log('🔒 CORS: Enabled for specific origins:', allowedOrigins);
+  console.log('🔒 CORS: Enabled for production + localhost:5173');
 
   // 3. Swagger Setup - Configures the API Documentation page
   const config = new DocumentBuilder()
@@ -135,7 +102,7 @@ async function bootstrap() {
   console.log(`📡 Server listening on:     http://${host}:${port}`);
   console.log(`📚 API Documentation:       http://localhost:${port}/api`);
   console.log(`🌍 Environment:             ${nodeEnv}`);
-  console.log(`🔒 CORS Enabled for:        ${allowedOrigins.length} origins`);
+  console.log(`🔒 CORS Enabled for:        production + localhost:5173`);
   console.log('');
   console.log('✅ Server is ready to accept connections!');
   console.log('');
