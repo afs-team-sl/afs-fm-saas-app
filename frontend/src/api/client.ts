@@ -1,12 +1,12 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/env.config';
 
 /**
  * Create an Axios instance with base configuration
  * Supports both Docker and local development
  */
 const apiClient = axios.create({
-  // Use environment variable or fallback to localhost:3000
-  baseURL: import.meta.env.VITE_API_URL || 'https://be-fms-dev-h6fed7awcqd7cxb5.centralus-01.azurewebsites.net',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

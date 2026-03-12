@@ -1,5 +1,6 @@
 import apiClient from './client';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/env.config';
 
 /**
  * Upload an attachment (photo evidence) to a work order
@@ -30,11 +31,10 @@ export const uploadAttachment = async (workOrderId: string, file: File) => {
     headers['x-tenant-id'] = tenantId;
   }
   
-  // Use a raw axios call without the default Content-Type header
-  const baseURL = import.meta.env.VITE_API_URL || 'https://be-fms-dev-h6fed7awcqd7cxb5.centralus-01.azurewebsites.net';
+  // Use centralized API_BASE_URL from config (NEVER hardcode localhost:3000!)
   
   const response = await axios.post(
-    `${baseURL}/work-orders/${workOrderId}/upload`,
+    `${API_BASE_URL}/work-orders/${workOrderId}/upload`,
     formData,
     {
       headers,
