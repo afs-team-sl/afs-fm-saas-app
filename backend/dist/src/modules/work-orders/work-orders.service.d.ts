@@ -9,15 +9,37 @@ export declare class WorkOrdersService {
     constructor(prisma: PrismaService, storageService: StorageService);
     private readonly includeRelations;
     create(tenantId: string, dto: CreateWorkOrderDto): Promise<({
+        parts: ({
+            part: {
+                id: string;
+                tenantId: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                location: string | null;
+                partNumber: string;
+                stockLevel: number;
+                minStock: number;
+                unitPrice: number;
+                uom: string;
+                supplierId: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            partId: string;
+            quantity: number;
+            workOrderId: string;
+        })[];
         asset: {
             room: ({
                 floor: {
                     building: {
                         id: string;
-                        name: string;
                         tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        name: string;
                         address: string | null;
                     };
                 } & {
@@ -29,17 +51,21 @@ export declare class WorkOrdersService {
                 };
             } & {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }) | null;
         } & {
             id: string;
+            tenantId: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
             site: string | null;
             location: string | null;
             customId: string | null;
@@ -53,10 +79,6 @@ export declare class WorkOrdersService {
             department: string | null;
             image: string | null;
             costCenter: string | null;
-            tenantId: string;
-            roomId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         assignedTo: {
             id: string;
@@ -64,36 +86,14 @@ export declare class WorkOrdersService {
             firstName: string;
             lastName: string;
         } | null;
-        parts: ({
-            part: {
-                id: string;
-                name: string;
-                location: string | null;
-                tenantId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                partNumber: string;
-                stockLevel: number;
-                minStock: number;
-                unitPrice: number;
-                uom: string;
-                supplierId: string | null;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            quantity: number;
-            workOrderId: string;
-            partId: string;
-        })[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.WorkOrderStatus;
         tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         description: string | null;
+        title: string;
+        status: import(".prisma/client").$Enums.WorkOrderStatus;
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
@@ -105,15 +105,37 @@ export declare class WorkOrdersService {
         legacyId: string | null;
     })[]>;
     findAll(tenantId: string, userId?: string, role?: string): Promise<({
+        parts: ({
+            part: {
+                id: string;
+                tenantId: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                location: string | null;
+                partNumber: string;
+                stockLevel: number;
+                minStock: number;
+                unitPrice: number;
+                uom: string;
+                supplierId: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            partId: string;
+            quantity: number;
+            workOrderId: string;
+        })[];
         asset: {
             room: ({
                 floor: {
                     building: {
                         id: string;
-                        name: string;
                         tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        name: string;
                         address: string | null;
                     };
                 } & {
@@ -125,17 +147,21 @@ export declare class WorkOrdersService {
                 };
             } & {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }) | null;
         } & {
             id: string;
+            tenantId: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
             site: string | null;
             location: string | null;
             customId: string | null;
@@ -149,10 +175,6 @@ export declare class WorkOrdersService {
             department: string | null;
             image: string | null;
             costCenter: string | null;
-            tenantId: string;
-            roomId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         assignedTo: {
             id: string;
@@ -160,36 +182,14 @@ export declare class WorkOrdersService {
             firstName: string;
             lastName: string;
         } | null;
-        parts: ({
-            part: {
-                id: string;
-                name: string;
-                location: string | null;
-                tenantId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                partNumber: string;
-                stockLevel: number;
-                minStock: number;
-                unitPrice: number;
-                uom: string;
-                supplierId: string | null;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            quantity: number;
-            workOrderId: string;
-            partId: string;
-        })[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.WorkOrderStatus;
         tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         description: string | null;
+        title: string;
+        status: import(".prisma/client").$Enums.WorkOrderStatus;
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
@@ -201,15 +201,37 @@ export declare class WorkOrdersService {
         legacyId: string | null;
     })[]>;
     findByStatus(tenantId: string, status: string): Promise<({
+        parts: ({
+            part: {
+                id: string;
+                tenantId: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                location: string | null;
+                partNumber: string;
+                stockLevel: number;
+                minStock: number;
+                unitPrice: number;
+                uom: string;
+                supplierId: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            partId: string;
+            quantity: number;
+            workOrderId: string;
+        })[];
         asset: {
             room: ({
                 floor: {
                     building: {
                         id: string;
-                        name: string;
                         tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        name: string;
                         address: string | null;
                     };
                 } & {
@@ -221,17 +243,21 @@ export declare class WorkOrdersService {
                 };
             } & {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }) | null;
         } & {
             id: string;
+            tenantId: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
             site: string | null;
             location: string | null;
             customId: string | null;
@@ -245,10 +271,6 @@ export declare class WorkOrdersService {
             department: string | null;
             image: string | null;
             costCenter: string | null;
-            tenantId: string;
-            roomId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         assignedTo: {
             id: string;
@@ -256,36 +278,14 @@ export declare class WorkOrdersService {
             firstName: string;
             lastName: string;
         } | null;
-        parts: ({
-            part: {
-                id: string;
-                name: string;
-                location: string | null;
-                tenantId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                partNumber: string;
-                stockLevel: number;
-                minStock: number;
-                unitPrice: number;
-                uom: string;
-                supplierId: string | null;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            quantity: number;
-            workOrderId: string;
-            partId: string;
-        })[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.WorkOrderStatus;
         tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         description: string | null;
+        title: string;
+        status: import(".prisma/client").$Enums.WorkOrderStatus;
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
@@ -297,15 +297,37 @@ export declare class WorkOrdersService {
         legacyId: string | null;
     })[]>;
     findByPriority(tenantId: string, priority: string): Promise<({
+        parts: ({
+            part: {
+                id: string;
+                tenantId: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                location: string | null;
+                partNumber: string;
+                stockLevel: number;
+                minStock: number;
+                unitPrice: number;
+                uom: string;
+                supplierId: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            partId: string;
+            quantity: number;
+            workOrderId: string;
+        })[];
         asset: {
             room: ({
                 floor: {
                     building: {
                         id: string;
-                        name: string;
                         tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        name: string;
                         address: string | null;
                     };
                 } & {
@@ -317,17 +339,21 @@ export declare class WorkOrdersService {
                 };
             } & {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }) | null;
         } & {
             id: string;
+            tenantId: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
             site: string | null;
             location: string | null;
             customId: string | null;
@@ -341,10 +367,6 @@ export declare class WorkOrdersService {
             department: string | null;
             image: string | null;
             costCenter: string | null;
-            tenantId: string;
-            roomId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         assignedTo: {
             id: string;
@@ -352,36 +374,14 @@ export declare class WorkOrdersService {
             firstName: string;
             lastName: string;
         } | null;
-        parts: ({
-            part: {
-                id: string;
-                name: string;
-                location: string | null;
-                tenantId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                partNumber: string;
-                stockLevel: number;
-                minStock: number;
-                unitPrice: number;
-                uom: string;
-                supplierId: string | null;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            quantity: number;
-            workOrderId: string;
-            partId: string;
-        })[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.WorkOrderStatus;
         tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         description: string | null;
+        title: string;
+        status: import(".prisma/client").$Enums.WorkOrderStatus;
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
@@ -393,15 +393,37 @@ export declare class WorkOrdersService {
         legacyId: string | null;
     })[]>;
     findOne(id: string, tenantId: string): Promise<{
+        parts: ({
+            part: {
+                id: string;
+                tenantId: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                location: string | null;
+                partNumber: string;
+                stockLevel: number;
+                minStock: number;
+                unitPrice: number;
+                uom: string;
+                supplierId: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            partId: string;
+            quantity: number;
+            workOrderId: string;
+        })[];
         asset: {
             room: ({
                 floor: {
                     building: {
                         id: string;
-                        name: string;
                         tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        name: string;
                         address: string | null;
                     };
                 } & {
@@ -413,17 +435,21 @@ export declare class WorkOrdersService {
                 };
             } & {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }) | null;
         } & {
             id: string;
+            tenantId: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
             site: string | null;
             location: string | null;
             customId: string | null;
@@ -437,10 +463,6 @@ export declare class WorkOrdersService {
             department: string | null;
             image: string | null;
             costCenter: string | null;
-            tenantId: string;
-            roomId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         assignedTo: {
             id: string;
@@ -448,36 +470,14 @@ export declare class WorkOrdersService {
             firstName: string;
             lastName: string;
         } | null;
-        parts: ({
-            part: {
-                id: string;
-                name: string;
-                location: string | null;
-                tenantId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                partNumber: string;
-                stockLevel: number;
-                minStock: number;
-                unitPrice: number;
-                uom: string;
-                supplierId: string | null;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            quantity: number;
-            workOrderId: string;
-            partId: string;
-        })[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.WorkOrderStatus;
         tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         description: string | null;
+        title: string;
+        status: import(".prisma/client").$Enums.WorkOrderStatus;
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
@@ -489,15 +489,37 @@ export declare class WorkOrdersService {
         legacyId: string | null;
     }>;
     update(id: string, tenantId: string, dto: UpdateWorkOrderDto): Promise<{
+        parts: ({
+            part: {
+                id: string;
+                tenantId: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                location: string | null;
+                partNumber: string;
+                stockLevel: number;
+                minStock: number;
+                unitPrice: number;
+                uom: string;
+                supplierId: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            partId: string;
+            quantity: number;
+            workOrderId: string;
+        })[];
         asset: {
             room: ({
                 floor: {
                     building: {
                         id: string;
-                        name: string;
                         tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        name: string;
                         address: string | null;
                     };
                 } & {
@@ -509,17 +531,21 @@ export declare class WorkOrdersService {
                 };
             } & {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }) | null;
         } & {
             id: string;
+            tenantId: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
             site: string | null;
             location: string | null;
             customId: string | null;
@@ -533,10 +559,6 @@ export declare class WorkOrdersService {
             department: string | null;
             image: string | null;
             costCenter: string | null;
-            tenantId: string;
-            roomId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         assignedTo: {
             id: string;
@@ -544,36 +566,14 @@ export declare class WorkOrdersService {
             firstName: string;
             lastName: string;
         } | null;
-        parts: ({
-            part: {
-                id: string;
-                name: string;
-                location: string | null;
-                tenantId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                partNumber: string;
-                stockLevel: number;
-                minStock: number;
-                unitPrice: number;
-                uom: string;
-                supplierId: string | null;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            quantity: number;
-            workOrderId: string;
-            partId: string;
-        })[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.WorkOrderStatus;
         tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         description: string | null;
+        title: string;
+        status: import(".prisma/client").$Enums.WorkOrderStatus;
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
@@ -588,15 +588,37 @@ export declare class WorkOrdersService {
         message: string;
     }>;
     findOverdue(tenantId: string, role?: string, userId?: string): Promise<({
+        parts: ({
+            part: {
+                id: string;
+                tenantId: string;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                location: string | null;
+                partNumber: string;
+                stockLevel: number;
+                minStock: number;
+                unitPrice: number;
+                uom: string;
+                supplierId: string | null;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            partId: string;
+            quantity: number;
+            workOrderId: string;
+        })[];
         asset: {
             room: ({
                 floor: {
                     building: {
                         id: string;
-                        name: string;
                         tenantId: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        name: string;
                         address: string | null;
                     };
                 } & {
@@ -608,17 +630,21 @@ export declare class WorkOrdersService {
                 };
             } & {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 floorId: string;
             }) | null;
         } & {
             id: string;
+            tenantId: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             category: string;
             serialNo: string | null;
             status: import(".prisma/client").$Enums.AssetStatus;
+            roomId: string | null;
             site: string | null;
             location: string | null;
             customId: string | null;
@@ -632,10 +658,6 @@ export declare class WorkOrdersService {
             department: string | null;
             image: string | null;
             costCenter: string | null;
-            tenantId: string;
-            roomId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         assignedTo: {
             id: string;
@@ -643,36 +665,14 @@ export declare class WorkOrdersService {
             firstName: string;
             lastName: string;
         } | null;
-        parts: ({
-            part: {
-                id: string;
-                name: string;
-                location: string | null;
-                tenantId: string;
-                createdAt: Date;
-                updatedAt: Date;
-                partNumber: string;
-                stockLevel: number;
-                minStock: number;
-                unitPrice: number;
-                uom: string;
-                supplierId: string | null;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            quantity: number;
-            workOrderId: string;
-            partId: string;
-        })[];
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.WorkOrderStatus;
         tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         description: string | null;
+        title: string;
+        status: import(".prisma/client").$Enums.WorkOrderStatus;
         priority: import(".prisma/client").$Enums.WorkOrderPriority;
         assetId: string;
         assignedToId: string | null;
@@ -686,11 +686,11 @@ export declare class WorkOrdersService {
     addPart(workOrderId: string, tenantId: string, dto: AddWorkOrderPartDto): Promise<{
         part: {
             id: string;
-            name: string;
-            location: string | null;
             tenantId: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            location: string | null;
             partNumber: string;
             stockLevel: number;
             minStock: number;
@@ -701,18 +701,18 @@ export declare class WorkOrdersService {
     } & {
         id: string;
         createdAt: Date;
+        partId: string;
         quantity: number;
         workOrderId: string;
-        partId: string;
     }>;
     getWorkOrderParts(workOrderId: string, tenantId: string): Promise<({
         part: {
             id: string;
-            name: string;
-            location: string | null;
             tenantId: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            location: string | null;
             partNumber: string;
             stockLevel: number;
             minStock: number;
@@ -723,9 +723,9 @@ export declare class WorkOrdersService {
     } & {
         id: string;
         createdAt: Date;
+        partId: string;
         quantity: number;
         workOrderId: string;
-        partId: string;
     })[]>;
     removePart(workOrderId: string, workOrderPartId: string, tenantId: string): Promise<{
         message: string;

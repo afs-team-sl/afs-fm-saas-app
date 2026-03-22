@@ -13,10 +13,14 @@ export declare class AssetsService {
         tenantId: string;
     }): Promise<{
         id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -30,20 +34,16 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        tenantId: string;
-        roomId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     findAll(tenantId: string): Promise<({
         room: ({
             floor: {
                 building: {
                     id: string;
-                    name: string;
                     tenantId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string | null;
                 };
             } & {
@@ -55,17 +55,21 @@ export declare class AssetsService {
             };
         } & {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             floorId: string;
         }) | null;
     } & {
         id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -79,17 +83,17 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        tenantId: string;
-        roomId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     findByStatus(tenantId: string, status: string): Promise<{
         id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -103,17 +107,17 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        tenantId: string;
-        roomId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }[]>;
     findByCategory(tenantId: string, category: string): Promise<{
         id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -127,20 +131,16 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        tenantId: string;
-        roomId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }[]>;
     findByRoom(tenantId: string, roomId: string): Promise<({
         room: ({
             floor: {
                 building: {
                     id: string;
-                    name: string;
                     tenantId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string | null;
                 };
             } & {
@@ -152,17 +152,21 @@ export declare class AssetsService {
             };
         } & {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             floorId: string;
         }) | null;
     } & {
         id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -176,20 +180,16 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        tenantId: string;
-        roomId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     findByLocation(tenantId: string, location: string): Promise<({
         room: ({
             floor: {
                 building: {
                     id: string;
-                    name: string;
                     tenantId: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string | null;
                 };
             } & {
@@ -201,17 +201,21 @@ export declare class AssetsService {
             };
         } & {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             floorId: string;
         }) | null;
     } & {
         id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -225,38 +229,10 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        tenantId: string;
-        roomId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     getUniqueLocations(tenantId: string): Promise<(string | null)[]>;
     findOne(id: string, tenantId: string): Promise<{
         latestReadings: string | number | true | Prisma.JsonObject | Prisma.JsonArray | null;
-        room: ({
-            floor: {
-                building: {
-                    id: string;
-                    name: string;
-                    tenantId: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    address: string | null;
-                };
-            } & {
-                number: string;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                buildingId: string;
-            };
-        } & {
-            id: string;
-            name: string;
-            createdAt: Date;
-            updatedAt: Date;
-            floorId: string;
-        }) | null;
         workOrders: ({
             assignedTo: {
                 id: string;
@@ -266,12 +242,12 @@ export declare class AssetsService {
             } | null;
         } & {
             id: string;
-            status: import(".prisma/client").$Enums.WorkOrderStatus;
             tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            title: string;
             description: string | null;
+            title: string;
+            status: import(".prisma/client").$Enums.WorkOrderStatus;
             priority: import(".prisma/client").$Enums.WorkOrderPriority;
             assetId: string;
             assignedToId: string | null;
@@ -282,20 +258,48 @@ export declare class AssetsService {
             checklistData: Prisma.JsonValue | null;
             legacyId: string | null;
         })[];
+        room: ({
+            floor: {
+                building: {
+                    id: string;
+                    tenantId: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    name: string;
+                    address: string | null;
+                };
+            } & {
+                number: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                buildingId: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            floorId: string;
+        }) | null;
         documents: {
             id: string;
-            name: string;
             createdAt: Date;
+            name: string;
             assetId: string;
             fileUrl: string;
             fileSize: number;
             mimeType: string;
         }[];
         id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -309,17 +313,17 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        tenantId: string;
-        roomId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     update(id: string, tenantId: string, dto: UpdateAssetDto): Promise<{
         id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -333,17 +337,17 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        tenantId: string;
-        roomId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     remove(id: string, tenantId: string, userEmail?: string): Promise<{
         id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         category: string;
         serialNo: string | null;
         status: import(".prisma/client").$Enums.AssetStatus;
+        roomId: string | null;
         site: string | null;
         location: string | null;
         customId: string | null;
@@ -357,10 +361,6 @@ export declare class AssetsService {
         department: string | null;
         image: string | null;
         costCenter: string | null;
-        tenantId: string;
-        roomId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     createBulk(tenantId: string, assets: CreateAssetDto[]): Promise<{
         count: number;
@@ -373,8 +373,8 @@ export declare class AssetsService {
     uploadImage(assetId: string, tenantId: string, file: Express.Multer.File): Promise<string>;
     uploadDocument(assetId: string, tenantId: string, file: Express.Multer.File): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
+        name: string;
         assetId: string;
         fileUrl: string;
         fileSize: number;
@@ -382,8 +382,8 @@ export declare class AssetsService {
     }>;
     getDocuments(assetId: string, tenantId: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
+        name: string;
         assetId: string;
         fileUrl: string;
         fileSize: number;

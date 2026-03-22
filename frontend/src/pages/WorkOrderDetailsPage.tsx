@@ -755,52 +755,55 @@ const WorkOrderDetailsPage = () => {
   const isCompleted = workOrder.status === 'COMPLETED';
   const isCancelled = workOrder.status === 'CANCELLED';
   const isDisabled = isCompleted || isCancelled;
+  const displayId = `WO-${workOrder.id.slice(-6).toUpperCase()}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ===== STICKY TOP BAR ===== */}
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left: Back Button + Work Order ID */}
-            <div className="flex items-center gap-6">
+          <div className="flex items-center justify-between gap-4">
+            {/* Left: Back Button + Title + Work Order ID + Badges */}
+            <div className="flex min-w-0 items-center gap-3 md:gap-4 flex-nowrap">
               <button
                 onClick={() => navigate('/work-orders')}
-                className="inline-flex items-center gap-2 text-gray-600 hover:text-[#232249] font-medium transition-colors group"
+                className="inline-flex shrink-0 items-center gap-2 text-[#232249] hover:text-[#1a1a38] font-medium transition-colors group"
               >
                 <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                Work Orders
+                <span className="hidden sm:inline">Work Orders</span>
               </button>
               
-              <div className="h-8 w-px bg-gray-300"></div>
+              <div className="h-8 w-px bg-gray-300 shrink-0"></div>
               
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Work Order</p>
-                <p className="text-sm font-mono font-bold text-[#232249]">{workOrder.id}</p>
+              <div className="min-w-0 max-w-[140px] sm:max-w-[220px]">
+                <p className="text-sm font-bold text-[#232249] truncate">{workOrder.title}</p>
+                <div className="min-w-0 max-w-[120px] sm:max-w-[160px]">
+                  <p className="text-xs text-[#232249] uppercase tracking-wide font-semibold">Work Order ID</p>
+                  <p className="text-sm font-mono font-bold text-[#232249] truncate">{displayId}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-nowrap shrink-0">
+                <span className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide shadow-sm whitespace-nowrap ${getStatusStyles(workOrder.status)}`}>
+                {workOrder.status.replace('_', ' ')}
+                </span>
+                <span className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap ${getPriorityStyles(workOrder.priority)}`}>
+                {workOrder.priority}
+                </span>
               </div>
             </div>
 
-            {/* Center: Status Badge */}
-            <div className="flex items-center gap-3">
-              <span className={`px-5 py-2 rounded-lg text-sm font-bold uppercase tracking-wide shadow-sm ${getStatusStyles(workOrder.status)}`}>
-                {workOrder.status.replace('_', ' ')}
-              </span>
-              <span className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide ${getPriorityStyles(workOrder.priority)}`}>
-                {workOrder.priority}
-              </span>
-            </div>
-
             {/* Right: Quick Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 shrink-0">
               {getNavigationLink() && (
                 <a
                   href={getNavigationLink()!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#232249] text-white rounded-lg hover:bg-[#1a1a38] transition-all shadow-sm text-sm font-semibold"
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-[#232249] text-white rounded-lg hover:bg-[#1a1a38] transition-all shadow-sm text-sm font-semibold"
                 >
                   <Navigation className="w-4 h-4" />
-                  Navigate
+                  <span className="hidden lg:inline">Navigate</span>
                 </a>
               )}
               
@@ -808,17 +811,17 @@ const WorkOrderDetailsPage = () => {
                 <button
                   onClick={handleCompleteWorkOrder}
                   disabled={isSubmitting}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-sm text-sm font-bold disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-3 sm:px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-sm text-sm font-bold disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Processing...
+                      <span className="hidden sm:inline">Processing...</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4" />
-                      Complete Work Order
+                      <span className="hidden xl:inline">Complete Work Order</span>
                     </>
                   )}
                 </button>
@@ -834,8 +837,20 @@ const WorkOrderDetailsPage = () => {
         {/* Page Title */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#232249] mb-2">{workOrder.title}</h1>
+          <div className="flex items-center gap-2 md:gap-3 flex-nowrap overflow-hidden mb-2">
+            <div className="min-w-0 max-w-[140px] sm:max-w-[180px]">
+              <p className="text-xs text-[#232249] uppercase tracking-wide font-semibold">Work Order ID</p>
+              <p className="text-sm font-mono font-bold text-[#232249] truncate">{displayId}</p>
+            </div>
+            <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap ${getStatusStyles(workOrder.status)}`}>
+              {workOrder.status.replace('_', ' ')}
+            </span>
+            <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap ${getPriorityStyles(workOrder.priority)}`}>
+              {workOrder.priority}
+            </span>
+          </div>
           {workOrder.description && (
-            <p className="text-gray-600 text-base leading-relaxed">{workOrder.description}</p>
+            <p className="text-[#232249] text-base leading-relaxed">{workOrder.description}</p>
           )}
         </div>
 

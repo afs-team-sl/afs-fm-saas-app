@@ -44,25 +44,25 @@ async function bootstrap() {
     transform: true,
   }));
 
-  // 2. Enable CORS - ⚠️ DIAGNOSTIC MODE: Maximally permissive to rule out CORS as root cause
-  // TODO: Lock down to specific origins once the live site is confirmed working
-  app.enableCors({
-    origin: true, // Reflects the request origin - allows ANY domain
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-      'Accept',
-      'x-tenant-id',
-      'X-Tenant-ID',
-    ],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+  // 2. Manual Global CORS Middleware - replaces app.enableCors() which fails on Azure
+  app.use((req: any, res: any, next: () => void) => {
+    const origin = req.headers.origin;
+
+    // Allow the production domain and local dev
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, x-tenant-id, X-Tenant-ID, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+
+    // Handle the OPTIONS preflight request immediately
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+
+    next();
   });
 
-  console.log('🔒 CORS: ⚠️ DIAGNOSTIC MODE - All origins reflected (maximally permissive)');
+  console.log('🔒 CORS: Manual middleware active - all origins allowed with credentials');
 
   // 3. Swagger Setup - Configures the API Documentation page
   const config = new DocumentBuilder()
@@ -100,7 +100,7 @@ async function bootstrap() {
   console.log(`📡 Server listening on:     http://${host}:${port}`);
   console.log(`📚 API Documentation:       http://localhost:${port}/api`);
   console.log(`🌍 Environment:             ${nodeEnv}`);
-  console.log(`🔒 CORS:                    ⚠️  DIAGNOSTIC - All origins allowed`);
+  console.log(`🔒 CORS:                    ✅ Manual middleware - all origins allowed`);
   console.log('');
   console.log('✅ Server is ready to accept connections!');
   console.log('');

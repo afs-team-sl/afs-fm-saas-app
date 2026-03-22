@@ -34,52 +34,18 @@ async function bootstrap() {
         forbidNonWhitelisted: true,
         transform: true,
     }));
-    const corsOrigin = configService.get('CORS_ORIGIN');
-    const allowedOrigins = corsOrigin
-        ? corsOrigin.split(',').map(origin => origin.trim())
-        : [
-            'http://localhost',
-            'http://localhost:80',
-            'http://localhost:5173',
-            'http://localhost:5174',
-            'http://localhost:3000',
-            'http://127.0.0.1',
-            'http://127.0.0.1:5173',
-            'http://127.0.0.1:3000',
-        ];
-    app.enableCors({
-        origin: (origin, callback) => {
-            if (!origin) {
-                console.log('✅ CORS: Allowing request with no origin (Postman/Mobile/Server)');
-                return callback(null, true);
-            }
-            if (allowedOrigins.indexOf(origin) !== -1) {
-                console.log(`✅ CORS: Allowing request from: ${origin}`);
-                callback(null, true);
-            }
-            else {
-                console.error(`❌ CORS: Blocked request from origin: ${origin}`);
-                console.log(`   Allowed origins: ${allowedOrigins.join(', ')}`);
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
-        credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-        allowedHeaders: [
-            'Content-Type',
-            'Accept',
-            'Authorization',
-            'x-tenant-id',
-            'X-Tenant-ID',
-            'Origin',
-            'X-Requested-With',
-        ],
-        exposedHeaders: ['Content-Length', 'Content-Type'],
-        preflightContinue: false,
-        optionsSuccessStatus: 204,
-        maxAge: 86400,
+    app.use((req, res, next) => {
+        const origin = req.headers.origin;
+        res.header('Access-Control-Allow-Origin', origin || '*');
+        res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, x-tenant-id, X-Tenant-ID, X-Requested-With');
+        res.header('Access-Control-Allow-Credentials', 'true');
+        if (req.method === 'OPTIONS') {
+            return res.sendStatus(204);
+        }
+        next();
     });
-    console.log('🔒 CORS: Enabled for specific origins:', allowedOrigins);
+    console.log('🔒 CORS: Manual middleware active - all origins allowed with credentials');
     const config = new swagger_1.DocumentBuilder()
         .setTitle('FMS SaaS Platform API')
         .setDescription('The API documentation for Facility Management & CMMS System')
@@ -104,7 +70,7 @@ async function bootstrap() {
     console.log(`📡 Server listening on:     http://${host}:${port}`);
     console.log(`📚 API Documentation:       http://localhost:${port}/api`);
     console.log(`🌍 Environment:             ${nodeEnv}`);
-    console.log(`🔒 CORS Enabled for:        ${allowedOrigins.length} origins`);
+    console.log(`🔒 CORS:                    ✅ Manual middleware - all origins allowed`);
     console.log('');
     console.log('✅ Server is ready to accept connections!');
     console.log('');
