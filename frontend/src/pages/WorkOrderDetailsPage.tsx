@@ -112,6 +112,7 @@ const WorkOrderDetailsPage = () => {
 
   // Labor Timer
   const [elapsedTime, setElapsedTime] = useState<string>('0h 0m');
+  const [isMobile, setIsMobile] = useState<boolean>(() => window.matchMedia('(max-width: 767px)').matches);
 
   // Get Google Maps navigation link
   const getNavigationLink = () => {
@@ -135,6 +136,18 @@ const WorkOrderDetailsPage = () => {
     fetchWorkOrderParts();
     fetchAttachments();
   }, [id]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const handleViewportChange = (event: MediaQueryListEvent) => setIsMobile(event.matches);
+
+    setIsMobile(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleViewportChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleViewportChange);
+    };
+  }, []);
 
   // Timer Effect - Updates every minute when work order is IN_PROGRESS
   useEffect(() => {
@@ -894,24 +907,26 @@ const WorkOrderDetailsPage = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         
         {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#232249] mb-2">{workOrder.title}</h1>
-          <div className="flex items-center gap-2 md:gap-3 flex-nowrap overflow-hidden mb-2">
-            <div className="min-w-0 max-w-[140px] sm:max-w-[180px]">
-              <p className="text-xs text-[#232249] uppercase tracking-wide font-semibold">Work Order ID</p>
-              <p className="text-sm font-mono font-bold text-[#232249] truncate">{displayId}</p>
+        {!isMobile && (
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-[#232249] mb-2">{workOrder.title}</h1>
+            <div className="flex items-center gap-2 md:gap-3 flex-nowrap overflow-hidden mb-2">
+              <div className="min-w-0 max-w-[140px] sm:max-w-[180px]">
+                <p className="text-xs text-[#232249] uppercase tracking-wide font-semibold">Work Order ID</p>
+                <p className="text-sm font-mono font-bold text-[#232249] truncate">{displayId}</p>
+              </div>
+              <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap ${getStatusStyles(workOrder.status)}`}>
+                {workOrder.status.replace('_', ' ')}
+              </span>
+              <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap ${getPriorityStyles(workOrder.priority)}`}>
+                {workOrder.priority}
+              </span>
             </div>
-            <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap ${getStatusStyles(workOrder.status)}`}>
-              {workOrder.status.replace('_', ' ')}
-            </span>
-            <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap ${getPriorityStyles(workOrder.priority)}`}>
-              {workOrder.priority}
-            </span>
+            {workOrder.description && (
+              <p className="text-[#232249] text-base leading-relaxed">{workOrder.description}</p>
+            )}
           </div>
-          {workOrder.description && (
-            <p className="text-[#232249] text-base leading-relaxed">{workOrder.description}</p>
-          )}
-        </div>
+        )}
 
         {/* ===== TWO-COLUMN GRID (Main Content + Action Sidebar) ===== */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

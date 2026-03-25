@@ -303,7 +303,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shadow-sm">
           <div className="flex items-center gap-4">
             <button 
-              className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all" 
+              className="md:hidden h-10 w-10 inline-flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-xl transition-all" 
               onClick={() => setSidebarOpen(!isSidebarOpen)}
             >
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -319,7 +319,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
             <div className="relative" ref={notificationRef}>
               <button 
                 onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all relative"
+                className="h-10 w-10 inline-flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all relative"
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
@@ -329,11 +329,20 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 )}
               </button>
 
+              {isNotificationOpen && (
+                <button
+                  type="button"
+                  aria-label="Close notifications"
+                  onClick={() => setIsNotificationOpen(false)}
+                  className="fixed inset-0 bg-black/40 z-[95] md:hidden"
+                />
+              )}
+
               {/* Notification Dropdown Panel */}
               {isNotificationOpen && (
-                <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-2xl border border-slate-200 z-50 max-h-[500px] flex flex-col">
+                <div className="fixed left-0 right-0 top-16 bottom-0 bg-white z-[100] flex flex-col shadow-[0_12px_30px_rgba(15,23,42,0.22)] md:absolute md:right-0 md:left-auto md:top-auto md:bottom-auto md:mt-2 md:w-96 md:max-h-[500px] md:rounded-lg md:border md:border-slate-200 md:shadow-2xl">
                   {/* Header */}
-                  <div className="px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-primary to-primary-dark rounded-t-lg">
+                  <div className="px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-primary to-primary-dark md:rounded-t-lg">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-white">Notifications</h3>
                       {unreadCount > 0 && (
@@ -345,7 +354,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                   </div>
 
                   {/* Notification List */}
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto overscroll-contain">
                     {(() => {
                       // Merge user notifications and announcements
                       const combinedItems = [
@@ -446,7 +455,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
                   {/* Footer */}
                   {userNotifications.length > 0 && (
-                    <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+                    <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 md:rounded-b-lg">
                       <button
                         onClick={markAllAsRead}
                         disabled={unreadCount === 0}
