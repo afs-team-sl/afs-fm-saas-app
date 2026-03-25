@@ -761,39 +761,98 @@ const WorkOrderDetailsPage = () => {
     <div className="min-h-screen bg-gray-50">
       {/* ===== STICKY TOP BAR ===== */}
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            {/* Left: Back Button + Title + Work Order ID + Badges */}
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
+          {/* Mobile Header (< md): Two rows */}
+          <div className="md:hidden">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={() => navigate('/work-orders')}
+                className="inline-flex shrink-0 items-center gap-1.5 px-2 py-1.5 rounded-lg text-[#232249] hover:bg-slate-100 font-semibold transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-xs">Back</span>
+              </button>
+
+              <p className="flex-1 min-w-0 text-sm font-bold text-[#232249] truncate text-center">{workOrder.title}</p>
+
+              <span className="shrink-0 text-[11px] font-mono font-bold text-[#232249] bg-slate-100 px-2 py-1 rounded-md">
+                {displayId}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              <span className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap ${getStatusStyles(workOrder.status)}`}>
+                {workOrder.status.replace('_', ' ')}
+              </span>
+              <span className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide whitespace-nowrap ${getPriorityStyles(workOrder.priority)}`}>
+                {workOrder.priority}
+              </span>
+
+              {getNavigationLink() && (
+                <a
+                  href={getNavigationLink()!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#232249] text-white rounded-lg hover:bg-[#1a1a38] transition-all shadow-sm text-xs font-semibold"
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  Navigate
+                </a>
+              )}
+
+              {!isDisabled && (
+                <button
+                  onClick={handleCompleteWorkOrder}
+                  disabled={isSubmitting}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-sm text-xs font-bold disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Complete
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Desktop Header (>= md): Single row */}
+          <div className="hidden md:flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3 md:gap-4 flex-nowrap">
               <button
                 onClick={() => navigate('/work-orders')}
                 className="inline-flex shrink-0 items-center gap-2 text-[#232249] hover:text-[#1a1a38] font-medium transition-colors group"
               >
                 <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                <span className="hidden sm:inline">Work Orders</span>
+                <span>Work Orders</span>
               </button>
-              
+
               <div className="h-8 w-px bg-gray-300 shrink-0"></div>
-              
-              <div className="min-w-0 max-w-[140px] sm:max-w-[220px]">
+
+              <div className="min-w-0 max-w-[220px]">
                 <p className="text-sm font-bold text-[#232249] truncate">{workOrder.title}</p>
-                <div className="min-w-0 max-w-[120px] sm:max-w-[160px]">
+                <div className="min-w-0 max-w-[160px]">
                   <p className="text-xs text-[#232249] uppercase tracking-wide font-semibold">Work Order ID</p>
                   <p className="text-sm font-mono font-bold text-[#232249] truncate">{displayId}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 flex-nowrap shrink-0">
-                <span className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide shadow-sm whitespace-nowrap ${getStatusStyles(workOrder.status)}`}>
-                {workOrder.status.replace('_', ' ')}
+                <span className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide shadow-sm whitespace-nowrap ${getStatusStyles(workOrder.status)}`}>
+                  {workOrder.status.replace('_', ' ')}
                 </span>
                 <span className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap ${getPriorityStyles(workOrder.priority)}`}>
-                {workOrder.priority}
+                  {workOrder.priority}
                 </span>
               </div>
             </div>
 
-            {/* Right: Quick Actions */}
             <div className="flex items-center gap-2 shrink-0">
               {getNavigationLink() && (
                 <a
@@ -806,7 +865,7 @@ const WorkOrderDetailsPage = () => {
                   <span className="hidden lg:inline">Navigate</span>
                 </a>
               )}
-              
+
               {!isDisabled && (
                 <button
                   onClick={handleCompleteWorkOrder}
@@ -816,7 +875,7 @@ const WorkOrderDetailsPage = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="hidden sm:inline">Processing...</span>
+                      <span>Processing...</span>
                     </>
                   ) : (
                     <>
